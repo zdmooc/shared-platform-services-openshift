@@ -1,0 +1,24 @@
+apiVersion: argoproj.io/v1alpha1
+kind: AppProject
+metadata:
+  name: shared-platform-services
+  namespace: openshift-gitops
+spec:
+  description: Shared MayaBank platform services
+  sourceRepos:
+    - https://github.com/zdmooc/shared-platform-services-openshift.git
+  destinations:
+    - namespace: shared-platform-services
+      server: https://kubernetes.default.svc
+    - namespace: shared-observability
+      server: https://kubernetes.default.svc
+    - namespace: shared-identity
+      server: https://kubernetes.default.svc
+    - namespace: shared-quality
+      server: https://kubernetes.default.svc
+  clusterResourceWhitelist:
+    - group: ""
+      kind: Namespace
+  namespaceResourceWhitelist:
+    - group: "*"
+      kind: "*"
