@@ -1,0 +1,34 @@
+name: S5 Runtime Smoke
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - "platform/**"
+      - "scripts/runtime-smoke-kind.sh"
+      - ".github/workflows/runtime-smoke.yml"
+  pull_request:
+    paths:
+      - "platform/**"
+      - "scripts/runtime-smoke-kind.sh"
+      - ".github/workflows/runtime-smoke.yml"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  kind-runtime:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: azure/setup-kubectl@v4
+        with:
+          version: v1.31.0
+      - name: Install kind
+        run: |
+          curl -fsSLo /usr/local/bin/kind https://kind.sigs.k8s.io/dl/v0.24.0/kind-linux-amd64
+          chmod +x /usr/local/bin/kind
+          kind version
+      - name: Execute shared-platform runtime smoke
+        run: bash scripts/runtime-smoke-kind.sh
