@@ -1,0 +1,22 @@
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: allow-shared-platform-egress
+  namespace: REPLACE_ME
+spec:
+  podSelector: {}
+  policyTypes:
+    - Egress
+  egress:
+    - to:
+        - namespaceSelector:
+            matchLabels:
+              app.kubernetes.io/part-of: shared-platform-services
+    - to:
+        - namespaceSelector:
+            matchLabels:
+              platform.mayabank.example/capability: observability
+    - to:
+        - namespaceSelector:
+            matchLabels:
+              platform.mayabank.example/capability: identity
