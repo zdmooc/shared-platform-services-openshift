@@ -1,21 +1,31 @@
-# S6 — Identity & Quality runtime evidence contract
+# S6 — Identity & Quality runtime evidence
 
-Status at repository creation time: **WORKFLOW_DEFINED / EXECUTION_RESULT_TO_BE_CAPTURED**.
+**Observed status:** CI_RUNTIME_PROVEN_CONTAINER_SMOKE  
+**Run:** `36840813149`  
+**Date:** 2026-10-01
 
 Workflow: `.github/workflows/identity-quality-smoke.yml`.
 
-Success criteria:
-- Keycloak dev runtime exposes OIDC discovery metadata;
-- SonarQube runtime reaches UP/GREEN;
-- workflow emits both PASS markers.
+## Observed successful checks
 
-Allowed successful claim:
+- Keycloak dev runtime started;
+- OIDC discovery metadata was retrieved successfully;
+- SonarQube runtime started;
+- SonarQube system status reached UP/GREEN;
+- the workflow completed successfully.
+
+Allowed claim:
+
 `CI_RUNTIME_PROVEN_CONTAINER_SMOKE`.
 
-Not proven:
+## Explicitly not proven
+
 - CRC/OpenShift Operators;
 - enterprise IdP federation;
 - secret rotation;
 - production persistence/HA;
-- enterprise SonarQube license/configuration;
-- production PKI.
+- enterprise PKI;
+- production SonarQube configuration/licensing;
+- multi-node failover.
+
+The container smoke proves component startup and the integration endpoints needed by the shared-platform contracts. It is not an OpenShift or production claim.

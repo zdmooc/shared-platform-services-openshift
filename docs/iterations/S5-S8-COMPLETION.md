@@ -1,59 +1,60 @@
-# S5→S8 Completion Record
+# S5→S8 Status Record
 
 Date: 2026-10-01
 
 ## S5 — Runtime portability smoke
-Status: **IMPLEMENTED / WORKFLOW_DEFINED**
-- ephemeral Kind runtime workflow;
-- shared namespaces deployment;
-- OpenTelemetry Collector rollout;
-- in-cluster metrics endpoint smoke test;
-- explicit claim boundary: Kind single-node only.
+
+Status: **IMPLEMENTED / PREVIOUS RUN FAILED BEFORE CLUSTER EXECUTION**.
+
+The original S5 workflow failed while installing Kind to `/usr/local/bin`; the runtime script did not execute.
+
+O3 repairs this gate and strengthens it to verify an actual OTLP metric path through the shared Collector before promoting S5 to runtime-proven.
 
 CRC/OpenShift status: **PENDING — NOT CLAIMED**.
 
 ## S6 — IAM + Quality runtime smoke
-Status: **IMPLEMENTED / WORKFLOW_DEFINED**
-- live Keycloak OIDC discovery smoke;
-- live SonarQube system-status smoke;
-- container-runtime evidence contract;
-- production IAM/SonarQube HA remains out of scope.
+
+Status: **CI_RUNTIME_PROVEN_CONTAINER_SMOKE**.
+
+Observed evidence:
+- workflow run `36840813149` succeeded;
+- Keycloak OIDC discovery succeeded;
+- SonarQube readiness succeeded.
 
 CRC/OpenShift status: **PENDING — NOT CLAIMED**.
 
 ## S7 — First product consumer
-Status: **IMPLEMENTED**
+
+Status: **IMPLEMENTED / STATIC CONSUMPTION EVIDENCE TO VERIFY**.
+
 Consumer: `zdmooc/mayabank-instant-payments-resilience-platform`.
 
 Implemented in consumer repository:
 - dedicated `gitops/overlays/shared-platform`;
 - shared OTel endpoint wiring;
 - Argo CD application profile;
-- platform-render CI guardrail;
 - standalone CRC profile preserved;
 - Kafka/PostgreSQL remain `DEDICATED_FOR_TEST`.
 
 Runtime shared-platform trace/metric proof on CRC: **PENDING — NOT CLAIMED**.
 
 ## S8 — Hardening & evidence
-Status: **IMPLEMENTED**
+
+Status: **IMPLEMENTED**.
+
 - rollback runbook;
 - failure-mode matrix;
-- claim/evidence matrix;
-- CI vs CRC vs production evidence separation;
+- claim/evidence separation;
 - non-disruption and fail-closed security rules.
 
-## V1 repository conclusion
+## Repository conclusion before O3 closure
 
-**S0→S8 IMPLEMENTED IN REPOSITORY.**
+S0→S8 assets exist in Git, but evidence levels differ by capability.
 
-This means the common-platform V1 architecture, manifests, integration contracts, runtime-smoke workflows, first consumer wiring, quality gates and evidence model are complete in Git.
-
-It does **not** mean:
-- CRC deployment was executed from this session;
-- Keycloak/SonarQube are live on CRC;
-- multi-node/HA is proven;
-- Kafka/PostgreSQL/MinIO are shared;
-- production readiness is proven.
-
-Next proof step when the local cluster is available: execute the CRC validation runbook and store evidence.
+Current verified truth:
+- structural Platform CI: PASS;
+- S6 container smoke: PASS;
+- S5 Kind runtime: not yet proven from the failed original run;
+- S7 consumer wiring: implemented, runtime shared consumption not yet proven;
+- CRC/OpenShift: not yet proven;
+- HA/production: not claimed.
