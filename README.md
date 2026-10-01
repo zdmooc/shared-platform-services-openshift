@@ -4,15 +4,27 @@ Plateforme technique commune MayaBank pour mutualiser les capacités transverses
 
 ## Statut
 
-**V1 — S0→S8 IMPLEMENTED IN REPOSITORY / CI RUNTIME WORKFLOWS DEFINED / CRC EVIDENCE PENDING**
+**V1 / O3 COMPLETE — STATIC_VALIDATED + S5 KIND RUNTIME PROVEN + S6 CONTAINER SMOKE PROVEN + S7 CONSUMER CONTRACT VERIFIED / CRC PENDING**
 
-Le dépôt fournit les contrats, manifests, GitOps, observabilité, IAM/secrets patterns, qualité et CI nécessaires au socle commun. Une capacité n'est marquée `RUNTIME_PROVEN` qu'après exécution et collecte d'une preuve dans `evidence/`.
+Le dépôt fournit les contrats, manifests, GitOps, observabilité, IAM/secrets patterns, qualité et CI du socle commun.
+
+Une capacité n'est promue qu'au niveau de preuve réellement observé.
+
+## Preuves actuelles
+
+- Platform CI : run 36860978223 — SUCCESS.
+- S5 Kind runtime : run 36860978155 — SUCCESS.
+- S5 chemin télémétrie : consumer → OTLP HTTP → OTel Collector → Prometheus exporter — PASS.
+- S6 Keycloak OIDC + SonarQube : run 36840813149 — SUCCESS.
+- S7 Instant Payments : STATIC_CONSUMER_CONTRACT_VERIFIED sur le commit consumer bc2ba297f0b2807c7168047e3c4ca4c674f942b5.
+- CRC/OpenShift : PENDING / NOT_PROVEN.
+- HA multi-nœud / production : NOT_CLAIMED.
 
 ## Principes
 
 - séparation stricte plateforme / produit ;
 - aucune migration Big Bang ;
-- nouveaux produits : `CONSUME_SHARED` par défaut pour les services transverses ;
+- nouveaux produits : CONSUME_SHARED par défaut pour les services transverses ;
 - composants dédiés autorisés lorsqu'ils sont l'objet du test ;
 - rollback et reproductibilité obligatoires ;
 - CRC mono-nœud = lab, jamais preuve HA production ;
@@ -33,26 +45,40 @@ Le dépôt fournit les contrats, manifests, GitOps, observabilité, IAM/secrets 
 | Angular / Spring Boot / Camel | PRODUCT_OWNED | produit |
 | MongoDB read model métier | PRODUCT_OWNED | produit |
 
-## Itérations
+## V1 capabilities
 
-- **S0** — Foundation, ownership model, namespaces, architecture, validation.
-- **S1** — GitOps / Argo CD common control plane.
-- **S2** — Observability: OpenTelemetry + Prometheus integration + Grafana assets.
-- **S3** — IAM / OIDC + secrets integration contracts.
-- **S4** — SonarQube integration, reusable CI/security gates and evidence model.
-- **S5** — ephemeral Kind runtime portability smoke.
-- **S6** — Keycloak OIDC + SonarQube live container smoke.
-- **S7** — first real consumer onboarding: Instant Payments shared-platform overlay.
-- **S8** — hardening, rollback, failure-mode and claim/evidence closure.
+- S0 — Foundation / governance.
+- S1 — GitOps / Argo CD contracts.
+- S2 — OpenTelemetry / Prometheus / Grafana contracts.
+- S3 — IAM / OIDC / secrets contracts.
+- S4 — SonarQube / reusable quality gates.
+- S5 — Kind runtime portability and telemetry path.
+- S6 — Keycloak OIDC + SonarQube live container smoke.
+- S7 — Instant Payments consumer onboarding.
+- S8 — hardening / rollback / evidence model.
 
-Voir [ROADMAP.md](ROADMAP.md), [architecture](docs/architecture/PLATFORM_ARCHITECTURE.md), [bootstrap](docs/runbooks/BOOTSTRAP.md), [hardening/rollback](docs/runbooks/HARDENING_ROLLBACK.md) et [claim/evidence matrix](evidence/CLAIM-EVIDENCE-MATRIX.md).
+## Runtime truth boundary
 
-## Consommateurs
+The Kind proof validates Kubernetes portability and the shared telemetry path.
 
-- `mayabank-instant-payments-resilience-platform`
-- `mayabank-european-payment-processing-platform`
-- `enterprise-data-lakehouse-kubernetes-openshift`
-- `TradeOps-GenAI-Integration`
-- `mayabank-ibm-mq-native-ha-openshift-eda-platform`
+The S6 proof validates container startup and integration endpoints for Keycloak and SonarQube.
+
+The S7 verification validates repository contracts only.
+
+None of those proves CRC/OpenShift, multi-node HA or production readiness.
+
+## CRC/OpenShift next gate
+
+Use docs/runbooks/CRC_RUNTIME_VALIDATION.md and scripts/runtime-smoke-openshift.sh.
+
+Only an observed successful execution on CRC with archived evidence may promote the OpenShift column to CRC_RUNTIME_PROVEN.
+
+## Consumers
+
+- mayabank-instant-payments-resilience-platform
+- mayabank-european-payment-processing-platform
+- enterprise-data-lakehouse-kubernetes-openshift
+- TradeOps-GenAI-Integration
+- mayabank-ibm-mq-native-ha-openshift-eda-platform
 
 Chaque consommateur garde ses Deployments applicatifs, schémas, topics, SLO, tests et preuves runtime.
