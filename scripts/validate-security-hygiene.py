@@ -29,8 +29,10 @@ for root in ACTIVE:
             continue
         if path.suffix.lower() not in {".md", ".yaml", ".yml", ".json", ".py", ".sh", ".properties"}:
             continue
-        text = path.read_text(encoding="utf-8", errors="replace")
         rel = path.relative_to(ROOT)
+        if rel == pathlib.Path("scripts/validate-security-hygiene.py"):
+            continue
+        text = path.read_text(encoding="utf-8", errors="replace")
 
         if "-----BEGIN PRIVATE KEY-----" in text or "-----BEGIN RSA PRIVATE KEY-----" in text:
             errors.append(f"{rel}: private key material found")
