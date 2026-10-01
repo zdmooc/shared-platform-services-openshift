@@ -27,14 +27,16 @@ Consumer: `zdmooc/mayabank-instant-payments-resilience-platform`
 
 The consumer keeps its existing standalone CRC profile.
 
-Shared-platform consumption is exposed through a separate overlay so the existing runtime evidence remains reproducible and no Big Bang migration is implied.
+Shared-platform consumption is exposed through a separate overlay so existing runtime evidence remains reproducible and no Big Bang migration is implied.
 
 ## Evidence
 
-The shared-platform repository contains a dedicated S7 consumer-contract workflow that renders the consumer overlay and verifies the integration contract independently from the full product CI.
+Direct inspection of consumer main commit `bc2ba297f0b2807c7168047e3c4ca4c674f942b5` verified the shared-platform overlay, Argo CD Application and dependency-ownership document.
 
-Allowed successful claim after a green run:
+Current allowed claim:
 
-`STATIC_CONSUMER_CONTRACT_PROVEN`.
+`STATIC_CONSUMER_CONTRACT_VERIFIED`.
+
+The consumer repository's broader CI is not used as evidence for this narrow platform contract because it currently contains unrelated failing jobs.
 
 Runtime trace/metric proof on OpenShift/CRC remains a separate gate.
