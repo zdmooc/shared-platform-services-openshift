@@ -4,7 +4,7 @@ Plateforme technique commune MayaBank pour mutualiser les capacités transverses
 
 ## Statut
 
-**S0→S4 IMPLEMENTED IN REPOSITORY / RUNTIME EVIDENCE PENDING**
+**V1 — S0→S8 IMPLEMENTED IN REPOSITORY / CI RUNTIME WORKFLOWS DEFINED / CRC EVIDENCE PENDING**
 
 Le dépôt fournit les contrats, manifests, GitOps, observabilité, IAM/secrets patterns, qualité et CI nécessaires au socle commun. Une capacité n'est marquée `RUNTIME_PROVEN` qu'après exécution et collecte d'une preuve dans `evidence/`.
 
@@ -40,8 +40,12 @@ Le dépôt fournit les contrats, manifests, GitOps, observabilité, IAM/secrets 
 - **S2** — Observability: OpenTelemetry + Prometheus integration + Grafana assets.
 - **S3** — IAM / OIDC + secrets integration contracts.
 - **S4** — SonarQube integration, reusable CI/security gates and evidence model.
+- **S5** — ephemeral Kind runtime portability smoke.
+- **S6** — Keycloak OIDC + SonarQube live container smoke.
+- **S7** — first real consumer onboarding: Instant Payments shared-platform overlay.
+- **S8** — hardening, rollback, failure-mode and claim/evidence closure.
 
-Voir [ROADMAP.md](ROADMAP.md), [architecture](docs/architecture/PLATFORM_ARCHITECTURE.md) et [runbook](docs/runbooks/BOOTSTRAP.md).
+Voir [ROADMAP.md](ROADMAP.md), [architecture](docs/architecture/PLATFORM_ARCHITECTURE.md), [bootstrap](docs/runbooks/BOOTSTRAP.md), [hardening/rollback](docs/runbooks/HARDENING_ROLLBACK.md) et [claim/evidence matrix](evidence/CLAIM-EVIDENCE-MATRIX.md).
 
 ## Consommateurs
 
