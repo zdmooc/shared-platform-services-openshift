@@ -8,7 +8,16 @@ command -v kind >/dev/null
 command -v kubectl >/dev/null
 
 cleanup() {
+  status=$?
+  if [[ "$status" -ne 0 ]]; then
+    echo "== Failure diagnostics before cluster deletion"
+    kubectl get nodes -o wide || true
+    kubectl get pods -A -o wide || true
+    kubectl get events -A --sort-by=.lastTimestamp | tail -n 100 || true
+    kubectl -n shared-observability logs deploy/otel-collector --tail=200 || true
+  fi
   kind delete cluster --name "$CLUSTER_NAME" >/dev/null 2>&1 || true
+  exit "$status"
 }
 trap cleanup EXIT
 
@@ -25,11 +34,15 @@ kubectl get namespaces shared-platform-services shared-observability shared-iden
 kubectl -n shared-observability get deploy,svc
 kubectl -n shared-observability get endpoints otel-collector
 
-echo "== Emit OTLP metric from an in-cluster consumer and verify Prometheus export"
+echo "== Emit minimal OTLP/HTTP metric from in-cluster consumer"
 kubectl run telemetry-consumer-smoke   --namespace shared-observability   --image=curlimages/curl:8.10.1   --restart=Never   --rm -i   --command -- sh -ec '
-    payload='''{"resourceMetrics":[{"resource":{"attributes":[{"key":"service.name","value":{"stringValue":"shared-platform-ci-consumer"}}]},"scopeMetrics":[{"scope":{"name":"shared-platform-smoke"},"metrics":[{"name":"factory_consumer_smoke","description":"Shared platform CI metric","unit":"1","gauge":{"dataPoints":[{"timeUnixNano":"1727784000000000000","asDouble":1.0}]}}]}]}]}'''
+    payload='''{"resourceMetrics":[{"scopeMetrics":[{"metrics":[{"name":"factory_consumer_smoke","gauge":{"dataPoints":[{"asDouble":1}]}}]}]}]}'''
 
-    curl -fsS       -H "Content-Type: application/json"       -X POST       --data "$payload"       http://otel-collector.shared-observability.svc:4318/v1/metrics >/tmp/otlp-response
+    code="$(curl -sS       -o /tmp/otlp-response       -w "%{http_code}"       -H "Content-Type: application/json"       -X POST       --data "$payload"       http://otel-collector.shared-observability.svc:4318/v1/metrics)"
+
+    echo "OTLP_HTTP_STATUS=$code"
+    cat /tmp/otlp-response || true
+    test "$code" = "200"
 
     found=0
     for i in $(seq 1 30); do
