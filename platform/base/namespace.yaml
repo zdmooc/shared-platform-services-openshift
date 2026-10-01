@@ -1,0 +1,31 @@
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: shared-platform-services
+  labels:
+    app.kubernetes.io/part-of: shared-platform-services
+    platform.mayabank.example/scope: shared
+---
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: shared-observability
+  labels:
+    app.kubernetes.io/part-of: shared-platform-services
+    platform.mayabank.example/capability: observability
+---
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: shared-identity
+  labels:
+    app.kubernetes.io/part-of: shared-platform-services
+    platform.mayabank.example/capability: identity
+---
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: shared-quality
+  labels:
+    app.kubernetes.io/part-of: shared-platform-services
+    platform.mayabank.example/capability: quality
