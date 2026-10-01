@@ -4,5 +4,7 @@ resources:
   - configmap.yaml
   - deployment.yaml
   - service.yaml
-commonLabels:
-  app.kubernetes.io/part-of: shared-observability
+labels:
+  - pairs:
+      app.kubernetes.io/part-of: shared-observability
+    includeSelectors: false
