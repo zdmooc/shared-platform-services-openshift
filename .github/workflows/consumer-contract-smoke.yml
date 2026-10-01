@@ -1,0 +1,70 @@
+name: S7 Consumer Contract Smoke
+
+on:
+  workflow_dispatch:
+  push:
+    branches: [main]
+    paths:
+      - "consumers/instant-payments/**"
+      - ".github/workflows/consumer-contract-smoke.yml"
+
+permissions:
+  contents: read
+
+jobs:
+  instant-payments-contract:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: azure/setup-kubectl@v4
+        with:
+          version: v1.31.0
+
+      - name: Fetch consumer repository
+        shell: bash
+        run: |
+          set -euo pipefail
+          git clone --depth 1             https://github.com/zdmooc/mayabank-instant-payments-resilience-platform.git             /tmp/instant-payments
+
+      - name: Render shared-platform overlay
+        shell: bash
+        run: |
+          set -euo pipefail
+          kubectl kustomize             /tmp/instant-payments/gitops/overlays/shared-platform             > /tmp/instant-payments-shared-platform.yaml
+          test -s /tmp/instant-payments-shared-platform.yaml
+
+      - name: Verify shared observability contract
+        shell: bash
+        run: |
+          set -euo pipefail
+          grep -q 'OTEL_EXPORTER_OTLP_ENDPOINT' /tmp/instant-payments-shared-platform.yaml
+          grep -q 'http://otel-collector.shared-observability.svc:4317' /tmp/instant-payments-shared-platform.yaml
+          grep -q 'OTEL_EXPORTER_OTLP_PROTOCOL' /tmp/instant-payments-shared-platform.yaml
+          grep -q 'grpc' /tmp/instant-payments-shared-platform.yaml
+          grep -q 'platform.mayabank.example/observability: shared' /tmp/instant-payments-shared-platform.yaml
+
+      - name: Verify Argo CD consumer application contract
+        shell: bash
+        run: |
+          set -euo pipefail
+          app=/tmp/instant-payments/gitops/argocd/application-shared-platform.yaml
+          grep -q 'https://github.com/zdmooc/mayabank-instant-payments-resilience-platform.git' "$app"
+          grep -q 'gitops/overlays/shared-platform' "$app"
+          grep -q 'instant-payments-local' "$app"
+
+      - name: Verify ownership boundary
+        shell: bash
+        run: |
+          set -euo pipefail
+          contract=/tmp/instant-payments/docs/platform/SHARED-PLATFORM-CONSUMPTION.md
+          grep -q 'Kafka payment runtime | DEDICATED_FOR_TEST' "$contract"
+          grep -q 'PostgreSQL payment runtime | DEDICATED_FOR_TEST' "$contract"
+          grep -q 'Spring Boot services | PRODUCT_OWNED' "$contract"
+
+      - name: Report
+        run: |
+          echo "S7_CONSUMER_OVERLAY_RENDER=PASS"
+          echo "S7_SHARED_OTEL_CONTRACT=PASS"
+          echo "S7_ARGOCD_CONTRACT=PASS"
+          echo "claim=STATIC_CONSUMER_CONTRACT_PROVEN"
