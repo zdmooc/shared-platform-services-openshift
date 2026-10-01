@@ -1,0 +1,34 @@
+apiVersion: argoproj.io/v1alpha1
+kind: ApplicationSet
+metadata:
+  name: shared-platform-consumers-template
+  namespace: openshift-gitops
+spec:
+  generators:
+    - list:
+        elements:
+          - name: REPLACE_ME
+            repoURL: https://github.com/zdmooc/REPLACE_ME.git
+            revision: main
+            path: REPLACE_ME
+            namespace: REPLACE_ME
+  template:
+    metadata:
+      name: '{{name}}'
+      labels:
+        platform.mayabank.example/consumer: '{{name}}'
+    spec:
+      project: shared-platform-services
+      source:
+        repoURL: '{{repoURL}}'
+        targetRevision: '{{revision}}'
+        path: '{{path}}'
+      destination:
+        server: https://kubernetes.default.svc
+        namespace: '{{namespace}}'
+      syncPolicy:
+        automated:
+          prune: false
+          selfHeal: true
+        syncOptions:
+          - CreateNamespace=false
