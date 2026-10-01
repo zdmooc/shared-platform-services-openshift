@@ -54,3 +54,28 @@ Allowed claim: STATIC_CONSUMER_CONTRACT_VERIFIED.
 CRC/OpenShift is deliberately separate.
 
 A successful CRC execution may promote the Kubernetes-native observability slice to CRC_RUNTIME_PROVEN, but not to HA or production.
+
+
+## A3/A4 — AKS portability promotion — 2026-10-01
+
+Portfolio reference: `cadrage_202682030` D-086.
+
+Status:
+- A3 AKS shared-platform runbook: **PREPARED / RUNTIME PENDING**;
+- A4 capability consumption contract: **PREPARED / RUNTIME PENDING**.
+
+New references:
+- `docs/runbooks/AKS_RUNTIME_VALIDATION.md`;
+- `docs/architecture/CAPABILITY_CONSUMPTION_CONTRACT.md`.
+
+Promotion path:
+
+```text
+STATIC_VALIDATED
+-> AKS cluster qualified by Cluster Factory
+-> shared observability bootstrap
+-> real consumer
+-> CLOUD_RUNTIME_PROVEN_AKS_SHARED_OBSERVABILITY
+```
+
+No cloud runtime claim is made until an observed AKS execution exists.
