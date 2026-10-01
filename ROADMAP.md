@@ -1,31 +1,56 @@
-# Roadmap — S0→S8 + O3 Evidence Hardening
+# Roadmap — Shared Platform Services
 
-| Iteration | Scope | Repository status | Runtime claim |
+## V1 / O3 status
+
+| Iteration | Scope | Repository status | Evidence |
 |---|---|---|---|
-| S0 | Foundation & governance | IMPLEMENTED | NOT_APPLICABLE |
-| S1 | GitOps / Argo CD contracts | IMPLEMENTED | CRC_PENDING |
-| S2 | Observability shared contracts | IMPLEMENTED | S5_GATE |
-| S3 | IAM / secrets shared contracts | IMPLEMENTED | CRC_PENDING |
-| S4 | Quality / CI / SonarQube contracts | IMPLEMENTED | S6_PROVEN |
-| S5 | Ephemeral runtime portability | IMPLEMENTED | REPAIR_AND_REEXECUTE |
-| S6 | Keycloak + SonarQube live smoke | IMPLEMENTED | **CI_RUNTIME_PROVEN_CONTAINER_SMOKE** |
-| S7 | Instant Payments consumer onboarding | IMPLEMENTED | STATIC_VERIFY / CRC_PENDING |
-| S8 | Hardening / rollback / evidence | IMPLEMENTED | NOT_APPLICABLE |
+| S0 | Foundation & governance | IMPLEMENTED | STATIC_VALIDATED |
+| S1 | GitOps / Argo CD contracts | IMPLEMENTED | STATIC_VALIDATED / CRC_PENDING |
+| S2 | Observability shared contracts | IMPLEMENTED | S5 CI_RUNTIME_PROVEN_KIND |
+| S3 | IAM / secrets contracts | IMPLEMENTED | STATIC_VALIDATED / CRC_PENDING |
+| S4 | Quality / SonarQube contracts | IMPLEMENTED | S6 PROVEN |
+| S5 | Kind runtime portability | IMPLEMENTED | CI_RUNTIME_PROVEN_KIND |
+| S6 | Keycloak + SonarQube live smoke | IMPLEMENTED | CI_RUNTIME_PROVEN_CONTAINER_SMOKE |
+| S7 | Instant Payments onboarding | IMPLEMENTED | STATIC_CONSUMER_CONTRACT_VERIFIED |
+| S8 | Hardening / rollback / evidence | IMPLEMENTED | STATIC_VALIDATED |
+| O3 | Evidence hardening | COMPLETE | CRC remains pending |
 
-## O3 evidence-hardening sequence
+## Recorded evidence
 
-1. synchronize evidence truth;
-2. repair S5 Kind runner installation;
-3. strengthen S5 from endpoint reachability to OTLP consumer → Collector → Prometheus path;
-4. harden static validation;
-5. verify first-consumer integration;
-6. add CRC/OpenShift execution gate without making a false hosted-CI claim;
-7. close O3 with updated evidence.
+- Platform CI 36860978223 — SUCCESS.
+- S5 Runtime Smoke 36860978155 — SUCCESS.
+- S6 Identity Quality Smoke 36840813149 — SUCCESS.
+- S7 consumer main commit bc2ba297f0b2807c7168047e3c4ca4c674f942b5 inspected and contract verified.
 
-## V1 truth boundary
+## S5 result
 
-Repository-complete means the architecture, contracts and implementation assets exist.
+The runtime smoke proves:
 
-Runtime-proven means the corresponding execution has actually succeeded.
+~~~text
+Kind cluster
+  -> shared namespaces
+  -> OTel Collector Ready
+  -> in-cluster consumer
+  -> OTLP HTTP 200
+  -> Prometheus exporter exposes factory_consumer_smoke 1
+~~~
 
-CRC/OpenShift, HA and production remain independent proof gates.
+Allowed claim: CI_RUNTIME_PROVEN_KIND.
+
+## S6 result
+
+Keycloak OIDC discovery and SonarQube readiness were observed successfully.
+
+Allowed claim: CI_RUNTIME_PROVEN_CONTAINER_SMOKE.
+
+## S7 result
+
+The Instant Payments shared-platform overlay, Argo CD Application and ownership document were directly verified.
+
+Allowed claim: STATIC_CONSUMER_CONTRACT_VERIFIED.
+
+## Next promotion gate
+
+CRC/OpenShift is deliberately separate.
+
+A successful CRC execution may promote the Kubernetes-native observability slice to CRC_RUNTIME_PROVEN, but not to HA or production.
