@@ -1,0 +1,29 @@
+{
+  "realm": "REPLACE_ME",
+  "enabled": true,
+  "displayName": "REPLACE_ME",
+  "registrationAllowed": false,
+  "resetPasswordAllowed": true,
+  "rememberMe": false,
+  "bruteForceProtected": true,
+  "roles": {
+    "realm": [
+      {"name": "reader"},
+      {"name": "operator"},
+      {"name": "admin"}
+    ]
+  },
+  "clients": [
+    {
+      "clientId": "REPLACE_ME",
+      "enabled": true,
+      "protocol": "openid-connect",
+      "publicClient": false,
+      "standardFlowEnabled": true,
+      "directAccessGrantsEnabled": false,
+      "serviceAccountsEnabled": true,
+      "redirectUris": ["https://REPLACE_ME/*"],
+      "webOrigins": ["https://REPLACE_ME"]
+    }
+  ]
+}
