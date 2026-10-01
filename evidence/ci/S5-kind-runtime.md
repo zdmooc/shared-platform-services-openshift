@@ -1,42 +1,44 @@
 # S5 — Kind runtime evidence
 
-**Observed status:** FAILED BEFORE CLUSTER EXECUTION  
-**Run:** `36840802013`  
+**Status:** CI_RUNTIME_PROVEN_KIND  
+**Successful run:** 36860978155  
+**Commit:** 30c9174f4e12b6d831c2a6d07f725f91d259f835  
 **Date:** 2026-10-01
 
-Workflow: `.github/workflows/runtime-smoke.yml`.
+## What was executed
 
-## Observed failure
+- Kind installed in a runner-writable path;
+- ephemeral Kubernetes cluster created;
+- shared-platform runtime slice applied;
+- shared namespaces created;
+- OTel Collector reached Ready;
+- an in-cluster consumer sent an OTLP/HTTP metric;
+- Collector returned HTTP 200;
+- Prometheus exporter exposed the emitted metric;
+- cluster was cleaned up automatically.
 
-The original workflow attempted to install Kind directly under `/usr/local/bin` and failed on the hosted runner:
+## Observed evidence
 
-```text
-chmod: changing permissions of '/usr/local/bin/kind': Operation not permitted
-```
+~~~text
+OTLP_HTTP_STATUS=200
+factory_consumer_smoke 1
+OTEL_CONSUMER_PATH=PASS
+S5_KIND_RUNTIME_SMOKE=PASS
+S5_OTLP_CONSUMER_TO_PROMETHEUS=PASS
+claim=CI_RUNTIME_PROVEN_KIND
+crc_claim=NOT_PROVEN
+~~~
 
-The failure occurred **before** `scripts/runtime-smoke-kind.sh` executed.
+## Allowed claim
 
-Therefore the correct claim for that run is:
+CI_RUNTIME_PROVEN_KIND.
 
-`WORKFLOW_IMPLEMENTED / RUNTIME_NOT_PROVEN`.
+## Not proven
 
-## Success criteria for the repaired run
-
-- Kind binary installed in a runner-writable directory;
-- ephemeral cluster starts;
-- shared namespaces are applied;
-- OpenTelemetry Collector reaches Ready;
-- an in-cluster consumer sends OTLP metric data;
-- the Prometheus exporter exposes the emitted metric;
-- workflow emits `S5_KIND_RUNTIME_SMOKE=PASS`;
-- cluster is destroyed on exit.
-
-Allowed successful claim after an observed green run:
-
-`CI_RUNTIME_PROVEN_KIND`.
-
-Not proven by S5:
-- CRC/OpenShift;
+- CRC/OpenShift runtime;
 - OpenShift Operators;
-- multi-zone/site HA;
+- multi-node/shared-service HA;
+- zone/site resilience;
 - production readiness.
+
+The previous failed runs remain useful audit history: the first exposed runner permission assumptions and the second exposed a weak OTLP test payload. Both were corrected before promotion.
