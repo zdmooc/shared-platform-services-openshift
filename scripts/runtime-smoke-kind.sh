@@ -12,18 +12,43 @@ cleanup() {
 }
 trap cleanup EXIT
 
-kind create cluster --name "$CLUSTER_NAME" --image "$KIND_NODE_IMAGE" --wait 120s
+echo "== Create ephemeral Kind cluster"
+kind create cluster --name "$CLUSTER_NAME" --image "$KIND_NODE_IMAGE" --wait 180s
+kubectl wait --for=condition=Ready node --all --timeout=120s
+
+echo "== Apply shared platform runtime slice"
 kubectl apply -k platform/runtime-ci
 kubectl -n shared-observability rollout status deploy/otel-collector --timeout=180s
 
-kubectl run telemetry-smoke   --namespace shared-observability   --image=curlimages/curl:8.10.1   --restart=Never   --rm -i   --command -- sh -ec '
-    curl -fsS http://otel-collector.shared-observability.svc:8889/metrics >/tmp/metrics
-    grep -Eq "otelcol_|target_info|promhttp" /tmp/metrics
-  '
-
+echo "== Validate platform namespaces and service"
 kubectl get namespaces shared-platform-services shared-observability shared-identity shared-quality
 kubectl -n shared-observability get deploy,svc
+kubectl -n shared-observability get endpoints otel-collector
+
+echo "== Emit OTLP metric from an in-cluster consumer and verify Prometheus export"
+kubectl run telemetry-consumer-smoke   --namespace shared-observability   --image=curlimages/curl:8.10.1   --restart=Never   --rm -i   --command -- sh -ec '
+    payload='''{"resourceMetrics":[{"resource":{"attributes":[{"key":"service.name","value":{"stringValue":"shared-platform-ci-consumer"}}]},"scopeMetrics":[{"scope":{"name":"shared-platform-smoke"},"metrics":[{"name":"factory_consumer_smoke","description":"Shared platform CI metric","unit":"1","gauge":{"dataPoints":[{"timeUnixNano":"1727784000000000000","asDouble":1.0}]}}]}]}]}'''
+
+    curl -fsS       -H "Content-Type: application/json"       -X POST       --data "$payload"       http://otel-collector.shared-observability.svc:4318/v1/metrics >/tmp/otlp-response
+
+    found=0
+    for i in $(seq 1 30); do
+      curl -fsS http://otel-collector.shared-observability.svc:8889/metrics >/tmp/metrics
+      if grep -q "factory_consumer_smoke" /tmp/metrics; then
+        found=1
+        break
+      fi
+      sleep 1
+    done
+
+    test "$found" -eq 1
+    grep "factory_consumer_smoke" /tmp/metrics
+  '
+
+echo "== Collector log sanity"
+kubectl -n shared-observability logs deploy/otel-collector --tail=100
 
 echo "S5_KIND_RUNTIME_SMOKE=PASS"
-echo "claim=CI_RUNTIME_PROVEN_KIND_SINGLE_NODE"
+echo "S5_OTLP_CONSUMER_TO_PROMETHEUS=PASS"
+echo "claim=CI_RUNTIME_PROVEN_KIND"
 echo "crc_claim=NOT_PROVEN"

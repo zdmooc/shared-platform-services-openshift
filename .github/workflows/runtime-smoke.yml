@@ -20,15 +20,38 @@ permissions:
 jobs:
   kind-runtime:
     runs-on: ubuntu-latest
+    timeout-minutes: 15
+    env:
+      CLUSTER_NAME: shared-platform-ci
     steps:
       - uses: actions/checkout@v4
+
       - uses: azure/setup-kubectl@v4
         with:
           version: v1.31.0
-      - name: Install kind
+
+      - name: Install Kind in writable runner path
+        shell: bash
         run: |
-          curl -fsSLo /usr/local/bin/kind https://kind.sigs.k8s.io/dl/v0.24.0/kind-linux-amd64
-          chmod +x /usr/local/bin/kind
+          set -euo pipefail
+          mkdir -p "$RUNNER_TEMP/bin"
+          curl -fsSLo "$RUNNER_TEMP/bin/kind"             https://kind.sigs.k8s.io/dl/v0.24.0/kind-linux-amd64
+          chmod +x "$RUNNER_TEMP/bin/kind"
+          echo "$RUNNER_TEMP/bin" >> "$GITHUB_PATH"
+
+      - name: Show tool versions
+        run: |
           kind version
+          kubectl version --client=true
+
       - name: Execute shared-platform runtime smoke
         run: bash scripts/runtime-smoke-kind.sh
+
+      - name: Capture failure diagnostics
+        if: failure()
+        shell: bash
+        run: |
+          kubectl get nodes -o wide || true
+          kubectl get pods -A -o wide || true
+          kubectl get events -A --sort-by=.lastTimestamp | tail -n 100 || true
+          kubectl -n shared-observability logs deploy/otel-collector --tail=200 || true
