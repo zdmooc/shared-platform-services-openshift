@@ -1,0 +1,27 @@
+apiVersion: platform.mayabank.example/v1alpha1
+kind: DependencyClassification
+metadata:
+  name: shared-platform-defaults
+spec:
+  shared:
+    - argocd
+    - prometheus
+    - grafana
+    - opentelemetry
+    - keycloak
+    - sonarqube
+  conditional:
+    kafka: CONSUME_SHARED_OR_DEDICATED_FOR_TEST
+    postgresql: CONSUME_SHARED_OR_DEDICATED_FOR_TEST
+    objectStorage: CONSUME_SHARED_OR_PRODUCT_OWNED
+  productOwned:
+    - angular
+    - spring-boot
+    - apache-camel
+    - product-mongodb-read-model
+  labels:
+    - CONSUME_SHARED
+    - DEDICATED_FOR_TEST
+    - SPECIALIZED_PLATFORM
+    - PRODUCT_OWNED
+    - REFERENCE_ONLY
