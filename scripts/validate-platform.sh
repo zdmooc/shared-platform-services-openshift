@@ -3,6 +3,7 @@ set -euo pipefail
 
 python scripts/validate_yaml.py
 python scripts/validate_kustomize_refs.py
+python scripts/validate-security-hygiene.py
 
 required=(
   README.md
@@ -26,7 +27,8 @@ done
 
 grep -q "apache-camel" config/dependency-classification.yaml
 grep -q "product-mongodb-read-model" config/dependency-classification.yaml
-grep -q "S0→S8 IMPLEMENTED IN REPOSITORY" docs/iterations/S5-S8-COMPLETION.md
 grep -q "mayabank-instant-payments-resilience-platform" consumers/instant-payments/CONTRACT.md
+grep -q "CI_RUNTIME_PROVEN_CONTAINER_SMOKE" evidence/CLAIM-EVIDENCE-MATRIX.md
+grep -q "CRC/OpenShift" docs/iterations/S5-S8-COMPLETION.md
 
-echo "Shared platform S0-S8 structural validation: PASS"
+echo "SHARED_PLATFORM_STRUCTURAL_VALIDATION=PASS"
