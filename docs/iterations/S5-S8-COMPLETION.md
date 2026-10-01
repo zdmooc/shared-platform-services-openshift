@@ -1,60 +1,71 @@
-# S5→S8 Status Record
+# S5→S8 / O3 Completion Record
 
 Date: 2026-10-01
 
-## S5 — Runtime portability smoke
+## S5 — Runtime portability
 
-Status: **IMPLEMENTED / PREVIOUS RUN FAILED BEFORE CLUSTER EXECUTION**.
+Status: **CI_RUNTIME_PROVEN_KIND**.
 
-The original S5 workflow failed while installing Kind to `/usr/local/bin`; the runtime script did not execute.
-
-O3 repairs this gate and strengthens it to verify an actual OTLP metric path through the shared Collector before promoting S5 to runtime-proven.
+Evidence:
+- run 36860978155 SUCCESS;
+- OTel Collector Ready;
+- OTLP HTTP 200;
+- emitted metric visible in Prometheus exporter;
+- consumer telemetry path PASS.
 
 CRC/OpenShift status: **PENDING — NOT CLAIMED**.
 
-## S6 — IAM + Quality runtime smoke
+## S6 — IAM + Quality
 
 Status: **CI_RUNTIME_PROVEN_CONTAINER_SMOKE**.
 
-Observed evidence:
-- workflow run `36840813149` succeeded;
-- Keycloak OIDC discovery succeeded;
-- SonarQube readiness succeeded.
+Evidence:
+- run 36840813149 SUCCESS;
+- Keycloak OIDC discovery PASS;
+- SonarQube readiness PASS.
 
 CRC/OpenShift status: **PENDING — NOT CLAIMED**.
 
 ## S7 — First product consumer
 
-Status: **IMPLEMENTED / STATIC CONSUMPTION EVIDENCE TO VERIFY**.
+Status: **STATIC_CONSUMER_CONTRACT_VERIFIED**.
 
-Consumer: `zdmooc/mayabank-instant-payments-resilience-platform`.
+Consumer:
+zdmooc/mayabank-instant-payments-resilience-platform.
 
-Implemented in consumer repository:
-- dedicated `gitops/overlays/shared-platform`;
-- shared OTel endpoint wiring;
-- Argo CD application profile;
-- standalone CRC profile preserved;
-- Kafka/PostgreSQL remain `DEDICATED_FOR_TEST`.
+Consumer main commit inspected:
+bc2ba297f0b2807c7168047e3c4ca4c674f942b5.
 
-Runtime shared-platform trace/metric proof on CRC: **PENDING — NOT CLAIMED**.
+Verified:
+- shared-platform overlay;
+- shared OTel endpoint/protocol;
+- Argo CD Application;
+- Kafka/PostgreSQL remain DEDICATED_FOR_TEST;
+- application services remain PRODUCT_OWNED.
+
+Runtime shared-platform telemetry from the real payment service on CRC remains pending.
 
 ## S8 — Hardening & evidence
 
-Status: **IMPLEMENTED**.
+Status: **IMPLEMENTED / STATIC_VALIDATED**.
 
 - rollback runbook;
 - failure-mode matrix;
-- claim/evidence separation;
-- non-disruption and fail-closed security rules.
+- claim/evidence boundaries;
+- security hygiene validation;
+- hardened OTel Collector pod;
+- CRC/OpenShift execution gate.
 
-## Repository conclusion before O3 closure
+## O3 conclusion
 
-S0→S8 assets exist in Git, but evidence levels differ by capability.
+O3 is complete as a repository/runtime-evidence hardening program.
 
-Current verified truth:
-- structural Platform CI: PASS;
-- S6 container smoke: PASS;
-- S5 Kind runtime: not yet proven from the failed original run;
-- S7 consumer wiring: implemented, runtime shared consumption not yet proven;
-- CRC/OpenShift: not yet proven;
-- HA/production: not claimed.
+Current truth:
+- Platform CI: PASS;
+- S5 Kind shared observability runtime: PROVEN;
+- S6 Keycloak/SonarQube container smoke: PROVEN;
+- S7 consumer contract: VERIFIED;
+- CRC/OpenShift: PENDING;
+- HA/production: NOT_CLAIMED.
+
+The remaining CRC step is an environment-specific evidence promotion, not unfinished repository engineering.
