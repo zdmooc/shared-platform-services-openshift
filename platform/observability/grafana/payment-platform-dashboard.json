@@ -1,0 +1,20 @@
+{
+  "title": "Shared Platform - Consumer Telemetry",
+  "schemaVersion": 39,
+  "version": 1,
+  "refresh": "30s",
+  "tags": ["shared-platform", "opentelemetry"],
+  "panels": [
+    {
+      "type": "timeseries",
+      "title": "OTel exported metrics",
+      "targets": [
+        {
+          "expr": "up",
+          "legendFormat": "{{job}}"
+        }
+      ],
+      "gridPos": {"h": 8, "w": 24, "x": 0, "y": 0}
+    }
+  ]
+}
