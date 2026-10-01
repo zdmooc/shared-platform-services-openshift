@@ -1,0 +1,23 @@
+name: S6 Identity Quality Smoke
+
+on:
+  workflow_dispatch:
+  push:
+    branches: [main]
+    paths:
+      - "platform/identity/**"
+      - "quality/sonarqube/**"
+      - "scripts/smoke-identity-quality.sh"
+      - ".github/workflows/identity-quality-smoke.yml"
+
+permissions:
+  contents: read
+
+jobs:
+  identity-quality:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+      - name: Keycloak OIDC and SonarQube live smoke
+        run: bash scripts/smoke-identity-quality.sh
