@@ -7,8 +7,8 @@
 |---|---|---|---|---|
 | Foundation/governance | IMPLEMENTED | Platform CI PASS | N/A | NOT_CLAIMED |
 | Argo CD contracts | IMPLEMENTED | STATIC_VALIDATED | PENDING | NOT_CLAIMED |
-| OpenTelemetry Collector | IMPLEMENTED | CI_RUNTIME_PROVEN_KIND | PENDING | NOT_CLAIMED |
-| Consumer → OTLP → Prometheus path | IMPLEMENTED | CI_RUNTIME_PROVEN_KIND | PENDING | NOT_CLAIMED |
+| OpenTelemetry Collector | IMPLEMENTED | CI_RUNTIME_PROVEN_KIND | CRC_RUNTIME_PROVEN_SHARED_OBSERVABILITY | NOT_CLAIMED |
+| Consumer → OTLP → Prometheus path | IMPLEMENTED | CI_RUNTIME_PROVEN_KIND | CRC_RUNTIME_PROVEN_SHARED_OBSERVABILITY | NOT_CLAIMED |
 | Prometheus integration contract | IMPLEMENTED | STATIC_VALIDATED | PENDING | NOT_CLAIMED |
 | Grafana asset | IMPLEMENTED | STATIC_VALIDATED | PENDING | NOT_CLAIMED |
 | Keycloak/OIDC | IMPLEMENTED_CONTRACT | CI_RUNTIME_PROVEN_CONTAINER_SMOKE | PENDING | NOT_CLAIMED |
@@ -74,7 +74,7 @@ Runtime use of shared OIDC/OTel on CRC remains pending.
 
 ## CRC/OpenShift
 
-CRC runtime remains PENDING / NOT_PROVEN.
+CRC shared observability is now `CRC_RUNTIME_PROVEN_SHARED_OBSERVABILITY` on OpenShift Local / CRC 4.22.7.
 
 The execution gate exists in:
 - scripts/runtime-smoke-openshift.sh
@@ -82,8 +82,15 @@ The execution gate exists in:
 - docs/runbooks/CRC_RUNTIME_VALIDATION.md
 - evidence/ci/CRC-openshift-runtime.md
 
-The current gate can only promote the shared observability slice to:
+Observed on CRC 4.22.7:
+- node `crc` Ready;
+- all ClusterOperators Available=True / Progressing=False / Degraded=False;
+- `otel-collector` deployment 1/1 Ready with zero restarts;
+- `OTLP_HTTP_STATUS=200`;
+- `factory_consumer_smoke 1`;
+- `OTEL_CONSUMER_PATH=PASS`.
 
+Allowed claim:
 `CRC_RUNTIME_PROVEN_SHARED_OBSERVABILITY`.
 
-No Kind or container-smoke result is promoted to CRC, HA or production evidence.
+Shared Keycloak/OIDC, SonarQube, Argo CD reconciliation, Kafka/PostgreSQL/MinIO, API Management shared-runtime consumption, HA and production remain unproven.
