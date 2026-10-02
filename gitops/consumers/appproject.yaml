@@ -7,8 +7,11 @@ spec:
   description: MayaBank product consumers of shared platform services
   sourceRepos:
     - https://github.com/zdmooc/mayabank-customer-identity-kyc-digital-banking-architecture.git
+    - https://github.com/zdmooc/mayabank-instant-payments-resilience-platform.git
   destinations:
     - namespace: customer-digital
+      server: https://kubernetes.default.svc
+    - namespace: instant-payments-local
       server: https://kubernetes.default.svc
   clusterResourceWhitelist:
     - group: ""
