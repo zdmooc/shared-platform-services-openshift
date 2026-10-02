@@ -22,10 +22,10 @@
 
 ## Next proof gate
 
-- [ ] execute docs/runbooks/CRC_RUNTIME_VALIDATION.md on the user's real CRC/OpenShift Local environment;
-- [ ] archive sanitized CRC evidence;
-- [ ] promote only shared observability to CRC_RUNTIME_PROVEN_SHARED_OBSERVABILITY if the gate passes;
-- [ ] after that, onboard API Management runtime to shared OIDC and shared OTel on CRC.
+- [x] execute docs/runbooks/CRC_RUNTIME_VALIDATION.md on the user's real CRC/OpenShift Local environment;
+- [x] record sanitized CRC shared-observability evidence;
+- [x] promote shared observability to CRC_RUNTIME_PROVEN_SHARED_OBSERVABILITY;
+- [ ] onboard API Management runtime to shared OIDC and shared OTel on CRC.
 
 ## API Management next consumer promotion
 
