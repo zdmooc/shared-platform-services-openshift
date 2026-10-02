@@ -17,9 +17,10 @@ Une capacité n'est promue qu'au niveau de preuve réellement observé.
 - S5 chemin télémétrie : consumer → OTLP HTTP → OTel Collector → Prometheus exporter — PASS.
 - S6 Keycloak OIDC + SonarQube : run 36840813149 — SUCCESS.
 - Instant Payments : STATIC_CONSUMER_CONTRACT_VERIFIED sur le commit consumer bc2ba297f0b2807c7168047e3c4ca4c674f942b5.
-- API Management : STATIC_CONSUMER_CONTRACT_VERIFIED sur le commit consumer 00f0fd2b7fc4ffbc95269b57b2c5556339867916.
+- API Management : `CRC_RUNTIME_PROVEN_SHARED_PLATFORM_CONSUMER` sur CRC 4.22.7 ; Shared OIDC → Kong → Payment API + traces vers Shared OTel observés.
 - CRC/OpenShift shared observability : CRC_RUNTIME_PROVEN_SHARED_OBSERVABILITY on OpenShift Local 4.22.7.
 - Shared Identity CRC : `CRC_SHARED_IDENTITY_BOOTSTRAP_PROVEN` on OpenShift Local 4.22.7; RHBK runtime remains delegated to `keycloak-enterprise-roadmap-v7`.
+- API Management shared runtime : `CRC_RUNTIME_PROVEN_SHARED_PLATFORM_CONSUMER`.
 - HA multi-nœud / production : NOT_CLAIMED.
 
 ## Principes
