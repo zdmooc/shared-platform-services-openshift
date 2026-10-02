@@ -14,6 +14,9 @@ spec:
     kafka: CONSUME_SHARED_OR_DEDICATED_FOR_TEST
     postgresql: CONSUME_SHARED_OR_DEDICATED_FOR_TEST
     objectStorage: CONSUME_SHARED_OR_PRODUCT_OWNED
+  specializedPlatforms:
+    - api-management
+    - ibm-mq
   productOwned:
     - angular
     - spring-boot
