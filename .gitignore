@@ -1,0 +1,5 @@
+evidence/out/
+*.kubeconfig
+*.token
+*.pem
+*.key
