@@ -1,0 +1,32 @@
+apiVersion: platform.mayabank.example/v1alpha1
+kind: CapabilityConsumption
+metadata:
+  name: customer-kyc-digital
+spec:
+  identity:
+    mode: CONSUME_SHARED
+  observability:
+    mode: CONSUME_SHARED
+  secrets:
+    mode: CONSUME_SHARED
+  gitops:
+    mode: CONSUME_SHARED
+  quality:
+    mode: CONSUME_SHARED
+  apiManagement:
+    mode: SPECIALIZED_PLATFORM
+  eventing:
+    mode: SPECIALIZED_PLATFORM
+  messaging:
+    mode: SPECIALIZED_PLATFORM
+  database:
+    mode: PRODUCT_OWNED_SCHEMA_ON_APPROVED_PLATFORM
+  objectStorage:
+    mode: CONSUME_SHARED_WHEN_REQUIRED
+  ownedCapabilities:
+    - customer-domain
+    - customer-360
+    - onboarding
+    - kyc-kyb-case
+    - consent-preferences
+    - product-api-event-contracts
