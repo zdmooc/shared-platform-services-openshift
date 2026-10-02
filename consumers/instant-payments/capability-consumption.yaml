@@ -1,0 +1,28 @@
+apiVersion: platform.mayabank.example/v1alpha1
+kind: CapabilityConsumption
+metadata:
+  name: instant-payments
+spec:
+  identity:
+    mode: CONSUME_SHARED
+  observability:
+    mode: CONSUME_SHARED
+  secrets:
+    mode: CONSUME_SHARED
+  gitops:
+    mode: CONSUME_SHARED
+  quality:
+    mode: CONSUME_SHARED
+  eventing:
+    mode: DEDICATED_FOR_TEST
+  database:
+    mode: DEDICATED_FOR_TEST
+  objectStorage:
+    mode: REFERENCE_ONLY
+  ownedCapabilities:
+    - payment-domain
+    - angular-ui
+    - apache-camel-integration
+    - mongodb-read-model
+    - payment-api-event-contracts
+    - product-slo
