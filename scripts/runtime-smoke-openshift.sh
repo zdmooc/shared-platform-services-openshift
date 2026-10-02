@@ -14,8 +14,19 @@ else
 fi
 
 echo "== OpenShift identity and API"
-oc whoami
-oc whoami --show-server
+CURRENT_SERVER="$(oc whoami --show-server 2>/dev/null || true)"
+CURRENT_USER="$(oc whoami 2>/dev/null || true)"
+echo "user=${CURRENT_USER:-unknown}"
+echo "server=${CURRENT_SERVER:-unknown}"
+
+if ! oc api-resources --api-group=config.openshift.io --no-headers 2>/dev/null | grep -qE "^clusterversions[[:space:]]"; then
+  echo "ERROR: current oc context is not an OpenShift cluster exposing config.openshift.io/clusterversions."
+  echo "This commonly means oc is still pointing to a Kind/Kubernetes cluster."
+  echo "Run: crc start"
+  echo "Then: eval \"\$(crc oc-env)\""
+  echo "Then verify: oc whoami --show-server && oc get clusterversion version"
+  exit 2
+fi
 
 echo "== ClusterVersion"
 oc get clusterversion version -o wide
