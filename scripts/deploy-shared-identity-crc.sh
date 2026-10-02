@@ -26,16 +26,23 @@ if [[ ! -f "${DEPLOY_SCRIPT}" ]]; then
   exit 1
 fi
 
-export KC_DB_USERNAME="${KC_DB_USERNAME:-keycloak}"
-if [[ -z "${KC_DB_PASSWORD:-}" ]]; then
-  if command -v python3 >/dev/null 2>&1; then
-    export KC_DB_PASSWORD="$(python3 -c 'import secrets; print(secrets.token_urlsafe(32))')"
-  else
-    export KC_DB_PASSWORD="$(python -c 'import secrets; print(secrets.token_urlsafe(32))')"
-  fi
-  GENERATED_DB_CREDENTIAL=true
-else
+if oc -n keycloak-system get secret keycloak-db-secret >/dev/null 2>&1; then
+  export KC_DB_USERNAME="$(oc -n keycloak-system get secret keycloak-db-secret -o jsonpath='{.data.username}' | base64 -d)"
+  export KC_DB_PASSWORD="$(oc -n keycloak-system get secret keycloak-db-secret -o jsonpath='{.data.password}' | base64 -d)"
   GENERATED_DB_CREDENTIAL=false
+  echo "== Reusing existing Keycloak database credential Secret"
+else
+  export KC_DB_USERNAME="${KC_DB_USERNAME:-keycloak}"
+  if [[ -z "${KC_DB_PASSWORD:-}" ]]; then
+    if command -v python3 >/dev/null 2>&1; then
+      export KC_DB_PASSWORD="$(python3 -c 'import secrets; print(secrets.token_urlsafe(32))')"
+    else
+      export KC_DB_PASSWORD="$(python -c 'import secrets; print(secrets.token_urlsafe(32))')"
+    fi
+    GENERATED_DB_CREDENTIAL=true
+  else
+    GENERATED_DB_CREDENTIAL=false
+  fi
 fi
 
 bash "${DEPLOY_SCRIPT}"
