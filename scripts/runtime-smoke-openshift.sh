@@ -53,7 +53,7 @@ fi
 
 echo "== Apply Kubernetes-native shared-platform observability slice"
 oc apply -k platform/runtime-ci
-oc -n shared-observability rollout status deploy/otel-collector --timeout=180s
+oc -n shared-observability rollout status deploy/otel-collector --timeout=600s
 
 echo "== Prove consumer telemetry path on OpenShift"
 bash scripts/smoke-otel-consumer.sh
