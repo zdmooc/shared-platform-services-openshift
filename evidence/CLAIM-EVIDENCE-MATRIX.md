@@ -1,6 +1,6 @@
 # Claim / Evidence Matrix
 
-**Date:** 2026-10-01  
+**Date:** 2026-10-02  
 **O3 status:** COMPLETE
 
 | Capability | Repository | Static/CI evidence | CRC/OpenShift | Production |
@@ -14,6 +14,7 @@
 | Keycloak/OIDC | IMPLEMENTED_CONTRACT | CI_RUNTIME_PROVEN_CONTAINER_SMOKE | PENDING | NOT_CLAIMED |
 | SonarQube | IMPLEMENTED_CONTRACT | CI_RUNTIME_PROVEN_CONTAINER_SMOKE | PENDING | NOT_CLAIMED |
 | Instant Payments consumer overlay | IMPLEMENTED | STATIC_CONSUMER_CONTRACT_VERIFIED | PENDING | NOT_CLAIMED |
+| API Management consumer contract | IMPLEMENTED | STATIC_CONSUMER_CONTRACT_VERIFIED | PENDING | NOT_CLAIMED |
 | Shared Kafka | DEFERRED | N/A | NOT_DEPLOYED | NOT_CLAIMED |
 | Shared PostgreSQL | DEFERRED | N/A | NOT_DEPLOYED | NOT_CLAIMED |
 | Shared MinIO | DEFERRED | N/A | NOT_DEPLOYED | NOT_CLAIMED |
@@ -44,14 +45,32 @@ Run 36840813149 — SUCCESS.
 Allowed claim:
 CI_RUNTIME_PROVEN_CONTAINER_SMOKE.
 
-### S7 Consumer
+### Instant Payments consumer
 Consumer main commit inspected:
 bc2ba297f0b2807c7168047e3c4ca4c674f942b5.
 
-Verified overlay, Argo CD Application and ownership document.
+Verified shared-platform overlay, Argo CD Application and dependency ownership.
 
 Allowed claim:
 STATIC_CONSUMER_CONTRACT_VERIFIED.
+
+### API Management consumer
+Consumer main commit inspected:
+00f0fd2b7fc4ffbc95269b57b2c5556339867916.
+
+Verified:
+- standalone Keycloak + Kong + Payment API runtime exists as a bounded CI proof;
+- target ownership keeps Kong/API Management in the specialized platform;
+- target identity, observability, secrets, GitOps and quality are declared CONSUME_SHARED;
+- standalone Keycloak remains DEDICATED_FOR_TEST and is not promoted as shared-platform ownership.
+
+Existing API Management runtime evidence:
+run 36984578912 — SUCCESS.
+
+Allowed platform-consumer claim:
+STATIC_CONSUMER_CONTRACT_VERIFIED.
+
+Runtime use of shared OIDC/OTel on CRC remains pending.
 
 ## CRC/OpenShift
 
@@ -59,7 +78,12 @@ CRC runtime remains PENDING / NOT_PROVEN.
 
 The execution gate exists in:
 - scripts/runtime-smoke-openshift.sh
+- scripts/run-crc-evidence.sh
 - docs/runbooks/CRC_RUNTIME_VALIDATION.md
 - evidence/ci/CRC-openshift-runtime.md
+
+The current gate can only promote the shared observability slice to:
+
+`CRC_RUNTIME_PROVEN_SHARED_OBSERVABILITY`.
 
 No Kind or container-smoke result is promoted to CRC, HA or production evidence.
