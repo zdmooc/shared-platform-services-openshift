@@ -4,7 +4,7 @@ Plateforme technique commune MayaBank pour mutualiser les capacités transverses
 
 ## Statut
 
-**V1 / O3 COMPLETE — STATIC_VALIDATED + S5 KIND RUNTIME PROVEN + S6 CONTAINER SMOKE PROVEN + S7 CONSUMER CONTRACT VERIFIED / CRC PENDING**
+**V1 / O3 COMPLETE — STATIC_VALIDATED + S5 KIND RUNTIME PROVEN + S6 CONTAINER SMOKE PROVEN + CONSUMER CONTRACTS VERIFIED / CRC SHARED-OBSERVABILITY PENDING**
 
 Le dépôt fournit les contrats, manifests, GitOps, observabilité, IAM/secrets patterns, qualité et CI du socle commun.
 
@@ -16,8 +16,9 @@ Une capacité n'est promue qu'au niveau de preuve réellement observé.
 - S5 Kind runtime : run 36860978155 — SUCCESS.
 - S5 chemin télémétrie : consumer → OTLP HTTP → OTel Collector → Prometheus exporter — PASS.
 - S6 Keycloak OIDC + SonarQube : run 36840813149 — SUCCESS.
-- S7 Instant Payments : STATIC_CONSUMER_CONTRACT_VERIFIED sur le commit consumer bc2ba297f0b2807c7168047e3c4ca4c674f942b5.
-- CRC/OpenShift : PENDING / NOT_PROVEN.
+- Instant Payments : STATIC_CONSUMER_CONTRACT_VERIFIED sur le commit consumer bc2ba297f0b2807c7168047e3c4ca4c674f942b5.
+- API Management : STATIC_CONSUMER_CONTRACT_VERIFIED sur le commit consumer 00f0fd2b7fc4ffbc95269b57b2c5556339867916.
+- CRC/OpenShift shared observability : PENDING / NOT_PROVEN.
 - HA multi-nœud / production : NOT_CLAIMED.
 
 ## Principes
@@ -25,6 +26,7 @@ Une capacité n'est promue qu'au niveau de preuve réellement observé.
 - séparation stricte plateforme / produit ;
 - aucune migration Big Bang ;
 - nouveaux produits : CONSUME_SHARED par défaut pour les services transverses ;
+- plateformes techniques spécialisées : consomment L2 et gardent leur runtime métier/technique spécifique ;
 - composants dédiés autorisés lorsqu'ils sont l'objet du test ;
 - rollback et reproductibilité obligatoires ;
 - CRC mono-nœud = lab, jamais preuve HA production ;
@@ -40,6 +42,8 @@ Une capacité n'est promue qu'au niveau de preuve réellement observé.
 | Keycloak / OIDC | CONSUME_SHARED | plateforme |
 | SonarQube / Quality Gates | CONSUME_SHARED | plateforme |
 | secrets / PKI / Vault integration | CONSUME_SHARED | plateforme |
+| API Management / Kong | SPECIALIZED_PLATFORM | API Management |
+| IBM MQ | SPECIALIZED_PLATFORM | Messaging |
 | Kafka métier | CONSUME_SHARED ou DEDICATED_FOR_TEST | selon scénario |
 | PostgreSQL métier | CONSUME_SHARED ou DEDICATED_FOR_TEST | selon scénario |
 | Angular / Spring Boot / Camel | PRODUCT_OWNED | produit |
@@ -54,7 +58,7 @@ Une capacité n'est promue qu'au niveau de preuve réellement observé.
 - S4 — SonarQube / reusable quality gates.
 - S5 — Kind runtime portability and telemetry path.
 - S6 — Keycloak OIDC + SonarQube live container smoke.
-- S7 — Instant Payments consumer onboarding.
+- S7 — first consumer onboarding.
 - S8 — hardening / rollback / evidence model.
 
 ## Runtime truth boundary
@@ -63,19 +67,28 @@ The Kind proof validates Kubernetes portability and the shared telemetry path.
 
 The S6 proof validates container startup and integration endpoints for Keycloak and SonarQube.
 
-The S7 verification validates repository contracts only.
+Consumer verification validates repository contracts only until a consumer actually resolves the shared capability at runtime.
 
-None of those proves CRC/OpenShift, multi-node HA or production readiness.
+None of those proves the whole platform on CRC/OpenShift, multi-node HA or production readiness.
 
 ## CRC/OpenShift next gate
 
-Use docs/runbooks/CRC_RUNTIME_VALIDATION.md and scripts/runtime-smoke-openshift.sh.
+Use docs/runbooks/CRC_RUNTIME_VALIDATION.md.
 
-Only an observed successful execution on CRC with archived evidence may promote the OpenShift column to CRC_RUNTIME_PROVEN.
+Recommended command:
+
+```bash
+bash scripts/run-crc-evidence.sh
+```
+
+Only an observed successful execution on CRC with sanitized evidence may promote the exact observability slice to:
+
+`CRC_RUNTIME_PROVEN_SHARED_OBSERVABILITY`.
 
 ## Consumers
 
 - mayabank-instant-payments-resilience-platform
+- mayabank-api-management-architecture
 - mayabank-european-payment-processing-platform
 - enterprise-data-lakehouse-kubernetes-openshift
 - TradeOps-GenAI-Integration
