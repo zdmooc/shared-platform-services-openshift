@@ -18,9 +18,9 @@ Consumer: `zdmooc/mayabank-instant-payments-resilience-platform`
 ## Product-owned
 
 - Spring Boot services;
-- Angular UI when added;
-- Apache Camel integration layer when added;
-- MongoDB payment read model when added;
+- Angular 22 Consumer/Acceptor UI;
+- Apache Camel product integration layer;
+- MongoDB payment CQRS/read model;
 - payment schemas, topics and SLOs.
 
 ## Non-disruption rule
@@ -31,13 +31,15 @@ Shared-platform consumption is exposed through a separate overlay so existing ru
 
 ## Evidence
 
-Direct inspection of consumer main commit `bc2ba297f0b2807c7168047e3c4ca4c674f942b5` verified the shared-platform overlay, Argo CD Application and dependency-ownership document.
+The original S7 contract was verified at consumer commit `bc2ba297f0b2807c7168047e3c4ca4c674f942b5`.
+
+The Tech Lead extension now adds the concrete Angular/Camel/MongoDB product surfaces, a `tech-lead-shared-platform` overlay, shared OIDC client bootstrap, shared OTel wiring and one-command CRC validation scripts.
 
 Current allowed claim:
 
 `STATIC_CONSUMER_CONTRACT_VERIFIED`.
 
-The consumer repository's broader CI is not used as evidence for this narrow platform contract because it currently contains unrelated failing jobs.
+The previously unrelated consumer CI failure was corrected on 2026-10-02; global consumer CI run `37065452210` is SUCCESS. Focused Tech Lead CI run `37065754596` is also SUCCESS after OIDC scope hardening.
 
 Runtime trace/metric proof on OpenShift/CRC remains a separate gate.
 
