@@ -19,6 +19,9 @@ ACTIVE = [
 
 errors: list[str] = []
 jwt_re = re.compile(r"eyJ[A-Za-z0-9_-]{10,}\.[A-Za-z0-9_-]{10,}\.[A-Za-z0-9_-]{10,}")
+credential_re = re.compile(
+    r"(?i)(password|secret|token)\s*[:=]\s*['\"]?([^\s'\"]{20,})"
+)
 
 for root in ACTIVE:
     if not root.exists():
@@ -40,8 +43,14 @@ for root in ACTIVE:
         if jwt_re.search(text):
             errors.append(f"{rel}: JWT-like token found")
 
-        if re.search(r"(?i)(password|secret|token)\s*[:=]\s*['\"]?(?!REPLACE_|EXAMPLE_|ci-only-password)[A-Za-z0-9+/=_-]{20,}", text):
+        for match in credential_re.finditer(text):
+            value = match.group(2).strip().rstrip(",}])")
+            if value.startswith(("REPLACE_", "EXAMPLE_", "ci-only-password")):
+                continue
+            if value.startswith(("$(", "${", "$")):
+                continue
             errors.append(f"{rel}: possible long-lived secret literal")
+            break
 
 if errors:
     print("SECURITY_HYGIENE=FAIL")
