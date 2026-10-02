@@ -13,15 +13,30 @@
 - [x] S5 Kind runtime smoke;
 - [x] S5 consumer → OTLP → Collector → Prometheus proof;
 - [x] S6 Keycloak OIDC + SonarQube container smoke;
-- [x] S7 Instant Payments shared-platform contract verification;
+- [x] Instant Payments shared-platform contract verification;
+- [x] API Management shared-platform consumer contract verification;
+- [x] API Management classified as SPECIALIZED_PLATFORM consuming L2 services;
 - [x] hardened OTel Collector pod security;
-- [x] CRC/OpenShift execution script and evidence runbook.
+- [x] CRC/OpenShift shared-observability execution script and evidence runbook;
+- [x] local CRC evidence capture wrapper with raw evidence ignored by Git.
 
 ## Next proof gate
 
 - [ ] execute docs/runbooks/CRC_RUNTIME_VALIDATION.md on the user's real CRC/OpenShift Local environment;
 - [ ] archive sanitized CRC evidence;
-- [ ] promote only the exact successful capability to CRC_RUNTIME_PROVEN.
+- [ ] promote only shared observability to CRC_RUNTIME_PROVEN_SHARED_OBSERVABILITY if the gate passes;
+- [ ] after that, onboard API Management runtime to shared OIDC and shared OTel on CRC.
+
+## API Management next consumer promotion
+
+After the platform CRC observability gate:
+
+- [ ] keep existing Docker CI runtime as DEDICATED_FOR_TEST;
+- [ ] add a separate shared-platform target profile in mayabank-api-management-architecture;
+- [ ] consume shared OIDC configuration rather than deploying a second target Keycloak;
+- [ ] export gateway/API telemetry to shared OTel;
+- [ ] prove the consumer path on CRC;
+- [ ] promote only the capabilities actually observed.
 
 ## Intentionally deferred / mission-driven
 
