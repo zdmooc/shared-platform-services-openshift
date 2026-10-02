@@ -40,3 +40,18 @@ Current allowed claim:
 The consumer repository's broader CI is not used as evidence for this narrow platform contract because it currently contains unrelated failing jobs.
 
 Runtime trace/metric proof on OpenShift/CRC remains a separate gate.
+
+## Tech Lead Wero I33 preparation — 2026-10-02
+
+The consumer now has:
+- Angular / Camel / MongoDB product-owned implementation surfaces;
+- `gitops/overlays/tech-lead-shared-platform`;
+- Shared OIDC token/JWKS wiring;
+- Shared OTel wiring;
+- CRC bootstrap/test scripts;
+- explicit rollback to the standalone overlay.
+
+Current claim remains:
+`STATIC_CONSUMER_CONTRACT_VERIFIED / READY_FOR_CRC`.
+
+Do not promote Instant Payments itself to runtime shared consumer until tomorrow's observed CRC execution.
