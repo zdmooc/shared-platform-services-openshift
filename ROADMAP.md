@@ -6,14 +6,14 @@
 |---|---|---|---|
 | S0 | Foundation & governance | IMPLEMENTED | STATIC_VALIDATED |
 | S1 | GitOps / Argo CD contracts | IMPLEMENTED | STATIC_VALIDATED / CRC_PENDING |
-| S2 | Observability shared contracts | IMPLEMENTED | S5 CI_RUNTIME_PROVEN_KIND |
-| S3 | IAM / secrets contracts | IMPLEMENTED | STATIC_VALIDATED / CRC_PENDING |
+| S2 | Observability shared contracts | IMPLEMENTED | CI_RUNTIME_PROVEN_KIND + CRC_RUNTIME_PROVEN_SHARED_OBSERVABILITY |
+| S3 | IAM / secrets contracts | IMPLEMENTED | CRC_SHARED_IDENTITY_BOOTSTRAP_PROVEN for shared realm/OIDC; secrets/PKI remain contract-level |
 | S4 | Quality / SonarQube contracts | IMPLEMENTED | S6 PROVEN |
 | S5 | Kind runtime portability | IMPLEMENTED | CI_RUNTIME_PROVEN_KIND |
 | S6 | Keycloak + SonarQube live smoke | IMPLEMENTED | CI_RUNTIME_PROVEN_CONTAINER_SMOKE |
 | S7 | Instant Payments onboarding | IMPLEMENTED | STATIC_CONSUMER_CONTRACT_VERIFIED |
 | S8 | Hardening / rollback / evidence | IMPLEMENTED | STATIC_VALIDATED |
-| O3 | Evidence hardening | COMPLETE | CRC remains pending |
+| O3 | Evidence hardening | COMPLETE | differentiated CRC evidence recorded; HA/production not claimed |
 
 ## Recorded evidence
 
@@ -49,11 +49,18 @@ The Instant Payments shared-platform overlay, Argo CD Application and ownership 
 
 Allowed claim: STATIC_CONSUMER_CONTRACT_VERIFIED.
 
-## Next promotion gate
+## Current CRC promotion state
 
-CRC/OpenShift is deliberately separate.
+Observed on OpenShift Local / CRC 4.22.7:
+- shared observability: `CRC_RUNTIME_PROVEN_SHARED_OBSERVABILITY`;
+- shared realm/OIDC bootstrap: `CRC_SHARED_IDENTITY_BOOTSTRAP_PROVEN`;
+- API Management consuming shared OIDC + OTel: `CRC_RUNTIME_PROVEN_SHARED_PLATFORM_CONSUMER`.
 
-A successful CRC execution may promote the Kubernetes-native observability slice to CRC_RUNTIME_PROVEN, but not to HA or production.
+Still pending by capability:
+- current Argo CD/OpenShift GitOps reconciliation proof;
+- SonarQube runtime on CRC;
+- Instant Payments real runtime consumption of shared OTel/OIDC;
+- HA/multi-node/production.
 
 
 ## A3/A4 — AKS portability promotion — 2026-10-01
