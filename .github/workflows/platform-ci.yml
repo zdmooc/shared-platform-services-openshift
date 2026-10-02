@@ -82,7 +82,11 @@ jobs:
           set -euo pipefail
           test -s consumers/api-management/capability-consumption.yaml
           test -s consumers/customer-kyc/capability-consumption.yaml
+          test -s consumers/instant-payments/capability-consumption.yaml
           test -s gitops/consumers/customer-kyc-application.yaml
+          test -s gitops/consumers/instant-payments-application.yaml
           grep -q 'CRC_RUNTIME_PROVEN_SHARED_PLATFORM_CONSUMER' consumers/api-management/CONTRACT.md
           grep -q 'STATIC_CONSUMER_CONTRACT_VERIFIED' consumers/customer-kyc/CONTRACT.md
+          grep -q 'READY_FOR_CRC' consumers/instant-payments/CONTRACT.md
           grep -q 'platform-consumption/manifests' gitops/consumers/customer-kyc-application.yaml
+          grep -q 'gitops/overlays/tech-lead-shared-platform' gitops/consumers/instant-payments-application.yaml
