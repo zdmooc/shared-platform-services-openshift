@@ -1,11 +1,11 @@
 # CRC / OpenShift Runtime Validation
 
-**Status:** EXECUTION GATE DEFINED / NOT YET EXECUTED  
-**Target claim after successful execution:** `CRC_RUNTIME_PROVEN_SHARED_OBSERVABILITY`
+**Status:** EXECUTED ON 2026-10-02 / `CRC_RUNTIME_PROVEN_SHARED_OBSERVABILITY`  
+**Environment observed:** OpenShift Local / CRC 4.22.7
 
 This runbook validates the Kubernetes-native **shared observability slice** on a real OpenShift Local / CRC cluster.
 
-It does **not** prove the whole shared platform. In particular, it does not prove live shared Keycloak, SonarQube, Argo CD reconciliation, shared Kafka/PostgreSQL, multi-node HA, production resilience or enterprise federation.
+It does **not** prove the whole shared platform. Shared Keycloak/OIDC bootstrap was proven separately on CRC after this observability gate. SonarQube CRC, Argo CD reconciliation, shared Kafka/PostgreSQL, multi-node HA, production resilience and enterprise federation remain outside this proof.
 
 ## Preconditions
 
@@ -96,13 +96,20 @@ oc -n shared-observability logs deploy/otel-collector --tail=300 > "$OUT/otel-co
 
 Do not commit tokens, kubeconfigs, credentials or private infrastructure details.
 
-## Promotion rule
+## Observed result — 2026-10-02
 
-Only after an observed successful CRC run with sanitized evidence may the matrix promote the exact slice to:
+Observed:
+- CRC node `crc` Ready;
+- ClusterOperators healthy for the exercised scope;
+- `otel-collector` 1/1 Ready with zero restarts;
+- `OTLP_HTTP_STATUS=200`;
+- `factory_consumer_smoke 1`;
+- `OTEL_CONSUMER_PATH=PASS`.
 
+Promoted claim:
 `CRC_RUNTIME_PROVEN_SHARED_OBSERVABILITY`.
 
-The broader shared platform remains at its existing evidence levels until its own components are executed.
+This runbook remains the replay procedure for future CRC evidence refreshes.
 
 A CRC result remains:
 - single-node/lab evidence;
