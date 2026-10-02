@@ -48,7 +48,9 @@ After the platform CRC observability gate:
 - production-grade Vault/CyberArk deployment;
 - HA/multi-node shared-platform proofs;
 - enterprise PKI integration;
-- live OpenShift GitOps/Keycloak/SonarQube Operator installation;
+- fresh OpenShift GitOps reconciliation proof;
+- SonarQube runtime/operator proof on CRC;
+- further Keycloak operations evidence beyond the proven shared realm/OIDC bootstrap (restart persistence, upgrade, HA as applicable);
 - production readiness.
 
 These capabilities are implemented only when a current mission or measurable duplication justifies them.
