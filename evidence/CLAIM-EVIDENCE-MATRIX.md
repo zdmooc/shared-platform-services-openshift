@@ -11,7 +11,7 @@
 | Consumer → OTLP → Prometheus path | IMPLEMENTED | CI_RUNTIME_PROVEN_KIND | CRC_RUNTIME_PROVEN_SHARED_OBSERVABILITY | NOT_CLAIMED |
 | Prometheus integration contract | IMPLEMENTED | STATIC_VALIDATED | PENDING | NOT_CLAIMED |
 | Grafana asset | IMPLEMENTED | STATIC_VALIDATED | PENDING | NOT_CLAIMED |
-| Keycloak/OIDC | IMPLEMENTED_CONTRACT + CRC adapter | CI_RUNTIME_PROVEN_CONTAINER_SMOKE | CRC_SHARED_IDENTITY_PENDING | NOT_CLAIMED |
+| Keycloak/OIDC | IMPLEMENTED_CONTRACT + CRC adapter | CI_RUNTIME_PROVEN_CONTAINER_SMOKE | CRC_SHARED_IDENTITY_BOOTSTRAP_PROVEN | NOT_CLAIMED |
 | SonarQube | IMPLEMENTED_CONTRACT | CI_RUNTIME_PROVEN_CONTAINER_SMOKE | PENDING | NOT_CLAIMED |
 | Instant Payments consumer overlay | IMPLEMENTED | STATIC_CONSUMER_CONTRACT_VERIFIED | PENDING | NOT_CLAIMED |
 | API Management consumer contract | IMPLEMENTED | STATIC_CONSUMER_CONTRACT_VERIFIED | PENDING | NOT_CLAIMED |
@@ -106,3 +106,29 @@ Implemented on 2026-10-02:
 - Platform CI after the integration: run `36996365594` — SUCCESS.
 
 Allowed current claim: `IMPLEMENTED / STATIC_VALIDATED / CRC_RUNTIME_NOT_PROVEN_SHARED_IDENTITY`.
+
+
+### Shared Identity CRC runtime proof — 2026-10-02
+
+Observed on OpenShift Local / CRC 4.22.7:
+
+- RHBK Operator 26.6.7-opr.1 installed successfully;
+- PostgreSQL lab dependency Running;
+- Keycloak CR Ready;
+- Keycloak pod Running on node `crc`;
+- public Route `keycloak.apps-crc.testing`;
+- shared realm `mayabank` created/verified;
+- OIDC discovery endpoint returned valid issuer metadata.
+
+Observed proof markers:
+
+```text
+SHARED_KEYCLOAK_REALM=PASS
+SHARED_OIDC_DISCOVERY=PASS
+claim=CRC_SHARED_IDENTITY_BOOTSTRAP_PROVEN
+```
+
+Allowed claim:
+`CRC_SHARED_IDENTITY_BOOTSTRAP_PROVEN`.
+
+This proves shared realm/bootstrap + OIDC discovery on CRC. It does not yet prove HA, external IdP federation, production persistence/backup, secret rotation or production readiness.
