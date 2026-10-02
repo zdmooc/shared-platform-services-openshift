@@ -16,7 +16,7 @@ Une capacité n'est promue qu'au niveau de preuve réellement observé.
 - S5 Kind runtime : run 36860978155 — SUCCESS.
 - S5 chemin télémétrie : consumer → OTLP HTTP → OTel Collector → Prometheus exporter — PASS.
 - S6 Keycloak OIDC + SonarQube : run 36840813149 — SUCCESS.
-- Instant Payments : STATIC_CONSUMER_CONTRACT_VERIFIED sur le commit consumer bc2ba297f0b2807c7168047e3c4ca4c674f942b5.
+- Instant Payments : Tech Lead consumer surface implemented; `STATIC_CONSUMER_CONTRACT_VERIFIED / READY_FOR_CRC`; focused product CI `37058472014` SUCCESS. Runtime Shared OIDC/OTel proof is deliberately pending.
 - API Management : `CRC_RUNTIME_PROVEN_SHARED_PLATFORM_CONSUMER` sur CRC 4.22.7 ; Shared OIDC → Kong → Payment API + traces vers Shared OTel observés.
 - Customer/KYC : `STATIC_CONSUMER_CONTRACT_VERIFIED` avec profil Kustomize + contrat Argo CD ; runtime volontairement non revendiqué.
 - CRC/OpenShift shared observability : CRC_RUNTIME_PROVEN_SHARED_OBSERVABILITY on OpenShift Local 4.22.7.
