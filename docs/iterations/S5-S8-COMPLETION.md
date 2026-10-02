@@ -13,7 +13,7 @@ Evidence:
 - emitted metric visible in Prometheus exporter;
 - consumer telemetry path PASS.
 
-CRC/OpenShift status: **PENDING — NOT CLAIMED**.
+CRC/OpenShift observability status: **CRC_RUNTIME_PROVEN_SHARED_OBSERVABILITY — observed 2026-10-02 on CRC 4.22.7**.
 
 ## S6 — IAM + Quality
 
@@ -24,7 +24,7 @@ Evidence:
 - Keycloak OIDC discovery PASS;
 - SonarQube readiness PASS.
 
-CRC/OpenShift status: **PENDING — NOT CLAIMED**.
+CRC/OpenShift identity status: **CRC_SHARED_IDENTITY_BOOTSTRAP_PROVEN — shared realm/OIDC bootstrap observed 2026-10-02; SonarQube CRC remains pending**.
 
 ## S7 — First product consumer
 
@@ -65,7 +65,10 @@ Current truth:
 - S5 Kind shared observability runtime: PROVEN;
 - S6 Keycloak/SonarQube container smoke: PROVEN;
 - S7 consumer contract: VERIFIED;
-- CRC/OpenShift: PENDING;
+- CRC/OpenShift shared observability: PROVEN;
+- CRC/OpenShift shared identity bootstrap: PROVEN;
+- API Management shared-platform consumer: PROVEN;
+- Instant Payments runtime consumption: PENDING;
 - HA/production: NOT_CLAIMED.
 
-The remaining CRC step is an environment-specific evidence promotion, not unfinished repository engineering.
+Remaining promotions are capability-specific and mission-driven: current Argo CD CRC reconciliation, SonarQube CRC, Instant Payments runtime consumption, HA/multi-node and production evidence.
