@@ -84,7 +84,7 @@ Recommended command:
 bash scripts/run-crc-evidence.sh
 ```
 
-The shared observability slice is now promoted to `CRC_RUNTIME_PROVEN_SHARED_OBSERVABILITY` based on the observed CRC 4.22.7 runtime. The next gate is API Management consuming shared OIDC and shared OTel on CRC.
+The shared observability slice is `CRC_RUNTIME_PROVEN_SHARED_OBSERVABILITY` on CRC 4.22.7. Shared identity bootstrap is also proven, and API Management has already consumed shared OIDC + OTel on CRC. The next product-specific gate is Instant Payments runtime consumption of the shared services; AKS promotion remains governed by D-086.
 
 ## Consumers
 
