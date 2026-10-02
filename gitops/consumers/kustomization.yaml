@@ -3,3 +3,4 @@ kind: Kustomization
 resources:
   - appproject.yaml
   - customer-kyc-application.yaml
+  - instant-payments-application.yaml
