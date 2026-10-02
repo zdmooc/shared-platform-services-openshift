@@ -30,7 +30,7 @@ jobs:
         run: bash scripts/validate-platform.sh
 
       - name: YAML lint
-        run: yamllint -c .yamllint.yml config gitops platform
+        run: yamllint -c .yamllint.yml config gitops platform consumers
 
       - name: Render Kustomize surfaces
         shell: bash
@@ -38,6 +38,7 @@ jobs:
           set -euo pipefail
           dirs=(
             gitops/base
+            gitops/consumers
             platform/base
             platform/observability/otel
             platform/observability/prometheus
@@ -74,3 +75,14 @@ jobs:
         run: |
           bash -n scripts/*.sh
           python -m compileall -q scripts
+
+      - name: Consumer contract gates
+        shell: bash
+        run: |
+          set -euo pipefail
+          test -s consumers/api-management/capability-consumption.yaml
+          test -s consumers/customer-kyc/capability-consumption.yaml
+          test -s gitops/consumers/customer-kyc-application.yaml
+          grep -q 'CRC_RUNTIME_PROVEN_SHARED_PLATFORM_CONSUMER' consumers/api-management/CONTRACT.md
+          grep -q 'STATIC_CONSUMER_CONTRACT_VERIFIED' consumers/customer-kyc/CONTRACT.md
+          grep -q 'platform-consumption/manifests' gitops/consumers/customer-kyc-application.yaml
