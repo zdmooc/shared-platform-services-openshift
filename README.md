@@ -4,7 +4,7 @@ Plateforme technique commune MayaBank pour mutualiser les capacités transverses
 
 ## Statut
 
-**V1 / O3 COMPLETE — STATIC_VALIDATED + S5 KIND RUNTIME PROVEN + S6 CONTAINER SMOKE PROVEN + CONSUMER CONTRACTS VERIFIED / CRC SHARED-OBSERVABILITY PENDING**
+**V1 / O3 COMPLETE — STATIC_VALIDATED + KIND RUNTIME PROVEN + CONTAINER SMOKE PROVEN + CONSUMER CONTRACTS VERIFIED + CRC SHARED OBSERVABILITY PROVEN**
 
 Le dépôt fournit les contrats, manifests, GitOps, observabilité, IAM/secrets patterns, qualité et CI du socle commun.
 
@@ -18,7 +18,7 @@ Une capacité n'est promue qu'au niveau de preuve réellement observé.
 - S6 Keycloak OIDC + SonarQube : run 36840813149 — SUCCESS.
 - Instant Payments : STATIC_CONSUMER_CONTRACT_VERIFIED sur le commit consumer bc2ba297f0b2807c7168047e3c4ca4c674f942b5.
 - API Management : STATIC_CONSUMER_CONTRACT_VERIFIED sur le commit consumer 00f0fd2b7fc4ffbc95269b57b2c5556339867916.
-- CRC/OpenShift shared observability : PENDING / NOT_PROVEN.
+- CRC/OpenShift shared observability : CRC_RUNTIME_PROVEN_SHARED_OBSERVABILITY on OpenShift Local 4.22.7.
 - HA multi-nœud / production : NOT_CLAIMED.
 
 ## Principes
@@ -71,7 +71,7 @@ Consumer verification validates repository contracts only until a consumer actua
 
 None of those proves the whole platform on CRC/OpenShift, multi-node HA or production readiness.
 
-## CRC/OpenShift next gate
+## CRC/OpenShift evidence
 
 Use docs/runbooks/CRC_RUNTIME_VALIDATION.md.
 
@@ -81,9 +81,7 @@ Recommended command:
 bash scripts/run-crc-evidence.sh
 ```
 
-Only an observed successful execution on CRC with sanitized evidence may promote the exact observability slice to:
-
-`CRC_RUNTIME_PROVEN_SHARED_OBSERVABILITY`.
+The shared observability slice is now promoted to `CRC_RUNTIME_PROVEN_SHARED_OBSERVABILITY` based on the observed CRC 4.22.7 runtime. The next gate is API Management consuming shared OIDC and shared OTel on CRC.
 
 ## Consumers
 
