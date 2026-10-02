@@ -27,18 +27,18 @@
 - [x] promote shared observability to CRC_RUNTIME_PROVEN_SHARED_OBSERVABILITY;
 - [x] execute the Shared Identity CRC gate through the RHBK specialist runtime + shared realm bootstrap;
 - [x] promote observed Keycloak/OIDC behavior to `CRC_SHARED_IDENTITY_BOOTSTRAP_PROVEN`;
-- [ ] onboard API Management runtime to shared OIDC and shared OTel on CRC.
+- [x] onboard API Management runtime to shared OIDC and shared OTel on CRC.
 
 ## API Management next consumer promotion
 
 After the platform CRC observability gate:
 
-- [ ] keep existing Docker CI runtime as DEDICATED_FOR_TEST;
-- [ ] add a separate shared-platform target profile in mayabank-api-management-architecture;
-- [ ] consume shared OIDC configuration rather than deploying a second target Keycloak;
-- [ ] export gateway/API telemetry to shared OTel;
-- [ ] prove the consumer path on CRC;
-- [ ] promote only the capabilities actually observed.
+- [x] keep existing Docker CI runtime as DEDICATED_FOR_TEST;
+- [x] add a separate shared-platform target profile in mayabank-api-management-architecture;
+- [x] consume shared OIDC configuration rather than deploying a second target Keycloak;
+- [x] export gateway/API telemetry to shared OTel;
+- [x] prove the consumer path on CRC;
+- [x] promote only the capabilities actually observed.
 
 ## Intentionally deferred / mission-driven
 
@@ -52,3 +52,22 @@ After the platform CRC observability gate:
 - production readiness.
 
 These capabilities are implemented only when a current mission or measurable duplication justifies them.
+
+
+## Customer/KYC consumer onboarding
+
+- [x] reuse the existing Customer/KYC architecture repository;
+- [x] add an explicit `CapabilityConsumption` contract;
+- [x] add a deployable Kustomize consumer surface;
+- [x] wire shared OIDC and shared OTel endpoints;
+- [x] add an opt-in egress NetworkPolicy;
+- [x] add repository CI validation;
+- [x] add the Shared Platform side consumer contract;
+- [x] add an Argo CD AppProject and Application contract;
+- [x] keep runtime status at `STATIC_CONSUMER_CONTRACT_VERIFIED` until observed.
+
+## Current closure
+
+The planned Shared Platform + API Management + first product-consumer onboarding scope is **COMPLETE**.
+
+Further runtime gates are mission-driven, not required to close this iteration set.
