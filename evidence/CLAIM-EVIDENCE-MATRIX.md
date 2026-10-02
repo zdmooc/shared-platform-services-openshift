@@ -15,6 +15,7 @@
 | SonarQube | IMPLEMENTED_CONTRACT | CI_RUNTIME_PROVEN_CONTAINER_SMOKE | PENDING | NOT_CLAIMED |
 | Instant Payments consumer overlay | IMPLEMENTED | STATIC_CONSUMER_CONTRACT_VERIFIED | PENDING | NOT_CLAIMED |
 | API Management consumer contract | IMPLEMENTED | STATIC_CONSUMER_CONTRACT_VERIFIED | CRC_RUNTIME_PROVEN_SHARED_PLATFORM_CONSUMER | NOT_CLAIMED |
+| Customer/KYC consumer contract | IMPLEMENTED | STATIC_CONSUMER_CONTRACT_VERIFIED | NOT_PROVEN | NOT_CLAIMED |
 | Shared Kafka | DEFERRED | N/A | NOT_DEPLOYED | NOT_CLAIMED |
 | Shared PostgreSQL | DEFERRED | N/A | NOT_DEPLOYED | NOT_CLAIMED |
 | Shared MinIO | DEFERRED | N/A | NOT_DEPLOYED | NOT_CLAIMED |
@@ -160,3 +161,22 @@ Allowed platform-consumer claim:
 `CRC_RUNTIME_PROVEN_SHARED_PLATFORM_CONSUMER`.
 
 This does not prove HA, multi-node, production sizing or production readiness.
+
+
+### Customer/KYC consumer onboarding — 2026-10-02
+
+Consumer:
+`zdmooc/mayabank-customer-identity-kyc-digital-banking-architecture`.
+
+Verified:
+- explicit `CapabilityConsumption` profile;
+- shared OIDC and shared OTel endpoints;
+- Kustomize deployable surface;
+- opt-in NetworkPolicy contract;
+- repository CI gate;
+- Shared Platform Argo CD AppProject/Application onboarding assets.
+
+Allowed claim:
+`STATIC_CONSUMER_CONTRACT_VERIFIED`.
+
+Runtime remains `NOT_PROVEN` by design; the architecture baseline does not require a heavy Customer/KYC runtime.
