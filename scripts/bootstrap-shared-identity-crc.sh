@@ -63,17 +63,17 @@ elif [[ "${status}" != "200" ]]; then
   exit 1
 fi
 
-curl -kfsS "${KEYCLOAK_URL}/realms/${REALM}/.well-known/openid-configuration" >/tmp/shared-oidc-discovery.json
-"${PYTHON_BIN}" - <<'PY'
-import json
-from pathlib import Path
-obj=json.loads(Path("/tmp/shared-oidc-discovery.json").read_text())
-assert obj["issuer"].endswith("/realms/mayabank")
+OIDC_DISCOVERY_JSON="$(curl -kfsS "${KEYCLOAK_URL}/realms/${REALM}/.well-known/openid-configuration")"
+OIDC_DISCOVERY_JSON="${OIDC_DISCOVERY_JSON}" REALM="${REALM}" "${PYTHON_BIN}" -c '
+import json, os
+obj=json.loads(os.environ["OIDC_DISCOVERY_JSON"])
+expected_suffix="/realms/" + os.environ["REALM"]
+assert obj["issuer"].endswith(expected_suffix), obj["issuer"]
 assert obj.get("jwks_uri")
-PY
+'
 
-unset ADMIN_TOKEN ADMIN_USER ADMIN_PASSWORD
-rm -f /tmp/shared-realm.json /tmp/shared-realm-create.out /tmp/shared-oidc-discovery.json
+unset ADMIN_TOKEN ADMIN_USER ADMIN_PASSWORD OIDC_DISCOVERY_JSON
+rm -f /tmp/shared-realm.json /tmp/shared-realm-create.out
 
 echo "SHARED_KEYCLOAK_REALM=PASS"
 echo "SHARED_OIDC_DISCOVERY=PASS"
