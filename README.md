@@ -18,6 +18,7 @@ Une capacité n'est promue qu'au niveau de preuve réellement observé.
 - S6 Keycloak OIDC + SonarQube : run 36840813149 — SUCCESS.
 - Instant Payments : STATIC_CONSUMER_CONTRACT_VERIFIED sur le commit consumer bc2ba297f0b2807c7168047e3c4ca4c674f942b5.
 - API Management : `CRC_RUNTIME_PROVEN_SHARED_PLATFORM_CONSUMER` sur CRC 4.22.7 ; Shared OIDC → Kong → Payment API + traces vers Shared OTel observés.
+- Customer/KYC : `STATIC_CONSUMER_CONTRACT_VERIFIED` avec profil Kustomize + contrat Argo CD ; runtime volontairement non revendiqué.
 - CRC/OpenShift shared observability : CRC_RUNTIME_PROVEN_SHARED_OBSERVABILITY on OpenShift Local 4.22.7.
 - Shared Identity CRC : `CRC_SHARED_IDENTITY_BOOTSTRAP_PROVEN` on OpenShift Local 4.22.7; RHBK runtime remains delegated to `keycloak-enterprise-roadmap-v7`.
 - API Management shared runtime : `CRC_RUNTIME_PROVEN_SHARED_PLATFORM_CONSUMER`.
@@ -104,3 +105,13 @@ The shared platform now provides `scripts/deploy-shared-identity-crc.sh` and `sc
 The deployment wrapper deliberately reuses the specialist repository `keycloak-enterprise-roadmap-v7` for the RHBK Operator, PostgreSQL lab runtime and Keycloak CR. This repository owns the shared `mayabank` realm/issuer contract and does not duplicate the specialist runtime.
 
 Current claim: `CRC_SHARED_IDENTITY_BOOTSTRAP_PROVEN`.
+
+
+## Consumer onboarding
+
+Le runbook canonique est :
+`docs/runbooks/CONSUMER_ONBOARDING.md`.
+
+Consumers actuels :
+- API Management — spécialisé, runtime CRC prouvé ;
+- Customer/KYC/Digital — produit, contrat statique validé.
