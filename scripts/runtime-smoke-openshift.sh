@@ -4,6 +4,15 @@ set -euo pipefail
 command -v oc >/dev/null 2>&1 || { echo "oc CLI is required"; exit 1; }
 command -v kubectl >/dev/null 2>&1 || { echo "kubectl CLI is required"; exit 1; }
 
+if command -v python3 >/dev/null 2>&1; then
+  PYTHON_BIN="python3"
+elif command -v python >/dev/null 2>&1; then
+  PYTHON_BIN="python"
+else
+  echo "Python 3 is required (python3 or python)"
+  exit 1
+fi
+
 echo "== OpenShift identity and API"
 oc whoami
 oc whoami --show-server
@@ -14,7 +23,7 @@ oc get clusterversion version -o wide
 echo "== ClusterOperators"
 oc get clusteroperators
 
-bad_operators="$(oc get clusteroperators -o json | python3 -c '
+bad_operators="$(oc get clusteroperators -o json | "$PYTHON_BIN" -c '
 import json,sys
 data=json.load(sys.stdin)
 bad=[]
@@ -25,13 +34,13 @@ for item in data["items"]:
 print("\n".join(bad))
 ')"
 
-if [[ -n "${bad_operators}" ]]; then
+if [[ -n "$bad_operators" ]]; then
   echo "ERROR: unhealthy ClusterOperators"
-  echo "${bad_operators}"
+  echo "$bad_operators"
   exit 1
 fi
 
-echo "== Apply Kubernetes-native shared-platform runtime slice"
+echo "== Apply Kubernetes-native shared-platform observability slice"
 oc apply -k platform/runtime-ci
 oc -n shared-observability rollout status deploy/otel-collector --timeout=180s
 
@@ -44,4 +53,5 @@ oc get namespaces shared-platform-services shared-observability shared-identity 
 oc -n shared-observability get deploy,svc,pods -o wide
 
 echo "OPENSHIFT_SHARED_PLATFORM_SMOKE=PASS"
-echo "claim=CRC_RUNTIME_PROVEN only when executed on CRC and evidence is stored"
+echo "CRC_SHARED_OBSERVABILITY_RUNTIME=PASS"
+echo "claim=CRC_RUNTIME_PROVEN_SHARED_OBSERVABILITY only when executed on CRC and sanitized evidence is retained"
