@@ -1,0 +1,22 @@
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: instant-payments-tech-lead
+  namespace: openshift-gitops
+  labels:
+    platform.mayabank.example/consumer: instant-payments
+spec:
+  project: mayabank-product-consumers
+  source:
+    repoURL: https://github.com/zdmooc/mayabank-instant-payments-resilience-platform.git
+    targetRevision: main
+    path: gitops/overlays/tech-lead-shared-platform
+  destination:
+    server: https://kubernetes.default.svc
+    namespace: instant-payments-local
+  syncPolicy:
+    automated:
+      prune: false
+      selfHeal: true
+    syncOptions:
+      - CreateNamespace=false
