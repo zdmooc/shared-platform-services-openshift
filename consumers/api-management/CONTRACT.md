@@ -1,7 +1,7 @@
 # API Management consumer onboarding
 
 **Consumer:** `zdmooc/mayabank-api-management-architecture`  
-**Inspected consumer commit:** `00f0fd2b7fc4ffbc95269b57b2c5556339867916`  
+**Runtime promotion date:** 2026-10-02  
 **Role:** L3 shared technical platform / API Management specialist.
 
 ## Target ownership
@@ -62,9 +62,19 @@ business product APIs
 
 Current consumer relationship:
 
-`STATIC_CONSUMER_CONTRACT_VERIFIED`
+`CRC_RUNTIME_PROVEN_SHARED_PLATFORM_CONSUMER`
 
-Runtime consumption of shared OIDC/OTel on CRC remains a separate evidence gate.
+Observed on OpenShift Local / CRC 4.22.7:
+
+```text
+KONG_SHARED_PLATFORM_DEPLOY=PASS
+API_SHARED_OIDC_TOKEN=PASS
+API_SHARED_GATEWAY_PAYMENT=PASS
+KONG_SHARED_OTEL_TRACE=PASS
+API_MANAGEMENT_SHARED_PLATFORM_CRC=PASS
+```
+
+The claim is bounded to the single-node CRC lab and does not prove HA or production readiness.
 
 ## Non-disruption rule
 
