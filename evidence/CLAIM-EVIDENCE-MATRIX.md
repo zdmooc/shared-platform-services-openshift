@@ -11,7 +11,7 @@
 | Consumer → OTLP → Prometheus path | IMPLEMENTED | CI_RUNTIME_PROVEN_KIND | CRC_RUNTIME_PROVEN_SHARED_OBSERVABILITY | NOT_CLAIMED |
 | Prometheus integration contract | IMPLEMENTED | STATIC_VALIDATED | PENDING | NOT_CLAIMED |
 | Grafana asset | IMPLEMENTED | STATIC_VALIDATED | PENDING | NOT_CLAIMED |
-| Keycloak/OIDC | IMPLEMENTED_CONTRACT | CI_RUNTIME_PROVEN_CONTAINER_SMOKE | PENDING | NOT_CLAIMED |
+| Keycloak/OIDC | IMPLEMENTED_CONTRACT + CRC adapter | CI_RUNTIME_PROVEN_CONTAINER_SMOKE | CRC_SHARED_IDENTITY_PENDING | NOT_CLAIMED |
 | SonarQube | IMPLEMENTED_CONTRACT | CI_RUNTIME_PROVEN_CONTAINER_SMOKE | PENDING | NOT_CLAIMED |
 | Instant Payments consumer overlay | IMPLEMENTED | STATIC_CONSUMER_CONTRACT_VERIFIED | PENDING | NOT_CLAIMED |
 | API Management consumer contract | IMPLEMENTED | STATIC_CONSUMER_CONTRACT_VERIFIED | PENDING | NOT_CLAIMED |
@@ -94,3 +94,15 @@ Allowed claim:
 `CRC_RUNTIME_PROVEN_SHARED_OBSERVABILITY`.
 
 Shared Keycloak/OIDC, SonarQube, Argo CD reconciliation, Kafka/PostgreSQL/MinIO, API Management shared-runtime consumption, HA and production remain unproven.
+
+
+### Shared Identity CRC adapter
+
+Implemented on 2026-10-02:
+- specialist-runtime reuse contract documented under `platform/identity/keycloak/`;
+- shared realm definition `mayabank` added;
+- `scripts/deploy-shared-identity-crc.sh` orchestrates the specialist RHBK deployment without copying it;
+- `scripts/bootstrap-shared-identity-crc.sh` creates/verifies the shared realm and OIDC discovery;
+- Platform CI after the integration: run `36996365594` — SUCCESS.
+
+Allowed current claim: `IMPLEMENTED / STATIC_VALIDATED / CRC_RUNTIME_NOT_PROVEN_SHARED_IDENTITY`.
