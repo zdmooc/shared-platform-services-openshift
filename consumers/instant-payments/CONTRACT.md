@@ -39,7 +39,7 @@ Current allowed claim:
 
 `STATIC_CONSUMER_CONTRACT_VERIFIED`.
 
-The previously unrelated consumer CI failure was corrected on 2026-10-02; global consumer CI run `37065452210` is SUCCESS. Focused Tech Lead CI run `37065754596` is also SUCCESS after OIDC scope hardening.
+The previously unrelated consumer CI failure was corrected on 2026-10-02; global consumer CI run `37065452210` is SUCCESS. Focused Tech Lead CI run `37065754596` is SUCCESS after OIDC scope hardening. Final coherent Tech Lead run `37066168907` is also **SUCCESS** after Angular runtime API alignment.
 
 Runtime trace/metric proof on OpenShift/CRC remains a separate gate.
 
