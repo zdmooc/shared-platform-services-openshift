@@ -13,7 +13,7 @@
 | Grafana asset | IMPLEMENTED | STATIC_VALIDATED | PENDING | NOT_CLAIMED |
 | Keycloak/OIDC | IMPLEMENTED_CONTRACT + CRC adapter | CI_RUNTIME_PROVEN_CONTAINER_SMOKE | CRC_SHARED_IDENTITY_BOOTSTRAP_PROVEN | NOT_CLAIMED |
 | SonarQube | IMPLEMENTED_CONTRACT | CI_RUNTIME_PROVEN_CONTAINER_SMOKE | PENDING | NOT_CLAIMED |
-| Instant Payments consumer overlay | IMPLEMENTED / TECH_LEAD_READY | STATIC_CONSUMER_CONTRACT_VERIFIED + product focused CI 37058472014 SUCCESS | READY_FOR_CRC | NOT_CLAIMED |
+| Instant Payments consumer overlay | IMPLEMENTED / TECH_LEAD_READY | focused CI 37058472014 SUCCESS + OIDC-hardening CI 37065754596 SUCCESS + global CI 37065452210 SUCCESS | READY_FOR_CRC | NOT_CLAIMED |
 | API Management consumer contract | IMPLEMENTED | STATIC_CONSUMER_CONTRACT_VERIFIED | CRC_RUNTIME_PROVEN_SHARED_PLATFORM_CONSUMER | NOT_CLAIMED |
 | Customer/KYC consumer contract | IMPLEMENTED | STATIC_CONSUMER_CONTRACT_VERIFIED | NOT_PROVEN | NOT_CLAIMED |
 | Shared Kafka | DEFERRED | N/A | NOT_DEPLOYED | NOT_CLAIMED |
@@ -47,13 +47,19 @@ Allowed claim:
 CI_RUNTIME_PROVEN_CONTAINER_SMOKE.
 
 ### Instant Payments consumer
-Consumer main commit inspected:
+Original S7 consumer contract was inspected at commit:
 bc2ba297f0b2807c7168047e3c4ca4c674f942b5.
 
-Verified shared-platform overlay, Argo CD Application and dependency ownership.
+Tech Lead extension evidence now includes:
+- Angular/Camel/MongoDB product-owned surfaces;
+- shared OIDC + OTel overlay;
+- CRC build/bootstrap/evidence scripts;
+- focused CI 37058472014 SUCCESS;
+- OIDC scope hardening CI 37065754596 SUCCESS;
+- global CI 37065452210 SUCCESS after isolating an unrelated Consumer test dependency.
 
-Allowed claim:
-STATIC_CONSUMER_CONTRACT_VERIFIED.
+Allowed current claim:
+STATIC_CONSUMER_CONTRACT_VERIFIED / READY_FOR_CRC.
 
 ### API Management consumer
 Consumer main commit inspected:
