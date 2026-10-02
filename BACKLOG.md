@@ -25,8 +25,8 @@
 - [x] execute docs/runbooks/CRC_RUNTIME_VALIDATION.md on the user's real CRC/OpenShift Local environment;
 - [x] record sanitized CRC shared-observability evidence;
 - [x] promote shared observability to CRC_RUNTIME_PROVEN_SHARED_OBSERVABILITY;
-- [ ] execute the Shared Identity CRC gate through `scripts/deploy-shared-identity-crc.sh`;
-- [ ] promote only observed Keycloak/OIDC behavior to a CRC shared-identity claim;
+- [x] execute the Shared Identity CRC gate through the RHBK specialist runtime + shared realm bootstrap;
+- [x] promote observed Keycloak/OIDC behavior to `CRC_SHARED_IDENTITY_BOOTSTRAP_PROVEN`;
 - [ ] onboard API Management runtime to shared OIDC and shared OTel on CRC.
 
 ## API Management next consumer promotion
