@@ -1,0 +1,29 @@
+apiVersion: platform.mayabank.example/v1alpha1
+kind: CapabilityConsumption
+metadata:
+  name: api-management
+spec:
+  identity:
+    mode: CONSUME_SHARED
+  observability:
+    mode: CONSUME_SHARED
+  secrets:
+    mode: CONSUME_SHARED
+  gitops:
+    mode: CONSUME_SHARED
+  quality:
+    mode: CONSUME_SHARED
+  eventing:
+    mode: REFERENCE_ONLY
+  database:
+    mode: REFERENCE_ONLY
+  objectStorage:
+    mode: REFERENCE_ONLY
+  externalPlatforms:
+    ibmMq:
+      mode: SPECIALIZED_PLATFORM
+  ownedCapabilities:
+    - api-gateway
+    - api-policies
+    - api-lifecycle-governance
+    - openapi-asyncapi-governance
