@@ -10,6 +10,20 @@ It does **not** prove the whole shared platform. In particular, it does not prov
 ## Preconditions
 
 - CRC/OpenShift Local is running;
+
+Recommended start sequence on the Windows/Git Bash workstation:
+
+```bash
+crc status
+crc start
+eval "$(crc oc-env)"
+oc whoami --show-server
+oc get clusterversion version
+```
+
+Do not continue if `oc get nodes` shows the Kind `edl-lab` nodes or if `clusterversion` is unavailable. That means the current kube/oc context is still Kubernetes/Kind rather than CRC/OpenShift.
+
+- CRC/OpenShift Local is running;
 - `oc` is logged in to the target cluster;
 - current user can create namespaces and namespaced workloads used by the lab;
 - `kubectl`, `oc`, Python 3 and Bash are available;
