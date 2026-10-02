@@ -1,0 +1,16 @@
+{
+  "realm": "mayabank",
+  "enabled": true,
+  "displayName": "MayaBank Shared Identity",
+  "registrationAllowed": false,
+  "resetPasswordAllowed": false,
+  "rememberMe": false,
+  "bruteForceProtected": true,
+  "roles": {
+    "realm": [
+      {"name": "reader"},
+      {"name": "operator"},
+      {"name": "admin"}
+    ]
+  }
+}
