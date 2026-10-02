@@ -14,7 +14,7 @@
 | Keycloak/OIDC | IMPLEMENTED_CONTRACT + CRC adapter | CI_RUNTIME_PROVEN_CONTAINER_SMOKE | CRC_SHARED_IDENTITY_BOOTSTRAP_PROVEN | NOT_CLAIMED |
 | SonarQube | IMPLEMENTED_CONTRACT | CI_RUNTIME_PROVEN_CONTAINER_SMOKE | PENDING | NOT_CLAIMED |
 | Instant Payments consumer overlay | IMPLEMENTED | STATIC_CONSUMER_CONTRACT_VERIFIED | PENDING | NOT_CLAIMED |
-| API Management consumer contract | IMPLEMENTED | STATIC_CONSUMER_CONTRACT_VERIFIED | PENDING | NOT_CLAIMED |
+| API Management consumer contract | IMPLEMENTED | STATIC_CONSUMER_CONTRACT_VERIFIED | CRC_RUNTIME_PROVEN_SHARED_PLATFORM_CONSUMER | NOT_CLAIMED |
 | Shared Kafka | DEFERRED | N/A | NOT_DEPLOYED | NOT_CLAIMED |
 | Shared PostgreSQL | DEFERRED | N/A | NOT_DEPLOYED | NOT_CLAIMED |
 | Shared MinIO | DEFERRED | N/A | NOT_DEPLOYED | NOT_CLAIMED |
@@ -70,7 +70,7 @@ run 36984578912 — SUCCESS.
 Allowed platform-consumer claim:
 STATIC_CONSUMER_CONTRACT_VERIFIED.
 
-Runtime use of shared OIDC/OTel on CRC remains pending.
+Runtime use of shared OIDC/OTel on CRC is now proven by the API Management consumer profile.
 
 ## CRC/OpenShift
 
@@ -93,7 +93,7 @@ Observed on CRC 4.22.7:
 Allowed claim:
 `CRC_RUNTIME_PROVEN_SHARED_OBSERVABILITY`.
 
-Shared Keycloak/OIDC, SonarQube, Argo CD reconciliation, Kafka/PostgreSQL/MinIO, API Management shared-runtime consumption, HA and production remain unproven.
+SonarQube CRC, Argo CD reconciliation, Kafka/PostgreSQL/MinIO, HA and production remain unproven. Shared Keycloak/OIDC and API Management shared-runtime consumption are now proven on CRC.
 
 
 ### Shared Identity CRC adapter
@@ -132,3 +132,31 @@ Allowed claim:
 `CRC_SHARED_IDENTITY_BOOTSTRAP_PROVEN`.
 
 This proves shared realm/bootstrap + OIDC discovery on CRC. It does not yet prove HA, external IdP federation, production persistence/backup, secret rotation or production readiness.
+
+
+### API Management shared-platform CRC runtime proof — 2026-10-02
+
+Observed consumer repository: `zdmooc/mayabank-api-management-architecture`.
+
+Observed successful markers:
+
+```text
+KONG_SHARED_PLATFORM_DEPLOY=PASS
+API_SHARED_OIDC_TOKEN=PASS
+API_SHARED_GATEWAY_PAYMENT=PASS
+KONG_SHARED_OTEL_TRACE=PASS
+API_MANAGEMENT_SHARED_PLATFORM_CRC=PASS
+```
+
+Observed chain:
+
+```text
+Shared Keycloak/OIDC -> Kong -> Payment API
+                         |
+                         +-> Shared OTel traces
+```
+
+Allowed platform-consumer claim:
+`CRC_RUNTIME_PROVEN_SHARED_PLATFORM_CONSUMER`.
+
+This does not prove HA, multi-node, production sizing or production readiness.
