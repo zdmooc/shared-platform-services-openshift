@@ -19,7 +19,7 @@ Une capacité n'est promue qu'au niveau de preuve réellement observé.
 - Instant Payments : STATIC_CONSUMER_CONTRACT_VERIFIED sur le commit consumer bc2ba297f0b2807c7168047e3c4ca4c674f942b5.
 - API Management : STATIC_CONSUMER_CONTRACT_VERIFIED sur le commit consumer 00f0fd2b7fc4ffbc95269b57b2c5556339867916.
 - CRC/OpenShift shared observability : CRC_RUNTIME_PROVEN_SHARED_OBSERVABILITY on OpenShift Local 4.22.7.
-- Shared Identity CRC adapter : IMPLEMENTED / STATIC_VALIDATED; RHBK runtime delegated to `keycloak-enterprise-roadmap-v7`, runtime proof pending.
+- Shared Identity CRC : `CRC_SHARED_IDENTITY_BOOTSTRAP_PROVEN` on OpenShift Local 4.22.7; RHBK runtime remains delegated to `keycloak-enterprise-roadmap-v7`.
 - HA multi-nœud / production : NOT_CLAIMED.
 
 ## Principes
@@ -102,4 +102,4 @@ The shared platform now provides `scripts/deploy-shared-identity-crc.sh` and `sc
 
 The deployment wrapper deliberately reuses the specialist repository `keycloak-enterprise-roadmap-v7` for the RHBK Operator, PostgreSQL lab runtime and Keycloak CR. This repository owns the shared `mayabank` realm/issuer contract and does not duplicate the specialist runtime.
 
-Current claim: `IMPLEMENTED / STATIC_VALIDATED / CRC_RUNTIME_NOT_PROVEN_SHARED_IDENTITY`.
+Current claim: `CRC_SHARED_IDENTITY_BOOTSTRAP_PROVEN`.
