@@ -88,7 +88,7 @@ def request(
 
 def admin_token() -> str:
     username = secret_value(KEYCLOAK_NAMESPACE, ADMIN_SECRET_NAME, "username")
-    password = secret_value(KEYCLOAK_NAMESPACE, ADMIN_SECRET_NAME, "password")
+    admin_credential = secret_value(KEYCLOAK_NAMESPACE, ADMIN_SECRET_NAME, "password")
     status, body = request(
         "/realms/master/protocol/openid-connect/token",
         method="POST",
@@ -96,7 +96,7 @@ def admin_token() -> str:
             "client_id": "admin-cli",
             "grant_type": "password",
             "username": username,
-            "password": password,
+            "password": admin_credential,
         },
     )
     if status != 200 or not isinstance(body, dict) or not body.get("access_token"):
