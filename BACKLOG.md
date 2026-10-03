@@ -27,7 +27,8 @@
 - [x] promote shared observability to CRC_RUNTIME_PROVEN_SHARED_OBSERVABILITY;
 - [x] execute the Shared Identity CRC gate through the RHBK specialist runtime + shared realm bootstrap;
 - [x] promote observed Keycloak/OIDC behavior to `CRC_SHARED_IDENTITY_BOOTSTRAP_PROVEN`;
-- [x] onboard API Management runtime to shared OIDC and shared OTel on CRC.
+- [x] onboard API Management runtime to shared OIDC and shared OTel on CRC;
+- [x] onboard Instant Payments runtime to shared OIDC and shared OTel on CRC and promote it to `CRC_RUNTIME_PROVEN_SHARED_PLATFORM_CONSUMER`.
 
 ## API Management next consumer promotion
 
@@ -70,6 +71,6 @@ These capabilities are implemented only when a current mission or measurable dup
 
 ## Current closure
 
-The planned Shared Platform + API Management + first product-consumer onboarding scope is **COMPLETE**.
+The planned Shared Platform + API Management + first product-consumer onboarding scope is **COMPLETE**. Instant Payments is also runtime-proven as a Shared Platform consumer on the tested single-node CRC as of 2026-10-03.
 
 Further runtime gates are mission-driven, not required to close this iteration set.
