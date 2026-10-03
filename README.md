@@ -16,7 +16,7 @@ Une capacité n'est promue qu'au niveau de preuve réellement observé.
 - S5 Kind runtime : run 36860978155 — SUCCESS.
 - S5 chemin télémétrie : consumer → OTLP HTTP → OTel Collector → Prometheus exporter — PASS.
 - S6 Keycloak OIDC + SonarQube : run 36840813149 — SUCCESS.
-- Instant Payments : Tech Lead consumer surface implemented; `STATIC_CONSUMER_CONTRACT_VERIFIED / READY_FOR_CRC`; focused product CI `37058472014` SUCCESS. Runtime Shared OIDC/OTel proof is deliberately pending.
+- Instant Payments : `CRC_RUNTIME_PROVEN_SHARED_PLATFORM_CONSUMER` on the tested single-node CRC; Shared OIDC consumption, authenticated metrics access and a real `payment-orchestrator` trace exported to Shared OTel were observed on 2026-10-03. Canonical evidence: `mayabank-instant-payments-resilience-platform/docs/evidence/runtime/I33-I34-crc-shared-platform-tech-lead-20261003.md`.
 - API Management : `CRC_RUNTIME_PROVEN_SHARED_PLATFORM_CONSUMER` sur CRC 4.22.7 ; Shared OIDC → Kong → Payment API + traces vers Shared OTel observés.
 - Customer/KYC : `STATIC_CONSUMER_CONTRACT_VERIFIED` avec profil Kustomize + contrat Argo CD ; runtime volontairement non revendiqué.
 - CRC/OpenShift shared observability : CRC_RUNTIME_PROVEN_SHARED_OBSERVABILITY on OpenShift Local 4.22.7.
@@ -84,7 +84,7 @@ Recommended command:
 bash scripts/run-crc-evidence.sh
 ```
 
-The shared observability slice is `CRC_RUNTIME_PROVEN_SHARED_OBSERVABILITY` on CRC 4.22.7. Shared identity bootstrap is also proven, and API Management has already consumed shared OIDC + OTel on CRC. The next product-specific gate is Instant Payments runtime consumption of the shared services; AKS promotion remains governed by D-086.
+The shared observability slice is `CRC_RUNTIME_PROVEN_SHARED_OBSERVABILITY` on CRC 4.22.7. Shared identity bootstrap is also proven. API Management and Instant Payments have both consumed shared OIDC + Shared OTel on CRC and are `CRC_RUNTIME_PROVEN_SHARED_PLATFORM_CONSUMER`. AKS promotion remains governed by D-086.
 
 ## Consumers
 
@@ -114,4 +114,5 @@ Le runbook canonique est :
 
 Consumers actuels :
 - API Management — spécialisé, runtime CRC prouvé ;
+- Instant Payments — produit flagship, Shared OIDC + Shared OTel runtime CRC prouvé ;
 - Customer/KYC/Digital — produit, contrat statique validé.
