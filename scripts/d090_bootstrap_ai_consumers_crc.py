@@ -71,7 +71,7 @@ def request(
         headers["Content-Type"] = "application/x-www-form-urlencoded"
         data = urllib.parse.urlencode(form).encode("utf-8")
     req = urllib.request.Request(
-        KEyCLOAK_URL + path,
+        KEYCLOAK_URL + path,
         data=data,
         headers=headers,
         method=method,
@@ -84,10 +84,6 @@ def request(
         raw = exc.read()
         body = json.loads(raw) if raw else {}
         return exc.code, body
-
-
-# Keep the constant typo impossible to hide behind runtime evidence.
-KEyCLOAK_URL = KEYCLOAK_URL
 
 
 def admin_token() -> str:
