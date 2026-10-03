@@ -20,7 +20,7 @@ import urllib.request
 KEYCLOAK_NAMESPACE = os.getenv("KEYCLOAK_NAMESPACE", "keycloak-system")
 KEYCLOAK_URL = os.getenv("KEYCLOAK_URL", "https://keycloak.apps-crc.testing").rstrip("/")
 REALM = os.getenv("SHARED_REALM", "mayabank")
-ADMIN_SECRET = os.getenv("KEYCLOAK_ADMIN_SECRET", "keycloak-initial-admin")
+ADMIN_SECRET_NAME = os.getenv("KEYCLOAK_ADMIN_SECRET", "keycloak-initial-admin")
 SYNC_TARGET_SECRETS = os.getenv("SYNC_TARGET_SECRETS", "false").lower() == "true"
 TRADEOPS_NAMESPACE = os.getenv("TRADEOPS_NAMESPACE", "tradeops")
 ODM_NAMESPACE = os.getenv("ODM_NAMESPACE", "mayainsurance-decision-local")
@@ -87,8 +87,8 @@ def request(
 
 
 def admin_token() -> str:
-    username = secret_value(KEYCLOAK_NAMESPACE, ADMIN_SECRET, "username")
-    password = secret_value(KEYCLOAK_NAMESPACE, ADMIN_SECRET, "password")
+    username = secret_value(KEYCLOAK_NAMESPACE, ADMIN_SECRET_NAME, "username")
+    password = secret_value(KEYCLOAK_NAMESPACE, ADMIN_SECRET_NAME, "password")
     status, body = request(
         "/realms/master/protocol/openid-connect/token",
         method="POST",
