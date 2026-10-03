@@ -11,7 +11,7 @@
 | S4 | Quality / SonarQube contracts | IMPLEMENTED | S6 PROVEN |
 | S5 | Kind runtime portability | IMPLEMENTED | CI_RUNTIME_PROVEN_KIND |
 | S6 | Keycloak + SonarQube live smoke | IMPLEMENTED | CI_RUNTIME_PROVEN_CONTAINER_SMOKE |
-| S7 | Instant Payments onboarding | IMPLEMENTED | STATIC_CONSUMER_CONTRACT_VERIFIED |
+| S7 | Instant Payments onboarding | IMPLEMENTED | CRC_RUNTIME_PROVEN_SHARED_PLATFORM_CONSUMER |
 | S8 | Hardening / rollback / evidence | IMPLEMENTED | STATIC_VALIDATED |
 | O3 | Evidence hardening | COMPLETE | differentiated CRC evidence recorded; HA/production not claimed |
 
@@ -45,21 +45,23 @@ Allowed claim: CI_RUNTIME_PROVEN_CONTAINER_SMOKE.
 
 ## S7 result
 
-The Instant Payments shared-platform overlay, Argo CD Application and ownership document were directly verified.
+The Instant Payments shared-platform overlay, Argo CD Application and ownership document were directly verified, then the product consumed Shared OIDC and Shared OTel on the tested single-node CRC. An actual `payment-orchestrator` trace was observed in the shared collector on 2026-10-03.
 
-Allowed claim: STATIC_CONSUMER_CONTRACT_VERIFIED.
+Allowed claim: `CRC_RUNTIME_PROVEN_SHARED_PLATFORM_CONSUMER`.
+
+Canonical product evidence: `mayabank-instant-payments-resilience-platform/docs/evidence/runtime/I33-I34-crc-shared-platform-tech-lead-20261003.md`.
 
 ## Current CRC promotion state
 
 Observed on OpenShift Local / CRC 4.22.7:
 - shared observability: `CRC_RUNTIME_PROVEN_SHARED_OBSERVABILITY`;
 - shared realm/OIDC bootstrap: `CRC_SHARED_IDENTITY_BOOTSTRAP_PROVEN`;
-- API Management consuming shared OIDC + OTel: `CRC_RUNTIME_PROVEN_SHARED_PLATFORM_CONSUMER`.
+- API Management consuming shared OIDC + OTel: `CRC_RUNTIME_PROVEN_SHARED_PLATFORM_CONSUMER`;
+- Instant Payments consuming shared OIDC + OTel: `CRC_RUNTIME_PROVEN_SHARED_PLATFORM_CONSUMER`.
 
 Still pending by capability:
 - current Argo CD/OpenShift GitOps reconciliation proof;
 - SonarQube runtime on CRC;
-- Instant Payments real runtime consumption of shared OTel/OIDC;
 - HA/multi-node/production.
 
 
