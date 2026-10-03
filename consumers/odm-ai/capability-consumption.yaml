@@ -1,0 +1,35 @@
+apiVersion: platform.mayabank.example/v1alpha1
+kind: CapabilityConsumption
+metadata:
+  name: odm-ai
+spec:
+  identity:
+    mode: CONSUME_SHARED
+    clientId: odm-ai
+    audience: ai-gateway
+    scopes:
+      - ai.inference
+  observability:
+    mode: CONSUME_SHARED
+  secrets:
+    mode: CONSUME_SHARED
+  gitops:
+    mode: CONSUME_SHARED
+  quality:
+    mode: CONSUME_SHARED
+  eventing:
+    mode: REFERENCE_ONLY
+  database:
+    mode: REFERENCE_ONLY
+  objectStorage:
+    mode: REFERENCE_ONLY
+  externalPlatforms:
+    aiAccess:
+      mode: CONSUME_SHARED
+      temporaryOwner: TradeOps-GenAI-Integration
+      exitGate: G5
+  ownedCapabilities:
+    - document-extraction-contract
+    - confidence-gate
+    - human-review-fallback
+    - deterministic-decision-boundary
