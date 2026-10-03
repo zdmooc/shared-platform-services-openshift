@@ -107,3 +107,13 @@ The product contract is versioned in both repositories:
 - Customer/KYC: `platform-consumption/`.
 
 Its runtime remains optional and mission-driven.
+
+
+### TradeOps
+
+Classification: `PRODUCT_CONSUMER` / primary executable AI runtime.
+
+Status:
+`IMPLEMENTED / STATIC_CONSUMER_CONTRACT_PREPARED`.
+
+The D-090 contract is versioned under `consumers/tradeops/`. TradeOps consumes Shared OIDC/OTel/secrets/GitOps/quality contracts while Kafka/PostgreSQL/Qdrant and the temporary LiteLLM lab remain dedicated test/runtime concerns. Real-model and CRC claims require separate observed evidence.
