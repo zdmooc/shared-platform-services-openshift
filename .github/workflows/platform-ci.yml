@@ -83,6 +83,12 @@ jobs:
         run: |
           set -euo pipefail
           go mod tidy
+          echo "__D093_GO_MOD_BEGIN__"
+          cat go.mod
+          echo "__D093_GO_MOD_END__"
+          echo "__D093_GO_SUM_BEGIN__"
+          cat go.sum
+          echo "__D093_GO_SUM_END__"
           go vet ./...
           go install sigs.k8s.io/controller-runtime/tools/setup-envtest@release-0.23
           export KUBEBUILDER_ASSETS="$(setup-envtest use -p path 1.35.x!)"
