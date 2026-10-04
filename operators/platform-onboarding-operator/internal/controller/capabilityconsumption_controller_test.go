@@ -174,8 +174,9 @@ func TestManageRefusesUnownedPlatformNamedResource(t *testing.T) {
 	if err := testClient.Get(ctx, client.ObjectKey{Namespace: ns, Name: platformQuotaName}, &quota); err != nil {
 		t.Fatalf("get existing quota: %v", err)
 	}
-	if quota.Spec.Hard.Cpu().String() != "1" {
-		t.Fatalf("operator overwrote unowned quota: %s", quota.Spec.Hard.Cpu().String())
+	requestsCPU := quota.Spec.Hard[corev1.ResourceRequestsCPU]
+	if requestsCPU.String() != "1" {
+		t.Fatalf("operator overwrote unowned quota: %s", requestsCPU.String())
 	}
 }
 
