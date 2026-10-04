@@ -11,6 +11,7 @@ import (
 	metricsserver "sigs.k8s.io/controller-runtime/pkg/metrics/server"
 
 	platformv1alpha1 "github.com/zdmooc/shared-platform-services-openshift/operators/platform-onboarding-operator/api/v1alpha1"
+	"github.com/zdmooc/shared-platform-services-openshift/operators/platform-onboarding-operator/internal/controller"
 )
 
 var scheme = runtime.NewScheme()
@@ -43,7 +44,16 @@ func main() {
 		os.Exit(1)
 	}
 
-	setupLog.Info("K3 API bootstrap ready; controller wiring follows after API/schema gate")
+	if err := (&controller.CapabilityConsumptionReconciler{
+		Client:   mgr.GetClient(),
+		Scheme:   mgr.GetScheme(),
+		Recorder: mgr.GetEventRecorderFor("mayabank-platform-operator"),
+	}).SetupWithManager(mgr); err != nil {
+		setupLog.Error(err, "unable to create CapabilityConsumption controller")
+		os.Exit(1)
+	}
+
+	setupLog.Info("K3 controller ready")
 	if err := mgr.Start(ctrl.SetupSignalHandler()); err != nil {
 		setupLog.Error(err, "manager stopped with error")
 		os.Exit(1)
