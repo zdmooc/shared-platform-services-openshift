@@ -14,6 +14,7 @@
 | S7 | Instant Payments onboarding | IMPLEMENTED | CRC_RUNTIME_PROVEN_SHARED_PLATFORM_CONSUMER |
 | S8 | Hardening / rollback / evidence | IMPLEMENTED | STATIC_VALIDATED |
 | O3 | Evidence hardening | COMPLETE | differentiated CRC evidence recorded; HA/production not claimed |
+| D-093 K3 I4 | CapabilityConsumption Platform Operator | IMPLEMENTED | ENVTEST_VALIDATED + KIND_RUNTIME_PROVEN_PLATFORM_OPERATOR |
 
 ## Recorded evidence
 
@@ -21,6 +22,7 @@
 - S5 Runtime Smoke 36860978155 — SUCCESS.
 - S6 Identity Quality Smoke 36840813149 — SUCCESS.
 - S7 consumer main commit bc2ba297f0b2807c7168047e3c4ca4c674f942b5 inspected and contract verified.
+- D-093 K3/I4 main commit `107ea4d7c651d12295a77d851ab8c2d6c8763fe8`; Platform CI `37224601724` SUCCESS; Operator Kind runtime `37224601718` SUCCESS.
 
 ## S5 result
 
@@ -50,6 +52,27 @@ The Instant Payments shared-platform overlay, Argo CD Application and ownership 
 Allowed claim: `CRC_RUNTIME_PROVEN_SHARED_PLATFORM_CONSUMER`.
 
 Canonical product evidence: `mayabank-instant-payments-resilience-platform/docs/evidence/runtime/I33-I34-crc-shared-platform-tech-lead-20261003.md`.
+
+## D-093 K3/I4 result
+
+The Platform Operator now has a real Kubernetes 1.35 Kind proof.
+
+Observed:
+- `CapabilityConsumption` CRD and controller running;
+- Manage baseline creation;
+- Server-Side Apply field manager;
+- resource-profile update;
+- drift recovery;
+- controller restart recovery;
+- brownfield Observe + `OwnershipConflict`;
+- explicit adoption after baseline migration;
+- `Retain` deletion boundary.
+
+Allowed claim: `KIND_RUNTIME_PROVEN_PLATFORM_OPERATOR`.
+
+Canonical evidence: `evidence/ci/D093-K3-operator-kind-runtime.md`.
+
+Next gate: CRC/OpenShift + Instant Payments consumer #1. Kind != OpenShift and no CRC Operator claim is made yet.
 
 ## Current CRC promotion state
 
