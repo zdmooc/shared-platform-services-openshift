@@ -1,0 +1,38 @@
+apiVersion: platform.mayabank.example/v1alpha1
+kind: CapabilityConsumption
+metadata:
+  name: instant-payments-crc
+spec:
+  consumer:
+    name: instant-payments
+    owner: payments
+    environment: crc
+  target:
+    namespace: instant-payments-local
+  identity:
+    mode: CONSUME_SHARED
+  observability:
+    mode: CONSUME_SHARED
+  secrets:
+    mode: CONSUME_SHARED
+  gitops:
+    mode: CONSUME_SHARED
+  quality:
+    mode: CONSUME_SHARED
+  eventing:
+    mode: DEDICATED_FOR_TEST
+  database:
+    mode: DEDICATED_FOR_TEST
+  objectStorage:
+    mode: REFERENCE_ONLY
+  resources:
+    profile: medium
+  network:
+    profile: restricted
+  gitSource:
+    repository: zdmooc/mayabank-instant-payments-resilience-platform
+    revision: main
+    path: gitops/overlays/tech-lead-shared-platform
+  lifecycle:
+    adoptionPolicy: Observe
+    deletionPolicy: Retain
