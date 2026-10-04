@@ -76,12 +76,16 @@ jobs:
           bash -n scripts/*.sh
           python -m compileall -q scripts
 
-      - name: D-093 K3 Platform Operator API gate
+      - name: D-093 K3 Platform Operator API + envtest gate
         working-directory: operators/platform-onboarding-operator
+        shell: bash
         run: |
+          set -euo pipefail
           go mod tidy
-          go test ./...
           go vet ./...
+          go install sigs.k8s.io/controller-runtime/tools/setup-envtest@release-0.23
+          export KUBEBUILDER_ASSETS="$(setup-envtest use -p path 1.35.x!)"
+          go test ./... -count=1
 
       - name: Consumer contract gates
         shell: bash
