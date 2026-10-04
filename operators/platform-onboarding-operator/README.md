@@ -1,23 +1,35 @@
 # MayaBank Platform Onboarding Operator
 
-Status: **K3 / I2 API BOOTSTRAP — IMPLEMENTED / CI PENDING / NO RUNTIME CLAIM**
+Status: **K3 / I2-I3 IMPLEMENTED / CI PENDING / KIND+CRC NOT_PROVEN**
 
 This operator materializes D-093/K2. `CapabilityConsumption` is the canonical Kubernetes Platform API.
 
-## Current I2 scope
+## Implemented
 
 - Go/Kubebuilder-compatible project layout;
-- `platform.mayabank.example/v1alpha1` API;
-- cluster-scoped `CapabilityConsumption` CRD;
-- status/conditions model;
-- ownership/lifecycle fields;
-- compatibility with the existing capability modes;
-- RBAC and manager deployment skeleton;
-- Instant Payments sample;
-- no controller reconciliation yet.
+- `platform.mayabank.example/v1alpha1` CRD;
+- status/conditions/events;
+- `Observe` and `Manage` lifecycle;
+- non-destructive ownership conflict reporting;
+- Server-Side Apply field manager `mayabank-platform-operator`;
+- label-based watches for continuous reconciliation without garbage-collection ownerReferences;
+- platform-owned Namespace labels, RBAC, ResourceQuota, LimitRange and baseline NetworkPolicies;
+- `Retain` deletion boundary;
+- envtest scenarios for brownfield Observe, greenfield Manage/idempotence and overwrite refusal.
 
-## Truth boundary
+## Brownfield rule
 
-I2 is an API/schema bootstrap only. It does not prove reconciliation, Server-Side Apply, ownership conflict handling, Kind runtime, CRC runtime or production behavior.
+```text
+Observe
+ -> inventory / compare
+ -> OwnershipConflict if product baseline still exists
+ -> explicit migration in product Git
+ -> Manage
+ -> SSA without ForceOwnership
+```
 
-Next gate: I3 controller + unit/envtest.
+The operator does not deploy business workloads. Product Git + Argo CD retain Deployments, StatefulSets, Services, Routes, stateful dependencies and product-specific NetworkPolicies.
+
+## Evidence boundary
+
+I2/I3 source and tests do not yet prove Kind or CRC runtime. Those are separate K3/I4-I5 gates.
