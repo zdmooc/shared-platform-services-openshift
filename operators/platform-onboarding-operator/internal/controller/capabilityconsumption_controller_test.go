@@ -180,6 +180,65 @@ func TestManageRefusesUnownedPlatformNamedResource(t *testing.T) {
 	}
 }
 
+func TestManageRefusesNamespaceAlreadyOwnedByAnotherConsumption(t *testing.T) {
+	ctx := context.Background()
+	ns := "single-consumption-i3"
+
+	first := newConsumption("first-consumption-i3", "first", ns, platformv1alpha1.AdoptionManage)
+	mustCreate(t, ctx, first)
+	r := reconciler()
+	if _, err := r.Reconcile(ctx, ctrl.Request{NamespacedName: client.ObjectKey{Name: first.Name}}); err != nil {
+		t.Fatalf("first reconcile: %v", err)
+	}
+
+	second := newConsumption("second-consumption-i3", "second", ns, platformv1alpha1.AdoptionManage)
+	mustCreate(t, ctx, second)
+	if _, err := r.Reconcile(ctx, ctrl.Request{NamespacedName: client.ObjectKey{Name: second.Name}}); err != nil {
+		t.Fatalf("second reconcile: %v", err)
+	}
+
+	got := &platformv1alpha1.CapabilityConsumption{}
+	if err := testClient.Get(ctx, client.ObjectKey{Name: second.Name}, got); err != nil {
+		t.Fatalf("get second status: %v", err)
+	}
+	ready := meta.FindStatusCondition(got.Status.Conditions, ConditionReady)
+	if ready == nil || ready.Reason != "OwnershipConflict" {
+		t.Fatalf("expected OwnershipConflict for shared namespace, got %#v", ready)
+	}
+
+	var namespace corev1.Namespace
+	if err := testClient.Get(ctx, client.ObjectKey{Name: ns}, &namespace); err != nil {
+		t.Fatalf("get namespace: %v", err)
+	}
+	if namespace.Labels[ConsumptionLabel] != first.Name {
+		t.Fatalf("second consumption stole namespace ownership: %#v", namespace.Labels)
+	}
+}
+
+func TestDesiredObjectsHonorSharedCapabilityIntent(t *testing.T) {
+	cc := newConsumption("intent-aware-i3", "intent-aware", "intent-aware-i3", platformv1alpha1.AdoptionManage)
+
+	names := objectNames(desiredObjects(cc))
+	if names["NetworkPolicy/platform-shared-oidc-egress"] || names["NetworkPolicy/platform-shared-otel-egress"] {
+		t.Fatalf("shared egress policies must not exist for REFERENCE_ONLY intent: %#v", names)
+	}
+
+	cc.Spec.Identity.Mode = platformv1alpha1.ConsumeShared
+	cc.Spec.Observability.Mode = platformv1alpha1.ConsumeShared
+	names = objectNames(desiredObjects(cc))
+	if !names["NetworkPolicy/platform-shared-oidc-egress"] || !names["NetworkPolicy/platform-shared-otel-egress"] {
+		t.Fatalf("shared egress policies missing for CONSUME_SHARED intent: %#v", names)
+	}
+}
+
+func objectNames(objects []client.Object) map[string]bool {
+	out := map[string]bool{}
+	for _, obj := range objects {
+		out[objectDescription(obj)] = true
+	}
+	return out
+}
+
 func reconciler() *CapabilityConsumptionReconciler {
 	return &CapabilityConsumptionReconciler{
 		Client:   testClient,
