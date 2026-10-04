@@ -1,0 +1,63 @@
+name: D093 K3 Operator Kind Runtime
+
+on:
+  pull_request:
+    paths:
+      - "operators/platform-onboarding-operator/**"
+      - "scripts/d093-k3-operator-kind.sh"
+      - ".github/workflows/d093-operator-kind.yml"
+  push:
+    branches: [main]
+    paths:
+      - "operators/platform-onboarding-operator/**"
+      - "scripts/d093-k3-operator-kind.sh"
+      - ".github/workflows/d093-operator-kind.yml"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  operator-kind-runtime:
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+    env:
+      CLUSTER_NAME: d093-operator-ci
+      KIND_NODE_IMAGE: kindest/node:v1.35.8@sha256:07b2536e30b803ed61d1677a79df6115f798ce64c80f9e22f6ed45afd09323c0
+      OPERATOR_IMAGE: mayabank-platform-operator:ci
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: azure/setup-kubectl@v4
+        with:
+          version: v1.35.8
+
+      - name: Install Kind v0.33.0
+        shell: bash
+        run: |
+          set -euo pipefail
+          mkdir -p "$RUNNER_TEMP/bin"
+          curl -fsSLo "$RUNNER_TEMP/bin/kind" https://kind.sigs.k8s.io/dl/v0.33.0/kind-linux-amd64
+          chmod +x "$RUNNER_TEMP/bin/kind"
+          echo "$RUNNER_TEMP/bin" >> "$GITHUB_PATH"
+
+      - name: Show tool versions
+        run: |
+          docker version
+          kind version
+          kubectl version --client=true
+
+      - name: Execute D-093 K3 operator Kind runtime proof
+        run: bash scripts/d093-k3-operator-kind.sh
+
+      - name: Capture diagnostics
+        if: failure()
+        shell: bash
+        run: |
+          kubectl get capabilityconsumptions.platform.mayabank.example -o yaml || true
+          kubectl get namespaces -o wide || true
+          kubectl get resourcequota,limitrange,networkpolicy -A || true
+          kubectl -n shared-platform-services get deploy,pod -o wide || true
+          kubectl -n shared-platform-services logs deploy/mayabank-platform-operator --tail=300 || true
+          kubectl get events -A --sort-by=.lastTimestamp | tail -n 150 || true
