@@ -4,7 +4,7 @@ Plateforme technique commune MayaBank pour mutualiser les capacités transverses
 
 ## Statut
 
-**V1 / O3 COMPLETE — STATIC_VALIDATED + KIND RUNTIME PROVEN + CONTAINER SMOKE PROVEN + CONSUMER CONTRACTS VERIFIED + CRC SHARED OBSERVABILITY PROVEN**
+**V1 / O3 COMPLETE + D-093 K3 I4 — STATIC_VALIDATED + SHARED KIND RUNTIME PROVEN + PLATFORM OPERATOR KIND_RUNTIME_PROVEN + CONSUMER CONTRACTS VERIFIED + CRC SHARED OBSERVABILITY PROVEN**
 
 Le dépôt fournit les contrats, manifests, GitOps, observabilité, IAM/secrets patterns, qualité et CI du socle commun.
 
@@ -13,6 +13,7 @@ Une capacité n'est promue qu'au niveau de preuve réellement observé.
 ## Preuves actuelles
 
 - Platform CI : run 36860978223 — SUCCESS.
+- D-093 Platform Operator: main commit `107ea4d7c651d12295a77d851ab8c2d6c8763fe8`; Platform CI `37224601724` SUCCESS; Kind runtime `37224601718` SUCCESS; `KIND_RUNTIME_PROVEN_PLATFORM_OPERATOR`.
 - S5 Kind runtime : run 36860978155 — SUCCESS.
 - S5 chemin télémétrie : consumer → OTLP HTTP → OTel Collector → Prometheus exporter — PASS.
 - S6 Keycloak OIDC + SonarQube : run 36840813149 — SUCCESS.
@@ -66,7 +67,9 @@ Une capacité n'est promue qu'au niveau de preuve réellement observé.
 
 ## Runtime truth boundary
 
-The Kind proof validates Kubernetes portability and the shared telemetry path.
+The original S5 Kind proof validates Kubernetes portability and the shared telemetry path.
+
+D-093/K3 I4 additionally proves the `CapabilityConsumption` Platform Operator itself on Kubernetes 1.35 Kind: SSA field ownership, update, drift recovery, controller restart, brownfield conflict/adoption and Retain behavior.
 
 The S6 proof validates container startup and integration endpoints for Keycloak and SonarQube.
 
