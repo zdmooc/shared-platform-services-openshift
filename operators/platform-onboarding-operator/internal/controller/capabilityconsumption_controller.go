@@ -3,6 +3,7 @@ package controller
 import (
 	"context"
 	"fmt"
+	"reflect"
 	"sort"
 	"strings"
 
@@ -222,6 +223,7 @@ func (r *CapabilityConsumptionReconciler) resourceReference(obj client.Object) (
 }
 
 func (r *CapabilityConsumptionReconciler) setStatus(ctx context.Context, cc *platformv1alpha1.CapabilityConsumption, status metav1.ConditionStatus, reason, message string, managed []platformv1alpha1.ManagedResourceReference) error {
+	before := cc.DeepCopy().Status
 	cc.Status.ObservedGeneration = cc.Generation
 	if managed != nil {
 		cc.Status.ManagedResources = managed
@@ -259,6 +261,9 @@ func (r *CapabilityConsumptionReconciler) setStatus(ctx context.Context, cc *pla
 			Reason:             "Managed",
 			Message:            "platform-owned resources are managed by the operator",
 		})
+	}
+	if reflect.DeepEqual(before, cc.Status) {
+		return nil
 	}
 	return r.Status().Update(ctx, cc)
 }
