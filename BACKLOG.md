@@ -74,3 +74,30 @@ These capabilities are implemented only when a current mission or measurable dup
 The planned Shared Platform + API Management + first product-consumer onboarding scope is **COMPLETE**. Instant Payments is also runtime-proven as a Shared Platform consumer on the tested single-node CRC as of 2026-10-03.
 
 Further runtime gates are mission-driven, not required to close this iteration set.
+
+
+## D-093 Platform Operator
+
+### Closed — K2 / K3 I2-I4
+- [x] accept CapabilityConsumption as canonical Kubernetes Platform API;
+- [x] implement Go/Kubebuilder/controller-runtime API and controller;
+- [x] validate schema, go vet, unit/envtest on Kubernetes 1.35;
+- [x] prove Manage baseline creation on Kind;
+- [x] prove Server-Side Apply field manager;
+- [x] prove declared profile update;
+- [x] prove managed-resource drift recovery;
+- [x] prove controller restart recovery;
+- [x] prove brownfield Observe + OwnershipConflict with no mutation;
+- [x] prove explicit brownfield adoption after product baseline removal;
+- [x] prove deletionPolicy=Retain;
+- [x] record canonical Kind runtime evidence.
+
+Allowed claim: `KIND_RUNTIME_PROVEN_PLATFORM_OPERATOR`.
+
+### Next — K3/K4 CRC consumer #1
+- [ ] deploy the Operator on the user's CRC/OpenShift Local;
+- [ ] validate OpenShift/SCC-specific compatibility;
+- [ ] onboard Instant Payments as consumer #1 through CapabilityConsumption;
+- [ ] keep Argo CD as product workload reconciler;
+- [ ] revalidate Shared OIDC and Shared OTel;
+- [ ] capture sanitized CRC evidence before promotion.
