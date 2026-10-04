@@ -30,7 +30,7 @@ jobs:
         run: bash scripts/validate-platform.sh
 
       - name: YAML lint
-        run: yamllint -c .yamllint.yml config gitops platform consumers
+        run: yamllint -c .yamllint.yml config gitops platform consumers operators/platform-onboarding-operator/config
 
       - name: Render Kustomize surfaces
         shell: bash
@@ -44,6 +44,7 @@ jobs:
             platform/observability/prometheus
             platform/runtime-ci
             platform
+            operators/platform-onboarding-operator/config/default
           )
           mkdir -p /tmp/rendered
           for dir in "${dirs[@]}"; do
@@ -54,7 +55,7 @@ jobs:
 
       - uses: actions/setup-go@v5
         with:
-          go-version: "1.24.x"
+          go-version: "1.25.x"
 
       - name: Install kubeconform
         run: |
@@ -75,6 +76,17 @@ jobs:
         run: |
           bash -n scripts/*.sh
           python -m compileall -q scripts
+
+      - name: D-093 K3 Platform Operator API + envtest gate
+        working-directory: operators/platform-onboarding-operator
+        shell: bash
+        run: |
+          set -euo pipefail
+          go mod tidy
+          go vet ./...
+          go install sigs.k8s.io/controller-runtime/tools/setup-envtest@release-0.23
+          export KUBEBUILDER_ASSETS="$(setup-envtest use -p path 1.35.x!)"
+          go test ./... -count=1
 
       - name: Consumer contract gates
         shell: bash

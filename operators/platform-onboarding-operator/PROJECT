@@ -1,0 +1,16 @@
+domain: mayabank.example
+layout:
+- go.kubebuilder.io/v4
+projectName: platform-onboarding-operator
+repo: github.com/zdmooc/shared-platform-services-openshift/operators/platform-onboarding-operator
+resources:
+- api:
+    crdVersion: v1
+    namespaced: false
+  controller: true
+  domain: mayabank.example
+  group: platform
+  kind: CapabilityConsumption
+  path: github.com/zdmooc/shared-platform-services-openshift/operators/platform-onboarding-operator/api/v1alpha1
+  version: v1alpha1
+version: "3"
