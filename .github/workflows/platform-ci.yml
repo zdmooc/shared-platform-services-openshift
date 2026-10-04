@@ -30,7 +30,7 @@ jobs:
         run: bash scripts/validate-platform.sh
 
       - name: YAML lint
-        run: yamllint -c .yamllint.yml config gitops platform consumers
+        run: yamllint -c .yamllint.yml config gitops platform consumers operators/platform-onboarding-operator/config
 
       - name: Render Kustomize surfaces
         shell: bash
@@ -44,6 +44,7 @@ jobs:
             platform/observability/prometheus
             platform/runtime-ci
             platform
+            operators/platform-onboarding-operator/config/default
           )
           mkdir -p /tmp/rendered
           for dir in "${dirs[@]}"; do
