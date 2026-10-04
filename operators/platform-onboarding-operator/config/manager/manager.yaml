@@ -1,0 +1,47 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: mayabank-platform-operator
+  namespace: shared-platform-services
+  labels:
+    app.kubernetes.io/name: mayabank-platform-operator
+    app.kubernetes.io/part-of: shared-platform-services
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: mayabank-platform-operator
+  template:
+    metadata:
+      labels:
+        app.kubernetes.io/name: mayabank-platform-operator
+        app.kubernetes.io/part-of: shared-platform-services
+    spec:
+      serviceAccountName: mayabank-platform-operator
+      securityContext:
+        runAsNonRoot: true
+      containers:
+        - name: manager
+          image: ghcr.io/zdmooc/mayabank-platform-operator:dev
+          imagePullPolicy: IfNotPresent
+          args: []
+          securityContext:
+            allowPrivilegeEscalation: false
+            capabilities:
+              drop: ["ALL"]
+            readOnlyRootFilesystem: true
+          resources:
+            requests:
+              cpu: 50m
+              memory: 64Mi
+            limits:
+              cpu: 500m
+              memory: 256Mi
+          livenessProbe:
+            httpGet:
+              path: /healthz
+              port: 8081
+          readinessProbe:
+            httpGet:
+              path: /readyz
+              port: 8081
