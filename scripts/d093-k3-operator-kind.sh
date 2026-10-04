@@ -2,7 +2,7 @@
 set -euo pipefail
 
 CLUSTER_NAME="${CLUSTER_NAME:-d093-operator-ci}"
-KIND_NODE_IMAGE="${KIND_NODE_IMAGE:-kindest/node:v1.35.8@sha256:07b2536e30b803ed61d1677a79df6115f798ce64c80f9e22f6ed45afd09323c0ac95}"
+KIND_NODE_IMAGE="${KIND_NODE_IMAGE:-kindest/node:v1.35.8@sha256:07b2536e30b803ed61d1677a79df6115f798ce64c80f9e22f6ed45afd09323c0}"
 OPERATOR_IMAGE="${OPERATOR_IMAGE:-mayabank-platform-operator:ci}"
 
 ROOT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
@@ -10,6 +10,10 @@ OPERATOR_DIR="$ROOT_DIR/operators/platform-onboarding-operator"
 
 diagnostics() {
   echo "== D-093 operator diagnostics =="
+  if ! kubectl cluster-info >/dev/null 2>&1; then
+    echo "No reachable Kubernetes cluster; runtime diagnostics skipped."
+    return 0
+  fi
   kubectl get capabilityconsumptions.platform.mayabank.example -o wide || true
   kubectl get namespaces -o wide || true
   kubectl get resourcequota,limitrange,networkpolicy -A || true
