@@ -142,6 +142,53 @@ func TestManageCreatesPlatformOwnedBaselineAndIsIdempotent(t *testing.T) {
 	}
 }
 
+func TestManageAllowsLegacyDefaultDenyCoexistenceForZeroWindowHandoff(t *testing.T) {
+	ctx := context.Background()
+	ns := "brownfield-handoff-i5"
+
+	mustCreate(t, ctx, &corev1.Namespace{ObjectMeta: metav1.ObjectMeta{Name: ns}})
+	mustCreate(t, ctx, &networkingv1.NetworkPolicy{
+		ObjectMeta: metav1.ObjectMeta{Name: "default-deny", Namespace: ns},
+		Spec: networkingv1.NetworkPolicySpec{
+			PodSelector: metav1.LabelSelector{},
+			PolicyTypes: []networkingv1.PolicyType{
+				networkingv1.PolicyTypeIngress,
+				networkingv1.PolicyTypeEgress,
+			},
+		},
+	})
+
+	cc := newConsumption("brownfield-handoff-i5", "instant-payments", ns, platformv1alpha1.AdoptionManage)
+	mustCreate(t, ctx, cc)
+
+	r := reconciler()
+	if _, err := r.Reconcile(ctx, ctrl.Request{NamespacedName: client.ObjectKey{Name: cc.Name}}); err != nil {
+		t.Fatalf("reconcile handoff: %v", err)
+	}
+
+	got := &platformv1alpha1.CapabilityConsumption{}
+	if err := testClient.Get(ctx, client.ObjectKey{Name: cc.Name}, got); err != nil {
+		t.Fatalf("get status: %v", err)
+	}
+	ready := meta.FindStatusCondition(got.Status.Conditions, ConditionReady)
+	if ready == nil || ready.Status != metav1.ConditionTrue || ready.Reason != "Reconciled" {
+		t.Fatalf("expected Reconciled during coexistence handoff, got %#v", ready)
+	}
+
+	var legacy networkingv1.NetworkPolicy
+	if err := testClient.Get(ctx, client.ObjectKey{Namespace: ns, Name: "default-deny"}, &legacy); err != nil {
+		t.Fatalf("legacy default-deny must remain during handoff: %v", err)
+	}
+
+	var platform networkingv1.NetworkPolicy
+	if err := testClient.Get(ctx, client.ObjectKey{Namespace: ns, Name: "platform-default-deny"}, &platform); err != nil {
+		t.Fatalf("platform-default-deny must be created before legacy removal: %v", err)
+	}
+	if platform.Labels[ManagedByLabel] != ManagedByValue {
+		t.Fatalf("platform default deny missing ownership label: %#v", platform.Labels)
+	}
+}
+
 func TestManageRefusesUnownedPlatformNamedResource(t *testing.T) {
 	ctx := context.Background()
 	ns := "ownership-conflict-i3"
