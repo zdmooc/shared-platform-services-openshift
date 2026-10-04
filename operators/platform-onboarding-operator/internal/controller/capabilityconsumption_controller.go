@@ -185,9 +185,17 @@ func (r *CapabilityConsumptionReconciler) detectConflicts(ctx context.Context, c
 			if err != nil {
 				return nil, err
 			}
-			if policyObj.Labels[ManagedByLabel] != ManagedByValue {
-				conflicts[fmt.Sprintf("NetworkPolicy/%s is an existing product-owned baseline", name)] = struct{}{}
+			if policyObj.Labels[ManagedByLabel] == ManagedByValue {
+				continue
 			}
+			if policy == platformv1alpha1.AdoptionManage {
+				// Brownfield handoff bridge: in Manage mode the explicit approval allows
+				// the Operator to create its differently named platform baseline first.
+				// The legacy product policy can then be removed from product Git and
+				// from the cluster without a network-policy-open window.
+				continue
+			}
+			conflicts[fmt.Sprintf("NetworkPolicy/%s is an existing product-owned baseline", name)] = struct{}{}
 		}
 	}
 

@@ -9,6 +9,7 @@ import (
 	ctrl "sigs.k8s.io/controller-runtime"
 	"sigs.k8s.io/controller-runtime/pkg/healthz"
 	metricsserver "sigs.k8s.io/controller-runtime/pkg/metrics/server"
+	"sigs.k8s.io/controller-runtime/pkg/log/zap"
 
 	platformv1alpha1 "github.com/zdmooc/shared-platform-services-openshift/operators/platform-onboarding-operator/api/v1alpha1"
 	"github.com/zdmooc/shared-platform-services-openshift/operators/platform-onboarding-operator/internal/controller"
@@ -22,6 +23,7 @@ func init() {
 }
 
 func main() {
+	ctrl.SetLogger(zap.New(zap.UseDevMode(false)))
 	setupLog := ctrl.Log.WithName("setup")
 
 	mgr, err := ctrl.NewManager(ctrl.GetConfigOrDie(), ctrl.Options{

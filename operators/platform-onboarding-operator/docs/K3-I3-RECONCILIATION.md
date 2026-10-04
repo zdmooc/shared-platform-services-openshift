@@ -41,7 +41,11 @@ Existing same-name non-platform-managed resources produce:
 
 `Ready=False / Reason=OwnershipConflict`
 
-The pre-existing Namespace may be adopted in Manage mode by adding only platform-owned labels. Product baseline ResourceQuota/LimitRange/default-deny must be removed from the product desired state before Manage succeeds.
+The pre-existing Namespace may be adopted in Manage mode by adding only platform-owned labels.
+
+ResourceQuota and LimitRange remain strict ownership conflicts until removed from the product desired state.
+
+For legacy baseline NetworkPolicies named `default-deny` or `allow-dns-egress`, Manage provides a controlled coexistence bridge: the Operator first creates its differently named platform baseline (`platform-default-deny` / `platform-dns-egress`) while the legacy product policy remains present. Only after the platform baseline is Ready may the legacy policy be removed from product Git and then from the cluster. This avoids a network-policy-open window.
 
 ## V1 platform resources
 
@@ -62,7 +66,8 @@ Product workloads and product-specific NetworkPolicies remain outside this contr
 I3 adds envtest coverage for:
 - TradeOps-style brownfield Observe conflict;
 - greenfield Manage creation + idempotence;
-- refusal to overwrite an unowned same-name platform resource.
+- refusal to overwrite an unowned same-name platform resource;
+- zero-window coexistence of a legacy `default-deny` while `platform-default-deny` is established.
 
 CI targets Kubernetes 1.35 envtest, matching the Kubernetes generation used by OpenShift 4.22.
 
