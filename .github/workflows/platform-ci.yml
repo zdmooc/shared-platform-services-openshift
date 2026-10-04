@@ -54,7 +54,7 @@ jobs:
 
       - uses: actions/setup-go@v5
         with:
-          go-version: "1.24.x"
+          go-version: "1.25.x"
 
       - name: Install kubeconform
         run: |
@@ -75,6 +75,13 @@ jobs:
         run: |
           bash -n scripts/*.sh
           python -m compileall -q scripts
+
+      - name: D-093 K3 Platform Operator API gate
+        working-directory: operators/platform-onboarding-operator
+        run: |
+          go mod tidy
+          go test ./...
+          go vet ./...
 
       - name: Consumer contract gates
         shell: bash
