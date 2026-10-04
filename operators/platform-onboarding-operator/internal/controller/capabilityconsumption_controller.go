@@ -138,6 +138,10 @@ func (r *CapabilityConsumptionReconciler) detectConflicts(ctx context.Context, c
 			return nil, err
 		}
 		if current.GetLabels()[ManagedByLabel] == ManagedByValue {
+			consumption := current.GetLabels()[ConsumptionLabel]
+			if consumption != "" && consumption != cc.Name {
+				conflicts[fmt.Sprintf("%s is already managed for CapabilityConsumption/%s", objectDescription(obj), consumption)] = struct{}{}
+			}
 			continue
 		}
 		if _, isNamespace := obj.(*corev1.Namespace); isNamespace && policy == platformv1alpha1.AdoptionManage {
@@ -281,7 +285,7 @@ func desiredObjects(cc *platformv1alpha1.CapabilityConsumption) []client.Object 
 	otlpGRPC := intstr.FromInt32(4317)
 	otlpHTTP := intstr.FromInt32(4318)
 
-	return []client.Object{
+	objects := []client.Object{
 		&corev1.Namespace{ObjectMeta: metav1.ObjectMeta{Name: namespace, Labels: labels}},
 		&corev1.ServiceAccount{ObjectMeta: metav1.ObjectMeta{Name: "platform-consumer", Namespace: namespace, Labels: labels}},
 		&rbacv1.Role{
@@ -329,7 +333,11 @@ func desiredObjects(cc *platformv1alpha1.CapabilityConsumption) []client.Object 
 				}}},
 			},
 		},
-		&networkingv1.NetworkPolicy{
+
+	}
+
+	if cc.Spec.Identity.Mode == platformv1alpha1.ConsumeShared {
+		objects = append(objects, &networkingv1.NetworkPolicy{
 			ObjectMeta: metav1.ObjectMeta{Name: "platform-shared-oidc-egress", Namespace: namespace, Labels: labels},
 			Spec: networkingv1.NetworkPolicySpec{
 				PodSelector: metav1.LabelSelector{},
@@ -344,8 +352,11 @@ func desiredObjects(cc *platformv1alpha1.CapabilityConsumption) []client.Object 
 					},
 				}},
 			},
-		},
-		&networkingv1.NetworkPolicy{
+		})
+	}
+
+	if cc.Spec.Observability.Mode == platformv1alpha1.ConsumeShared {
+		objects = append(objects, &networkingv1.NetworkPolicy{
 			ObjectMeta: metav1.ObjectMeta{Name: "platform-shared-otel-egress", Namespace: namespace, Labels: labels},
 			Spec: networkingv1.NetworkPolicySpec{
 				PodSelector: metav1.LabelSelector{},
@@ -360,8 +371,10 @@ func desiredObjects(cc *platformv1alpha1.CapabilityConsumption) []client.Object 
 					},
 				}},
 			},
-		},
+		})
 	}
+
+	return objects
 }
 
 func managedLabels(cc *platformv1alpha1.CapabilityConsumption) map[string]string {
