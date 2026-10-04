@@ -141,7 +141,8 @@ wait_quota_cpu d093-greenfield 2
 
 managed_by="$(kubectl -n d093-greenfield get resourcequota platform-quota -o json | jq -r '.metadata.labels["platform.mayabank.example/managed-by"]')"
 [[ "$managed_by" == "mayabank-platform-operator" ]]
-kubectl -n d093-greenfield get resourcequota platform-quota -o json   | jq -e '.metadata.managedFields[]? | select(.manager=="mayabank-platform-operator")' >/dev/null
+kubectl -n d093-greenfield get resourcequota platform-quota -o json --show-managed-fields=true \
+  | jq -e '.metadata.managedFields[]? | select(.manager=="mayabank-platform-operator" and .operation=="Apply")' >/dev/null
 
 echo "K3_KIND_MANAGE=PASS"
 echo "K3_KIND_SSA_FIELD_MANAGER=PASS"
