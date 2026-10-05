@@ -417,6 +417,15 @@ func quotaProfile(name string) corev1.ResourceList {
 			corev1.ResourcePersistentVolumeClaims: resource.MustParse("8"),
 			corev1.ResourceRequestsStorage:     resource.MustParse("20Gi"),
 		}
+	case "payments-medium":
+		return corev1.ResourceList{
+			corev1.ResourceRequestsCPU:         resource.MustParse("4"),
+			corev1.ResourceRequestsMemory:      resource.MustParse("8Gi"),
+			corev1.ResourceLimitsCPU:           resource.MustParse("12"),
+			corev1.ResourceLimitsMemory:        resource.MustParse("16Gi"),
+			corev1.ResourcePersistentVolumeClaims: resource.MustParse("6"),
+			corev1.ResourceRequestsStorage:     resource.MustParse("20Gi"),
+		}
 	default:
 		return corev1.ResourceList{
 			corev1.ResourceRequestsCPU:         resource.MustParse("4"),

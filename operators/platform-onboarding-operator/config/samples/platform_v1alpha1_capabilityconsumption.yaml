@@ -26,7 +26,7 @@ spec:
   objectStorage:
     mode: REFERENCE_ONLY
   resources:
-    profile: medium
+    profile: payments-medium
   network:
     profile: restricted
   gitSource:
