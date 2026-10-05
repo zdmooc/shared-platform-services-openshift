@@ -1,6 +1,6 @@
 # Claim / Evidence Matrix
 
-**Date:** 2026-10-02  
+**Date:** 2026-10-05  
 **O3 status:** COMPLETE
 
 | Capability | Repository | Static/CI evidence | CRC/OpenShift | Production |
@@ -13,10 +13,10 @@
 | Grafana asset | IMPLEMENTED | STATIC_VALIDATED | PENDING | NOT_CLAIMED |
 | Keycloak/OIDC | IMPLEMENTED_CONTRACT + CRC adapter | CI_RUNTIME_PROVEN_CONTAINER_SMOKE | CRC_SHARED_IDENTITY_BOOTSTRAP_PROVEN | NOT_CLAIMED |
 | SonarQube | IMPLEMENTED_CONTRACT | CI_RUNTIME_PROVEN_CONTAINER_SMOKE | PENDING | NOT_CLAIMED |
-| Instant Payments consumer overlay | IMPLEMENTED / TECH_LEAD_READY | focused CI 37058472014 SUCCESS + OIDC-hardening CI 37065754596 SUCCESS + final Tech Lead CI 37066168907 SUCCESS + frozen-head Tech Lead CI 37066705874 SUCCESS + final global CI 37066705905 SUCCESS | READY_FOR_CRC | NOT_CLAIMED |
+| Instant Payments consumer overlay | IMPLEMENTED / TECH_LEAD_READY | focused CI 37058472014 SUCCESS + OIDC-hardening CI 37065754596 SUCCESS + final Tech Lead CI 37066168907 SUCCESS + frozen-head Tech Lead CI 37066705874 SUCCESS + final global CI 37066705905 SUCCESS | CONSUMER_1_CRC_RUNTIME_PROVEN | NOT_CLAIMED |
 | API Management consumer contract | IMPLEMENTED | STATIC_CONSUMER_CONTRACT_VERIFIED | CRC_RUNTIME_PROVEN_SHARED_PLATFORM_CONSUMER | NOT_CLAIMED |
 | Customer/KYC consumer contract | IMPLEMENTED | STATIC_CONSUMER_CONTRACT_VERIFIED | NOT_PROVEN | NOT_CLAIMED |
-| Platform Operator / CapabilityConsumption | IMPLEMENTED | ENVTEST_VALIDATED + KIND_RUNTIME_PROVEN_PLATFORM_OPERATOR | CRC_OPERATOR_NOT_PROVEN | NOT_CLAIMED |
+| Platform Operator / CapabilityConsumption | IMPLEMENTED | ENVTEST_VALIDATED + KIND_RUNTIME_PROVEN_PLATFORM_OPERATOR | CONSUMER_1_CRC_RUNTIME_PROVEN on Instant Payments | NOT_CLAIMED |
 | Shared Kafka | DEFERRED | N/A | NOT_DEPLOYED | NOT_CLAIMED |
 | Shared PostgreSQL | DEFERRED | N/A | NOT_DEPLOYED | NOT_CLAIMED |
 | Shared MinIO | DEFERRED | N/A | NOT_DEPLOYED | NOT_CLAIMED |
@@ -220,3 +220,30 @@ Allowed claim:
 `KIND_RUNTIME_PROVEN_PLATFORM_OPERATOR`.
 
 This does not prove CRC/OpenShift, SCC behavior, HA, production or cloud runtime.
+
+
+### D-093 Platform Operator CRC consumer #1 proof — 2026-10-05
+
+Observed on OpenShift Local / CRC 4.22.7 with Instant Payments:
+
+- Operator image from Shared Platform main `bebb508b5329be158ab790808a09b19b68f89a06`;
+- SCC `restricted-v2`;
+- Observe reported brownfield ownership conflicts with zero mutation;
+- `payments-medium` was introduced after measured usage exceeded generic medium `limits.cpu`;
+- explicit Observe -> Manage produced `Ready=True / Reconciled`;
+- `platform-quota`, `platform-defaults`, baseline RBAC and platform NetworkPolicies were created;
+- legacy `default-deny` coexisted with `platform-default-deny` until the new deny policy was established;
+- legacy `default-deny` was then removed and was not recreated;
+- Argo CD product Application finished `Synced / Healthy` at product revision `5549750fd010a1df2f14adfc6da49de799c882c2`;
+- Shared OIDC checks passed;
+- standard payment demo passed;
+- real `payment-orchestrator` trace `0b27a3cc4da1c859c2b488936f45e112` was observed in Shared OTel and the collector configuration was restored;
+- final Operator usage observed at 1m CPU / 18Mi memory.
+
+Allowed claim:
+`CONSUMER_1_CRC_RUNTIME_PROVEN`.
+
+Canonical evidence:
+`evidence/runtime/D093-K3-I5-crc-consumer1-instant-payments-20261005.md`.
+
+Boundary: single-node CRC only; HA, production, cloud/AKS and production readiness remain NOT_CLAIMED.

@@ -94,10 +94,28 @@ Further runtime gates are mission-driven, not required to close this iteration s
 
 Allowed claim: `KIND_RUNTIME_PROVEN_PLATFORM_OPERATOR`.
 
-### Next — K3/K4 CRC consumer #1
-- [ ] deploy the Operator on the user's CRC/OpenShift Local;
-- [ ] validate OpenShift/SCC-specific compatibility;
-- [ ] onboard Instant Payments as consumer #1 through CapabilityConsumption;
-- [ ] keep Argo CD as product workload reconciler;
-- [ ] revalidate Shared OIDC and Shared OTel;
-- [ ] capture sanitized CRC evidence before promotion.
+### Closed — K3/K4 I5 CRC consumer #1
+- [x] deploy the Operator on the user's CRC/OpenShift Local;
+- [x] validate OpenShift/SCC-specific compatibility with `restricted-v2`;
+- [x] prove brownfield Observe + OwnershipConflict with zero mutation;
+- [x] introduce the measured `payments-medium` quota profile before Manage;
+- [x] onboard Instant Payments as consumer #1 through `CapabilityConsumption`;
+- [x] execute explicit Observe -> Manage adoption;
+- [x] establish `platform-default-deny` before removing legacy `default-deny`;
+- [x] prove zero double ownership after handoff;
+- [x] keep Argo CD as product workload reconciler and restore `Synced/Healthy`;
+- [x] revalidate Shared OIDC and real Shared OTel trace export;
+- [x] revalidate the payment runtime with `FINAL_DEMO_RESULT=PASS`;
+- [x] capture sanitized CRC evidence before promotion.
+
+Allowed claim: `CONSUMER_1_CRC_RUNTIME_PROVEN`.
+
+Canonical evidence: `evidence/runtime/D093-K3-I5-crc-consumer1-instant-payments-20261005.md`.
+
+### Next — I6 CRC consumer #2 / TradeOps brownfield
+- [ ] onboard TradeOps in Observe;
+- [ ] inventory real brownfield ownership conflicts;
+- [ ] preserve product-owned workloads, PostgreSQL, Redpanda/Kafka and Qdrant;
+- [ ] transfer only the common platform baseline after explicit approval;
+- [ ] prove no double ownership and no runtime regression;
+- [ ] promote only observed CRC evidence.
