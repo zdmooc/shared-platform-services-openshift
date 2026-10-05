@@ -262,6 +262,29 @@ func TestManageRefusesNamespaceAlreadyOwnedByAnotherConsumption(t *testing.T) {
 	}
 }
 
+func TestPaymentsMediumQuotaProfile(t *testing.T) {
+	profile := quotaProfile("payments-medium")
+
+	checks := map[corev1.ResourceName]string{
+		corev1.ResourceRequestsCPU:            "4",
+		corev1.ResourceRequestsMemory:         "8Gi",
+		corev1.ResourceLimitsCPU:              "12",
+		corev1.ResourceLimitsMemory:           "16Gi",
+		corev1.ResourcePersistentVolumeClaims: "6",
+		corev1.ResourceRequestsStorage:        "20Gi",
+	}
+
+	for name, want := range checks {
+		got, ok := profile[name]
+		if !ok {
+			t.Fatalf("payments-medium missing %s", name)
+		}
+		if got.Cmp(resource.MustParse(want)) != 0 {
+			t.Fatalf("payments-medium %s=%s, want %s", name, got.String(), want)
+		}
+	}
+}
+
 func TestDesiredObjectsHonorSharedCapabilityIntent(t *testing.T) {
 	cc := newConsumption("intent-aware-i3", "intent-aware", "intent-aware-i3", platformv1alpha1.AdoptionManage)
 
