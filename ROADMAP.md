@@ -15,6 +15,7 @@
 | S8 | Hardening / rollback / evidence | IMPLEMENTED | STATIC_VALIDATED |
 | O3 | Evidence hardening | COMPLETE | differentiated CRC evidence recorded; HA/production not claimed |
 | D-093 K3 I4 | CapabilityConsumption Platform Operator | IMPLEMENTED | ENVTEST_VALIDATED + KIND_RUNTIME_PROVEN_PLATFORM_OPERATOR |
+| D-093 K3/K4 I5 | Instant Payments consumer #1 on CRC | COMPLETE | CONSUMER_1_CRC_RUNTIME_PROVEN |
 
 ## Recorded evidence
 
@@ -23,6 +24,7 @@
 - S6 Identity Quality Smoke 36840813149 — SUCCESS.
 - S7 consumer main commit bc2ba297f0b2807c7168047e3c4ca4c674f942b5 inspected and contract verified.
 - D-093 K3/I4 main commit `107ea4d7c651d12295a77d851ab8c2d6c8763fe8`; Platform CI `37224601724` SUCCESS; Operator Kind runtime `37224601718` SUCCESS.
+- D-093 I5 Platform Operator main commit `bebb508b5329be158ab790808a09b19b68f89a06`; final Operator image digest `sha256:ee3c1caed1d27642f11e7491a0e46442a08b0b6cb84df4258c4b7f52a8798d73`; Instant Payments product revision `5549750fd010a1df2f14adfc6da49de799c882c2`; CRC consumer #1 closure observed 2026-10-05.
 
 ## S5 result
 
@@ -72,7 +74,28 @@ Allowed claim: `KIND_RUNTIME_PROVEN_PLATFORM_OPERATOR`.
 
 Canonical evidence: `evidence/ci/D093-K3-operator-kind-runtime.md`.
 
-Next gate: CRC/OpenShift + Instant Payments consumer #1. Kind != OpenShift and no CRC Operator claim is made yet.
+## D-093 K3/K4 I5 result
+
+The Platform Operator is now observed on OpenShift Local / CRC 4.22.7 with Instant Payments as brownfield consumer #1.
+
+Observed:
+- SCC `restricted-v2` compatibility;
+- Observe + OwnershipConflict with zero mutation;
+- measured `payments-medium` capacity gate;
+- explicit Observe -> Manage transition;
+- ResourceQuota, LimitRange, RBAC and baseline NetworkPolicies managed by the Operator;
+- zero-window `default-deny` handoff;
+- legacy policy removed only after `platform-default-deny` existed;
+- Argo CD remained the product workload reconciler and finished `Synced/Healthy`;
+- Shared OIDC PASS;
+- real payment-orchestrator trace in Shared OTel, trace `0b27a3cc4da1c859c2b488936f45e112`;
+- `FINAL_DEMO_RESULT=PASS`.
+
+Allowed claim: `CONSUMER_1_CRC_RUNTIME_PROVEN`.
+
+Canonical evidence: `evidence/runtime/D093-K3-I5-crc-consumer1-instant-payments-20261005.md`.
+
+Next gate: I6 TradeOps brownfield consumer #2. CRC single-node evidence still does not prove HA, production or cloud runtime.
 
 ## Current CRC promotion state
 
