@@ -47,3 +47,17 @@ Allowed claim: `KIND_RUNTIME_PROVEN_PLATFORM_OPERATOR`.
 ## Evidence boundary
 
 Kind validates Kubernetes runtime behavior for this Operator. CRC/OpenShift behavior, SCC/OpenShift-specific constraints, consumer #1/#2 integration on CRC, HA, production and cloud runtime remain unproven.
+
+
+## Resource profiles
+
+The Operator keeps generic and workload-class profiles separate.
+
+- `small`: requests 2 CPU / 4Gi, limits 4 CPU / 8Gi, 4 PVC, 10Gi storage.
+- `medium`: requests 4 CPU / 8Gi, limits 8 CPU / 16Gi, 6 PVC, 20Gi storage.
+- `payments-medium`: requests 4 CPU / 8Gi, limits 12 CPU / 16Gi, 6 PVC, 20Gi storage.
+- `ai-medium`: requests 6 CPU / 10Gi, limits 16 CPU / 24Gi, 8 PVC, 20Gi storage.
+
+`payments-medium` was introduced during D-093/I5 after the Instant Payments CRC pre-Manage measurement showed 19 active pods with about 505m CPU requests, 3.2Gi memory requests, 9.15 CPU limits, 9.44Gi memory limits, four PVCs and 5Gi requested storage. The generic `medium` profile would have set `limits.cpu=8`, below existing declared usage, which could block a later pod replacement or rollout.
+
+This profile change does not itself prove CRC Manage. Runtime promotion still requires the explicit Observe -> Manage handoff and post-handoff non-regression evidence.
