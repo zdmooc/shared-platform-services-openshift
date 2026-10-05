@@ -4,7 +4,7 @@ Plateforme technique commune MayaBank pour mutualiser les capacités transverses
 
 ## Statut
 
-**V1 / O3 COMPLETE + D-093 K3 I4 — STATIC_VALIDATED + SHARED KIND RUNTIME PROVEN + PLATFORM OPERATOR KIND_RUNTIME_PROVEN + CONSUMER CONTRACTS VERIFIED + CRC SHARED OBSERVABILITY PROVEN**
+**V1 / O3 COMPLETE + D-093 K3/K4 I5 — PLATFORM OPERATOR KIND_RUNTIME_PROVEN + CONSUMER_1_CRC_RUNTIME_PROVEN + CRC SHARED OBSERVABILITY/IDENTITY PROVEN**
 
 Le dépôt fournit les contrats, manifests, GitOps, observabilité, IAM/secrets patterns, qualité et CI du socle commun.
 
@@ -13,7 +13,7 @@ Une capacité n'est promue qu'au niveau de preuve réellement observé.
 ## Preuves actuelles
 
 - Platform CI : run 36860978223 — SUCCESS.
-- D-093 Platform Operator: main commit `107ea4d7c651d12295a77d851ab8c2d6c8763fe8`; Platform CI `37224601724` SUCCESS; Kind runtime `37224601718` SUCCESS; `KIND_RUNTIME_PROVEN_PLATFORM_OPERATOR`.
+- D-093 Platform Operator: Kind proof remains `KIND_RUNTIME_PROVEN_PLATFORM_OPERATOR`; I5 additionally proves Instant Payments consumer #1 on OpenShift Local / CRC with explicit Observe -> Manage adoption, SCC `restricted-v2`, platform-owned quota/limits/RBAC/NetworkPolicies, zero-double-ownership handoff, Argo `Synced/Healthy`, Shared OIDC, Shared OTel trace and payment non-regression. Claim: `CONSUMER_1_CRC_RUNTIME_PROVEN`. Evidence: `evidence/runtime/D093-K3-I5-crc-consumer1-instant-payments-20261005.md`.
 - S5 Kind runtime : run 36860978155 — SUCCESS.
 - S5 chemin télémétrie : consumer → OTLP HTTP → OTel Collector → Prometheus exporter — PASS.
 - S6 Keycloak OIDC + SonarQube : run 36840813149 — SUCCESS.
@@ -69,7 +69,9 @@ Une capacité n'est promue qu'au niveau de preuve réellement observé.
 
 The original S5 Kind proof validates Kubernetes portability and the shared telemetry path.
 
-D-093/K3 I4 additionally proves the `CapabilityConsumption` Platform Operator itself on Kubernetes 1.35 Kind: SSA field ownership, update, drift recovery, controller restart, brownfield conflict/adoption and Retain behavior.
+D-093/K3 I4 proves the `CapabilityConsumption` Platform Operator itself on Kubernetes 1.35 Kind: SSA field ownership, update, drift recovery, controller restart, brownfield conflict/adoption and Retain behavior.
+
+D-093/K3-K4 I5 additionally proves a bounded OpenShift/CRC brownfield consumer integration with Instant Payments: Observe with zero mutation, explicit Manage adoption, SCC compatibility, measured quota profile, zero-window NetworkPolicy handoff, Argo product ownership, Shared OIDC/OTel and payment non-regression.
 
 The S6 proof validates container startup and integration endpoints for Keycloak and SonarQube.
 
