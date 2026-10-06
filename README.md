@@ -25,6 +25,20 @@ Une capacité n'est promue qu'au niveau de preuve réellement observé.
 - API Management shared runtime : `CRC_RUNTIME_PROVEN_SHARED_PLATFORM_CONSUMER`.
 - HA multi-nœud / production : NOT_CLAIMED.
 
+## D-098 — SQY Expert Kubernetes/OpenShift
+
+For D-098, this repository is the **Platform Engineering proof owner**:
+- Platform API / `CapabilityConsumption`;
+- Operator / brownfield Observe -> Manage;
+- shared OIDC / OTel contracts;
+- platform-owned quota/RBAC/NetworkPolicy onboarding.
+
+Mission pack:
+- `docs/runbooks/D098_SQY_PLATFORM_RUNTIME_PACK.md`;
+- `scripts/d098-sqy-readonly-evidence.sh`.
+
+Existing D-093/I5 CRC evidence is reused; new runtime evidence is only captured for uncovered SQY-2/SQY-5 gaps.
+
 ## Principes
 
 - séparation stricte plateforme / produit ;
