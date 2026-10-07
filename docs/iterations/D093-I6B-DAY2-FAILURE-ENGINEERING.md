@@ -69,18 +69,39 @@ Current bounded stages:
 
 No namespace, consumer, error text, or other high-cardinality value is used as a metric label.
 
+## Runtime evidence
+
+Validated on branch `d093-i6b-day2-failure-engineering`:
+
+- validated code head: `bc61413d304fb3fe9e08b9b6baf5d16d6c2f1f5b`;
+- Platform CI run `37590043833` — **SUCCESS**;
+- D093 K3 Operator Kind Runtime run `37590044290` — **SUCCESS**.
+
+Runtime markers include:
+
+- `I6B_TRANSIENT_APPLY_FAILURE_OBSERVED=PASS`;
+- `I6B_AUTOMATIC_RETRY_RECOVERY=PASS`;
+- `I6B_RETRYABLE_FAILURE_METRIC=PASS`;
+- `I6B_LEADER_FAILOVER=PASS`;
+- `I6B_POST_FAILOVER_RECONCILIATION=PASS`;
+- `K3_KIND_RUNTIME_RESULT=PASS`.
+
+Allowed branch-level claim: `PLATFORM_CI_PROVEN + KIND_RUNTIME_PROVEN_I6B_DAY2`.
+
+Promotion to `main` remains pending PR #9 merge.
+
 ## Acceptance gates
 
-- [ ] Go formatting/vet clean;
-- [ ] envtest partial-apply failure returns root error and recovers on retry;
-- [ ] envtest dependency-read failure exposes Degraded and recovers;
-- [ ] envtest joined error preserves both root apply failure and status-update failure;
-- [ ] Kind transient RBAC failure observed;
-- [ ] Kind automatic retry recovery without CR mutation;
-- [ ] retryable failure metric observed on leader;
-- [ ] leader Lease holder changes after leader pod deletion;
-- [ ] post-failover managed-resource reconstruction succeeds;
-- [ ] prior I6A/I4 runtime proof remains non-regressed.
+- [x] Go formatting/vet clean;
+- [x] envtest partial-apply failure returns root error and recovers on retry;
+- [x] envtest dependency-read failure exposes Degraded and recovers;
+- [x] envtest joined error preserves both root apply failure and status-update failure;
+- [x] Kind transient RBAC failure observed;
+- [x] Kind automatic retry recovery without CR mutation;
+- [x] retryable failure metric observed on leader;
+- [x] leader Lease holder changes after leader pod deletion;
+- [x] post-failover managed-resource reconstruction succeeds;
+- [x] prior I6A/I4 runtime proof remains non-regressed.
 
 ## Truth boundary
 
