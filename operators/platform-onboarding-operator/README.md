@@ -1,6 +1,6 @@
 # MayaBank Platform Onboarding Operator
 
-Status: **K3 / I2-I4 IMPLEMENTED / ENVTEST VALIDATED / KIND_RUNTIME_PROVEN / CRC NOT_PROVEN**
+Status: **K3 / I2-I5 RUNTIME PROVEN / I6A HARDENING IN PROGRESS — ENVTEST + KIND + CRC/OPENSHIFT CONSUMER #1 PROVEN**
 
 This operator materializes D-093/K2. `CapabilityConsumption` is the canonical Kubernetes Platform API.
 
@@ -15,7 +15,8 @@ This operator materializes D-093/K2. `CapabilityConsumption` is the canonical Ku
 - label-based watches for continuous reconciliation without garbage-collection ownerReferences;
 - platform-owned Namespace labels, RBAC, ResourceQuota, LimitRange and baseline NetworkPolicies;
 - `Retain` deletion boundary;
-- envtest scenarios for brownfield Observe, greenfield Manage/idempotence and overwrite refusal.
+- envtest scenarios for brownfield Observe, greenfield Manage/idempotence and overwrite refusal;
+- I6A branch adds controller-gen/Makefile, CRD profile validation, Progressing/Degraded conditions, bounded Prometheus reconciliation metrics, Lease-based leader election and partial-apply recovery tests.
 
 ## Brownfield rule
 
@@ -44,9 +45,24 @@ Canonical evidence: `evidence/ci/D093-K3-operator-kind-runtime.md`.
 
 Allowed claim: `KIND_RUNTIME_PROVEN_PLATFORM_OPERATOR`.
 
+## CRC/OpenShift evidence
+
+I5 proved the Operator on OpenShift Local / CRC 4.22.7 with Instant Payments as consumer #1:
+- SCC `restricted-v2`;
+- Observe -> explicit Manage;
+- platform-owned quota / LimitRange / RBAC / NetworkPolicies;
+- zero-double-ownership handoff;
+- Argo CD `Synced/Healthy`;
+- Shared OIDC and Shared OTel revalidated;
+- payment non-regression.
+
+Allowed claim: `CONSUMER_1_CRC_RUNTIME_PROVEN`.
+
+Canonical evidence: `evidence/runtime/D093-K3-I5-crc-consumer1-instant-payments-20261005.md`.
+
 ## Evidence boundary
 
-Kind validates Kubernetes runtime behavior for this Operator. CRC/OpenShift behavior, SCC/OpenShift-specific constraints, consumer #1/#2 integration on CRC, HA, production and cloud runtime remain unproven.
+Kind validates Kubernetes runtime behavior and I6A engineering mechanics. CRC/OpenShift consumer #1 is separately runtime-proven by I5. Consumer #2, multi-node OpenShift HA, production readiness and cloud runtime remain unproven.
 
 
 ## Resource profiles
