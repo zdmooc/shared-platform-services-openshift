@@ -108,10 +108,21 @@ Observed lifecycle markers include:
 - `I6C_UNINSTALL_RETAIN=PASS`;
 - `I6C_KIND_OLM_LIFECYCLE_RESULT=PASS`.
 
-Allowed branch-level combined claim:
+Allowed combined claim:
 `KIND_OLM_LIFECYCLE_PROVEN + OPENSHIFT_OPERATOR_RUNTIME_PROVEN_CONSUMER_1`.
 
-Promotion to `main` is pending PR #10 merge.
+Merged to `main` through PR #10 — squash commit `0573eeab564a901f1a25f47467a8aca7d6b8ebea`.
+
+## Closure
+
+I6C is **CLOSED / KIND_OLM_LIFECYCLE_PROVEN**.
+
+Final PR head `83cf5d80f3cd3c3e3d6845c58088e6d7f6b20c0d` was revalidated:
+- Platform CI `37600067342` — SUCCESS;
+- D093 K3 Operator Kind Runtime `37600067334` — SUCCESS;
+- D093 I6C OLM Lifecycle `37600067313` — SUCCESS.
+
+The DAAROPS technical sequence I6A -> I6B -> I6C is closed.
 
 ## Truth boundary
 

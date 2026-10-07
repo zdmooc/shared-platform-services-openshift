@@ -18,7 +18,7 @@
 | D-093 K3/K4 I5 | Instant Payments consumer #1 on CRC | COMPLETE | CONSUMER_1_CRC_RUNTIME_PROVEN |
 | D-093 I6A | Production-style Go/Kubebuilder hardening | CLOSED | PLATFORM_CI_PROVEN + KIND_RUNTIME_PROVEN_I6A |
 | D-093 I6B | Day-2 / Failure Engineering | CLOSED | PLATFORM_CI_PROVEN + KIND_RUNTIME_PROVEN_I6B_DAY2 |
-| D-093 I6C | OLM / OpenShift Operator packaging | IMPLEMENTED / PR #10 OPEN | KIND_OLM_LIFECYCLE_PROVEN + OPENSHIFT_OPERATOR_RUNTIME_PROVEN_CONSUMER_1 |
+| D-093 I6C | OLM / OpenShift Operator packaging | CLOSED | KIND_OLM_LIFECYCLE_PROVEN + OPENSHIFT_OPERATOR_RUNTIME_PROVEN_CONSUMER_1 |
 
 ## Recorded evidence
 
@@ -30,7 +30,7 @@
 - D-093 I5 Platform Operator main commit `bebb508b5329be158ab790808a09b19b68f89a06`; final Operator image digest `sha256:ee3c1caed1d27642f11e7491a0e46442a08b0b6cb84df4258c4b7f52a8798d73`; Instant Payments product revision `5549750fd010a1df2f14adfc6da49de799c882c2`; CRC consumer #1 closure observed 2026-10-05.
 - D-093 I6A main merge `0d1d50ff52cfe1ee1734361db89837f34baec744`; pre-merge final green head `9c4ddb5df7bbd65211d1829a290b624f33a3a2a6`; Platform CI `37587568757` SUCCESS; Operator Kind Runtime `37587568715` SUCCESS.
 - D-093 I6B main merge `079b3f11a4b514e636b04bcaf97feabbc3fc66f0`; final PR head `99ab1c25711c91c68dd66f2af0234c874765de5d`; Platform CI `37590409295` SUCCESS; Operator Kind Runtime `37590409355` SUCCESS.
-- D-093 I6C validated code head `4918b2e8d2c10d8203fbcf581f963a8a38f80545`; Platform CI `37599472773` SUCCESS; Operator Kind Runtime `37599472784` SUCCESS; OLM Lifecycle `37599472919` SUCCESS; PR #10 merge pending.
+- D-093 I6C main merge `0573eeab564a901f1a25f47467a8aca7d6b8ebea`; validated code head `4918b2e8d2c10d8203fbcf581f963a8a38f80545`; code runs Platform CI `37599472773`, Operator Kind Runtime `37599472784`, OLM Lifecycle `37599472919` SUCCESS; final PR head `83cf5d80f3cd3c3e3d6845c58088e6d7f6b20c0d` runs `37600067342`, `37600067334`, `37600067313` all SUCCESS.
 
 ## S5 result
 
@@ -101,7 +101,7 @@ Allowed claim: `CONSUMER_1_CRC_RUNTIME_PROVEN`.
 
 Canonical evidence: `evidence/runtime/D093-K3-I5-crc-consumer1-instant-payments-20261005.md`.
 
-I6B is closed and I6C is runtime-proven on Kind/OLM with PR #10 merge pending. The combined evidence proves Kind OLM lifecycle plus the previously observed OpenShift controller runtime for consumer #1; it does not prove OpenShift OLM lifecycle. TradeOps consumer #2 remains Observe-only until D-090 G1/G2 and MCP-R5 gates permit Manage.
+I6B and I6C are closed on `main`. The combined evidence proves Kind OLM lifecycle plus the previously observed OpenShift controller runtime for consumer #1; it does not prove OpenShift OLM lifecycle. TradeOps consumer #2 remains Observe-only until D-090 G1/G2 and MCP-R5 gates permit Manage.
 
 ## Current CRC promotion state
 

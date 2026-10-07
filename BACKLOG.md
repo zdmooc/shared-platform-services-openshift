@@ -135,7 +135,7 @@ No destructive finalizer is introduced: `deletionPolicy=Retain` remains the V1 b
 - [x] add bounded retryable-failure metric; Platform CI `37590043833` SUCCESS and Kind Runtime `37590044290` SUCCESS.
 - [x] merged PR #9 to `main` — squash commit `079b3f11a4b514e636b04bcaf97feabbc3fc66f0`.
 
-### I6C — OLM / OpenShift Operator Packaging — IMPLEMENTED / CI + KIND OLM RUNTIME PROVEN / PR #10 OPEN
+### I6C — OLM / OpenShift Operator Packaging — CLOSED / KIND_OLM_LIFECYCLE_PROVEN
 - [x] bundle v0.1.0 lifecycle fixture;
 - [x] current bundle v0.2.0 + CSV;
 - [x] explicit `replaces: v0.1.0` upgrade edge;
@@ -147,7 +147,11 @@ No destructive finalizer is introduced: `deletionPolicy=Retain` remains the V1 b
 - [x] Kind OLM install/upgrade/uninstall test implemented;
 - [x] Platform CI `37599472773` SUCCESS;
 - [x] Kind OLM lifecycle `37599472919` SUCCESS;
-- [ ] merge PR #10 to `main`; only then promote I6C to CLOSED.
+- [x] PR #10 merged to `main` — squash commit `0573eeab564a901f1a25f47467a8aca7d6b8ebea`; I6C CLOSED.
+
+### D-093 DAAROPS technical closure
+
+I6A, I6B and I6C are closed. The current commercial claim is `KIND_OLM_LIFECYCLE_PROVEN + OPENSHIFT_OPERATOR_RUNTIME_PROVEN_CONSUMER_1`. Exact OpenShift OLM lifecycle remains a separate optional replay; CRC single-node is not HA/production.
 
 ### Next — I6 CRC consumer #2 / TradeOps brownfield
 - [ ] onboard TradeOps in Observe;

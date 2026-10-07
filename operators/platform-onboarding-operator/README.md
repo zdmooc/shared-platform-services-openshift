@@ -1,6 +1,6 @@
 # MayaBank Platform Onboarding Operator
 
-Status: **K3 / I2-I5 RUNTIME PROVEN / I6A CLOSED — PLATFORM CI + KIND RUNTIME PROVEN / CRC CONSUMER #1 PROVEN**
+Status: **K3 / I2-I5 RUNTIME PROVEN / I6A-I6C CLOSED — PLATFORM CI + KIND/OLM RUNTIME PROVEN / CRC CONSUMER #1 PROVEN**
 
 This operator materializes D-093/K2. `CapabilityConsumption` is the canonical Kubernetes Platform API.
 
@@ -62,7 +62,7 @@ Canonical evidence: `evidence/runtime/D093-K3-I5-crc-consumer1-instant-payments-
 
 ## Evidence boundary
 
-Kind validates Kubernetes runtime behavior and I6A engineering mechanics. CRC/OpenShift consumer #1 is separately runtime-proven by I5. Consumer #2, multi-node OpenShift HA, production readiness and cloud runtime remain unproven.
+Kind validates Kubernetes runtime behavior, I6A/I6B engineering/Day-2 mechanics and the I6C OLM lifecycle. CRC/OpenShift consumer #1 is separately runtime-proven by I5. Consumer #2, multi-node OpenShift HA, production readiness and cloud runtime remain unproven.
 
 
 ## Resource profiles
