@@ -41,6 +41,12 @@ const (
 	platformLimitsName   = "platform-defaults"
 )
 
+type CapabilityConsumptionReconciler struct {
+	client.Client
+	Scheme   *runtime.Scheme
+	Recorder record.EventRecorder
+}
+
 // +kubebuilder:rbac:groups=platform.mayabank.example,resources=capabilityconsumptions,verbs=get;list;watch;update;patch
 // +kubebuilder:rbac:groups=platform.mayabank.example,resources=capabilityconsumptions/status,verbs=get;update;patch
 // +kubebuilder:rbac:groups="",resources=namespaces;serviceaccounts;resourcequotas;limitranges;configmaps;services,verbs=get;list;watch;create;update;patch
@@ -48,11 +54,6 @@ const (
 // +kubebuilder:rbac:groups=rbac.authorization.k8s.io,resources=roles;rolebindings,verbs=get;list;watch;create;update;patch
 // +kubebuilder:rbac:groups=networking.k8s.io,resources=networkpolicies,verbs=get;list;watch;create;update;patch
 // +kubebuilder:rbac:groups=coordination.k8s.io,resources=leases,verbs=get;list;watch;create;update;patch
-type CapabilityConsumptionReconciler struct {
-	client.Client
-	Scheme   *runtime.Scheme
-	Recorder record.EventRecorder
-}
 
 func (r *CapabilityConsumptionReconciler) Reconcile(ctx context.Context, req ctrl.Request) (result ctrl.Result, err error) {
 	outcome := "lookup"
