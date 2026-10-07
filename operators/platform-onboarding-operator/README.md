@@ -18,6 +18,20 @@ This operator materializes D-093/K2. `CapabilityConsumption` is the canonical Ku
 - envtest scenarios for brownfield Observe, greenfield Manage/idempotence and overwrite refusal;
 - I6A branch adds controller-gen/Makefile, CRD profile validation, Progressing/Degraded conditions, bounded Prometheus reconciliation metrics, Lease-based leader election and partial-apply recovery tests.
 
+## DAAROPS OP1 — interview surface
+
+The recruiter-driven OP1 gate makes the existing controller implementation easy to demonstrate without adding speculative features.
+
+Use:
+
+```bash
+bash scripts/d093-op1-operator-interview-surface.sh
+```
+
+Runbook: `docs/runbooks/DAAROPS_OPERATOR_FIRST_DEMO.md`.
+
+The script is read-only against an authenticated OpenShift cluster and falls back to source/evidence inspection when no live `oc` session is available.
+
 ## Brownfield rule
 
 ```text
