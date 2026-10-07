@@ -33,30 +33,51 @@ const (
 	ConsumerLabel       = "platform.mayabank.example/consumer"
 	ConsumptionLabel    = "platform.mayabank.example/consumption"
 	ManagedByValue      = "mayabank-platform-operator"
-	ConditionReady      = "Ready"
-	ConditionAdoptable  = "AdoptionReady"
+	ConditionReady       = "Ready"
+	ConditionAdoptable   = "AdoptionReady"
+	ConditionDegraded    = "Degraded"
+	ConditionProgressing = "Progressing"
 	platformQuotaName   = "platform-quota"
 	platformLimitsName  = "platform-defaults"
 )
 
+// +kubebuilder:rbac:groups=platform.mayabank.example,resources=capabilityconsumptions,verbs=get;list;watch;update;patch
+// +kubebuilder:rbac:groups=platform.mayabank.example,resources=capabilityconsumptions/status,verbs=get;update;patch
+// +kubebuilder:rbac:groups="",resources=namespaces;serviceaccounts;resourcequotas;limitranges;configmaps;services,verbs=get;list;watch;create;update;patch
+// +kubebuilder:rbac:groups="",resources=events,verbs=create;patch
+// +kubebuilder:rbac:groups=rbac.authorization.k8s.io,resources=roles;rolebindings,verbs=get;list;watch;create;update;patch
+// +kubebuilder:rbac:groups=networking.k8s.io,resources=networkpolicies,verbs=get;list;watch;create;update;patch
+// +kubebuilder:rbac:groups=coordination.k8s.io,resources=leases,verbs=get;list;watch;create;update;patch
 type CapabilityConsumptionReconciler struct {
 	client.Client
 	Scheme   *runtime.Scheme
 	Recorder record.EventRecorder
 }
 
-func (r *CapabilityConsumptionReconciler) Reconcile(ctx context.Context, req ctrl.Request) (ctrl.Result, error) {
+func (r *CapabilityConsumptionReconciler) Reconcile(ctx context.Context, req ctrl.Request) (result ctrl.Result, err error) {
+	outcome := "lookup"
+	finishMetrics := startReconcileMetrics()
+	defer func() {
+		if err != nil && outcome == "reconciled" {
+			outcome = "error"
+		}
+		finishMetrics(outcome)
+	}()
+
 	var cc platformv1alpha1.CapabilityConsumption
-	if err := r.Get(ctx, req.NamespacedName, &cc); err != nil {
+	if err = r.Get(ctx, req.NamespacedName, &cc); err != nil {
+		outcome = "not_found"
 		return ctrl.Result{}, client.IgnoreNotFound(err)
 	}
 
 	if !cc.DeletionTimestamp.IsZero() {
 		// K2 V1 deliberately retains managed resources.
+		outcome = "retain_delete"
 		return ctrl.Result{}, nil
 	}
 
 	if cc.Spec.Target.Namespace == "" {
+		outcome = "invalid_spec"
 		return ctrl.Result{}, r.setStatus(ctx, &cc, metav1.ConditionFalse, "InvalidSpec", "spec.target.namespace is required for reconciliation", nil)
 	}
 
@@ -66,15 +87,17 @@ func (r *CapabilityConsumptionReconciler) Reconcile(ctx context.Context, req ctr
 	}
 
 	desired := desiredObjects(&cc)
-	conflicts, err := r.detectConflicts(ctx, &cc, desired, policy)
-	if err != nil {
-		return ctrl.Result{}, err
+	conflicts, detectErr := r.detectConflicts(ctx, &cc, desired, policy)
+	if detectErr != nil {
+		outcome = "conflict_scan_error"
+		return ctrl.Result{}, detectErr
 	}
 	if len(conflicts) > 0 {
 		message := strings.Join(conflicts, "; ")
 		if r.Recorder != nil {
 			r.Recorder.Event(&cc, corev1.EventTypeWarning, "OwnershipConflict", message)
 		}
+		outcome = "ownership_conflict"
 		return ctrl.Result{}, r.setStatus(ctx, &cc, metav1.ConditionFalse, "OwnershipConflict", message, nil)
 	}
 
@@ -82,17 +105,27 @@ func (r *CapabilityConsumptionReconciler) Reconcile(ctx context.Context, req ctr
 		if r.Recorder != nil {
 			r.Recorder.Event(&cc, corev1.EventTypeNormal, "ObservationComplete", "observe mode completed without mutation")
 		}
+		outcome = "observe"
 		return ctrl.Result{}, r.setStatus(ctx, &cc, metav1.ConditionFalse, "ObserveMode", "observation complete; explicit Manage is required before mutation", nil)
+	}
+
+	if cc.Status.ObservedGeneration != cc.Generation {
+		if statusErr := r.setProgressingStatus(ctx, &cc, "Reconciling", "applying declared platform-owned baseline"); statusErr != nil {
+			outcome = "status_error"
+			return ctrl.Result{}, statusErr
+		}
 	}
 
 	managed := make([]platformv1alpha1.ManagedResourceReference, 0, len(desired))
 	for _, obj := range desired {
-		if err := r.apply(ctx, obj); err != nil {
-			return ctrl.Result{}, r.setStatus(ctx, &cc, metav1.ConditionFalse, "ApplyFailed", err.Error(), managed)
+		if applyErr := r.apply(ctx, obj); applyErr != nil {
+			outcome = "apply_failed"
+			return ctrl.Result{}, r.setStatus(ctx, &cc, metav1.ConditionFalse, "ApplyFailed", applyErr.Error(), managed)
 		}
-		ref, err := r.resourceReference(obj)
-		if err != nil {
-			return ctrl.Result{}, err
+		ref, refErr := r.resourceReference(obj)
+		if refErr != nil {
+			outcome = "reference_error"
+			return ctrl.Result{}, refErr
 		}
 		managed = append(managed, ref)
 	}
@@ -100,6 +133,7 @@ func (r *CapabilityConsumptionReconciler) Reconcile(ctx context.Context, req ctr
 	if r.Recorder != nil {
 		r.Recorder.Event(&cc, corev1.EventTypeNormal, "Reconciled", fmt.Sprintf("reconciled %d platform-owned resources", len(managed)))
 	}
+	outcome = "reconciled"
 	return ctrl.Result{}, r.setStatus(ctx, &cc, metav1.ConditionTrue, "Reconciled", "platform-owned resources match declared intent", managed)
 }
 
@@ -234,6 +268,28 @@ func (r *CapabilityConsumptionReconciler) resourceReference(obj client.Object) (
 	}, nil
 }
 
+func (r *CapabilityConsumptionReconciler) setProgressingStatus(ctx context.Context, cc *platformv1alpha1.CapabilityConsumption, reason, message string) error {
+	before := cc.DeepCopy().Status
+	meta.SetStatusCondition(&cc.Status.Conditions, metav1.Condition{
+		Type:               ConditionProgressing,
+		Status:             metav1.ConditionTrue,
+		ObservedGeneration: cc.Generation,
+		Reason:             reason,
+		Message:            message,
+	})
+	meta.SetStatusCondition(&cc.Status.Conditions, metav1.Condition{
+		Type:               ConditionDegraded,
+		Status:             metav1.ConditionFalse,
+		ObservedGeneration: cc.Generation,
+		Reason:             "Reconciling",
+		Message:            "no reconcile error observed",
+	})
+	if reflect.DeepEqual(before, cc.Status) {
+		return nil
+	}
+	return r.Status().Update(ctx, cc)
+}
+
 func (r *CapabilityConsumptionReconciler) setStatus(ctx context.Context, cc *platformv1alpha1.CapabilityConsumption, status metav1.ConditionStatus, reason, message string, managed []platformv1alpha1.ManagedResourceReference) error {
 	before := cc.DeepCopy().Status
 	cc.Status.ObservedGeneration = cc.Generation
@@ -248,8 +304,22 @@ func (r *CapabilityConsumptionReconciler) setStatus(ctx context.Context, cc *pla
 		Message:            message,
 	})
 
+	progressReason := "Stable"
+	progressMessage := "reconciliation is not in progress"
+	degradedStatus := metav1.ConditionFalse
+	degradedReason := "Healthy"
+	degradedMessage := "no reconcile error observed"
+
 	switch reason {
+	case "InvalidSpec", "ApplyFailed":
+		degradedStatus = metav1.ConditionTrue
+		degradedReason = reason
+		degradedMessage = message
 	case "OwnershipConflict":
+		progressReason = "Blocked"
+		progressMessage = "reconciliation is blocked by the non-destructive ownership guardrail"
+		degradedReason = "OwnershipProtected"
+		degradedMessage = "existing product-owned resources were left unchanged"
 		meta.SetStatusCondition(&cc.Status.Conditions, metav1.Condition{
 			Type:               ConditionAdoptable,
 			Status:             metav1.ConditionFalse,
@@ -258,6 +328,8 @@ func (r *CapabilityConsumptionReconciler) setStatus(ctx context.Context, cc *pla
 			Message:            message,
 		})
 	case "ObserveMode":
+		degradedReason = "Observed"
+		degradedMessage = "observe mode completed without mutation"
 		meta.SetStatusCondition(&cc.Status.Conditions, metav1.Condition{
 			Type:               ConditionAdoptable,
 			Status:             metav1.ConditionTrue,
@@ -274,6 +346,22 @@ func (r *CapabilityConsumptionReconciler) setStatus(ctx context.Context, cc *pla
 			Message:            "platform-owned resources are managed by the operator",
 		})
 	}
+
+	meta.SetStatusCondition(&cc.Status.Conditions, metav1.Condition{
+		Type:               ConditionProgressing,
+		Status:             metav1.ConditionFalse,
+		ObservedGeneration: cc.Generation,
+		Reason:             progressReason,
+		Message:            progressMessage,
+	})
+	meta.SetStatusCondition(&cc.Status.Conditions, metav1.Condition{
+		Type:               ConditionDegraded,
+		Status:             degradedStatus,
+		ObservedGeneration: cc.Generation,
+		Reason:             degradedReason,
+		Message:            degradedMessage,
+	})
+
 	if reflect.DeepEqual(before, cc.Status) {
 		return nil
 	}
