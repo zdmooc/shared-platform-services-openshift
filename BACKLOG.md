@@ -112,7 +112,7 @@ Allowed claim: `CONSUMER_1_CRC_RUNTIME_PROVEN`.
 
 Canonical evidence: `evidence/runtime/D093-K3-I5-crc-consumer1-instant-payments-20261005.md`.
 
-### I6A — Production-style Operator Engineering — IMPLEMENTED / CI + KIND RUNTIME PROVEN / PR #8 OPEN
+### I6A — Production-style Operator Engineering — CLOSED / RUNTIME_PROVEN_WITHIN_KIND_SCOPE
 - [x] add Kubebuilder-style Makefile and pinned controller-gen tooling;
 - [x] add CRD profile validation markers;
 - [x] add Progressing / Degraded conditions;
@@ -125,6 +125,14 @@ Canonical evidence: `evidence/runtime/D093-K3-I5-crc-consumer1-instant-payments-
 - [ ] merge I6A and promote the claim.
 
 No destructive finalizer is introduced: `deletionPolicy=Retain` remains the V1 brownfield safety contract.
+
+### I6B — Day-2 / Failure Engineering — NEXT
+- [ ] preserve the root reconcile error after writing `Degraded=True` so controller-runtime retry/backoff is triggered;
+- [ ] prove automatic recovery after transient apply failure, not only a manually invoked second reconcile;
+- [ ] surface dependency/read failures without masking the root cause;
+- [ ] prove controller restart + leader failover + reconciliation continuity;
+- [ ] prove deleted managed-resource reconstruction under a transient failure;
+- [ ] record bounded retry/failure metrics and evidence.
 
 ### Next — I6 CRC consumer #2 / TradeOps brownfield
 - [ ] onboard TradeOps in Observe;
