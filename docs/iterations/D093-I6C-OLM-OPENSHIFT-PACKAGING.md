@@ -76,19 +76,42 @@ This validates the intended `Retain` uninstall boundary.
 
 ## Acceptance gates
 
-- [ ] bundle v0.1.0 passes `operator-sdk bundle validate`;
-- [ ] bundle v0.2.0 passes `operator-sdk bundle validate`;
-- [ ] FBC passes `opm validate`;
-- [ ] bundle and catalog images build;
-- [ ] existing Go/envtest/I6B tests remain green;
-- [ ] OLM installs on Kind;
-- [ ] v0.1.0 CSV reaches Succeeded;
-- [ ] Operator reconciles a real CapabilityConsumption;
-- [ ] OLM upgrade to v0.2.0 reaches Succeeded;
-- [ ] post-upgrade reconciliation remains functional;
-- [ ] uninstall removes Operator deployment;
-- [ ] uninstall retains CRD, CR and managed resources;
-- [ ] OpenShift Classic and OLM v1 manifests remain statically valid.
+- [x] bundle v0.1.0 passes `operator-sdk bundle validate`;
+- [x] bundle v0.2.0 passes `operator-sdk bundle validate`;
+- [x] FBC passes `opm validate`;
+- [x] bundle and catalog images build;
+- [x] existing Go/envtest/I6B tests remain green;
+- [x] OLM installs on Kind;
+- [x] v0.1.0 CSV reaches Succeeded;
+- [x] Operator reconciles a real CapabilityConsumption;
+- [x] OLM upgrade to v0.2.0 reaches Succeeded;
+- [x] post-upgrade reconciliation remains functional;
+- [x] uninstall removes Operator deployment;
+- [x] uninstall retains CRD, CR and managed resources;
+- [x] OpenShift Classic and OLM v1 manifests remain statically valid.
+
+## Runtime evidence
+
+Validated on branch `d093-i6c-olm-openshift-packaging`, code head `4918b2e8d2c10d8203fbcf581f963a8a38f80545`:
+
+- Platform CI `37599472773` — **SUCCESS**;
+- D093 K3 Operator Kind Runtime `37599472784` — **SUCCESS**;
+- D093 I6C OLM Lifecycle `37599472919` — **SUCCESS**.
+
+Observed lifecycle markers include:
+- `I6C_BUNDLE_VALIDATION=PASS`;
+- `I6C_OLM_INSTALL=PASS`;
+- `I6C_OLM_V010_INSTALL=PASS`;
+- `I6C_OLM_CONSUMER_RECONCILE=PASS`;
+- `I6C_OLM_UPGRADE=PASS`;
+- `I6C_POST_UPGRADE_RECONCILIATION=PASS`;
+- `I6C_UNINSTALL_RETAIN=PASS`;
+- `I6C_KIND_OLM_LIFECYCLE_RESULT=PASS`.
+
+Allowed branch-level combined claim:
+`KIND_OLM_LIFECYCLE_PROVEN + OPENSHIFT_OPERATOR_RUNTIME_PROVEN_CONSUMER_1`.
+
+Promotion to `main` is pending PR #10 merge.
 
 ## Truth boundary
 

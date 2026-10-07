@@ -122,7 +122,7 @@ Canonical evidence: `evidence/runtime/D093-K3-I5-crc-consumer1-instant-payments-
 - [x] extend Kind runtime script with CRD negative test, two-replica Lease proof and metrics proof;
 - [x] Platform CI green on the I6A branch — run `37587208717` SUCCESS;
 - [x] D093 Kind runtime workflow green with I6A evidence — run `37587208723` SUCCESS;
-- [ ] merge I6A and promote the claim.
+- [x] I6A merged to `main` via PR #8 — squash commit `0d1d50ff52cfe1ee1734361db89837f34baec744`.
 
 No destructive finalizer is introduced: `deletionPolicy=Retain` remains the V1 brownfield safety contract.
 
@@ -135,7 +135,7 @@ No destructive finalizer is introduced: `deletionPolicy=Retain` remains the V1 b
 - [x] add bounded retryable-failure metric; Platform CI `37590043833` SUCCESS and Kind Runtime `37590044290` SUCCESS.
 - [x] merged PR #9 to `main` — squash commit `079b3f11a4b514e636b04bcaf97feabbc3fc66f0`.
 
-### I6C — OLM / OpenShift Operator Packaging — IMPLEMENTED / RUNTIME GATES PENDING
+### I6C — OLM / OpenShift Operator Packaging — IMPLEMENTED / CI + KIND OLM RUNTIME PROVEN / PR #10 OPEN
 - [x] bundle v0.1.0 lifecycle fixture;
 - [x] current bundle v0.2.0 + CSV;
 - [x] explicit `replaces: v0.1.0` upgrade edge;
@@ -145,9 +145,9 @@ No destructive finalizer is introduced: `deletionPolicy=Retain` remains the V1 b
 - [x] OpenShift 4.22 OLM v1 ClusterCatalog/ClusterExtension surfaces;
 - [x] CI bundle/FBC/image build gates;
 - [x] Kind OLM install/upgrade/uninstall test implemented;
-- [ ] Platform CI green;
-- [ ] Kind OLM lifecycle green;
-- [ ] merge I6C and promote the observed claim.
+- [x] Platform CI `37599472773` SUCCESS;
+- [x] Kind OLM lifecycle `37599472919` SUCCESS;
+- [ ] merge PR #10 to `main`; only then promote I6C to CLOSED.
 
 ### Next — I6 CRC consumer #2 / TradeOps brownfield
 - [ ] onboard TradeOps in Observe;
