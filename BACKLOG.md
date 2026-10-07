@@ -126,13 +126,13 @@ Canonical evidence: `evidence/runtime/D093-K3-I5-crc-consumer1-instant-payments-
 
 No destructive finalizer is introduced: `deletionPolicy=Retain` remains the V1 brownfield safety contract.
 
-### I6B — Day-2 / Failure Engineering — NEXT
-- [ ] preserve the root reconcile error after writing `Degraded=True` so controller-runtime retry/backoff is triggered;
-- [ ] prove automatic recovery after transient apply failure, not only a manually invoked second reconcile;
-- [ ] surface dependency/read failures without masking the root cause;
-- [ ] prove controller restart + leader failover + reconciliation continuity;
-- [ ] prove deleted managed-resource reconstruction under a transient failure;
-- [ ] record bounded retry/failure metrics and evidence.
+### I6B — Day-2 / Failure Engineering — IN PROGRESS
+- [x] preserve the root reconcile error after writing `Degraded=True` so controller-runtime retry/backoff is triggered;
+- [x] implement Kind proof for automatic recovery after transient RBAC/apply failure without CR mutation;
+- [x] surface dependency/read failures without masking the root cause;
+- [x] implement leader-loss / Lease failover / reconciliation-continuity Kind proof;
+- [x] implement deleted managed-resource reconstruction after leader failover;
+- [x] add bounded retryable-failure metric; runtime evidence pending CI/Kind execution.
 
 ### Next — I6 CRC consumer #2 / TradeOps brownfield
 - [ ] onboard TradeOps in Observe;
