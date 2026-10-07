@@ -19,6 +19,7 @@
 | D-093 I6A | Production-style Go/Kubebuilder hardening | CLOSED | PLATFORM_CI_PROVEN + KIND_RUNTIME_PROVEN_I6A |
 | D-093 I6B | Day-2 / Failure Engineering | CLOSED | PLATFORM_CI_PROVEN + KIND_RUNTIME_PROVEN_I6B_DAY2 |
 | D-093 I6C | OLM / OpenShift Operator packaging | CLOSED | KIND_OLM_LIFECYCLE_PROVEN + OPENSHIFT_OPERATOR_RUNTIME_PROVEN_CONSUMER_1 |
+| D-093 OP1 | DAAROPS Operator interview hardening | IMPLEMENTED / CI PENDING | interview surface + non-destructive evidence script |
 
 ## Recorded evidence
 
@@ -102,6 +103,28 @@ Allowed claim: `CONSUMER_1_CRC_RUNTIME_PROVEN`.
 Canonical evidence: `evidence/runtime/D093-K3-I5-crc-consumer1-instant-payments-20261005.md`.
 
 I6B and I6C are closed on `main`. The combined evidence proves Kind OLM lifecycle plus the previously observed OpenShift controller runtime for consumer #1; it does not prove OpenShift OLM lifecycle. TradeOps consumer #2 remains Observe-only until D-090 G1/G2 and MCP-R5 gates permit Manage.
+
+## D-093 OP1 result
+
+The recruiter-driven Operator-first lane is active.
+
+OP1 packages the existing Go/controller-runtime implementation into a reproducible technical-interview surface:
+- CRD and schema validation;
+- Reconcile/idempotence;
+- Observe/OwnershipConflict/Manage;
+- SSA without forced ownership;
+- Conditions/Events;
+- retry/backoff;
+- leader election;
+- metrics;
+- OLM package markers;
+- optional read-only OpenShift inspection.
+
+Canonical runbook: `docs/runbooks/DAAROPS_OPERATOR_FIRST_DEMO.md`.
+
+CI gate: `.github/workflows/d093-op1-operator-interview.yml`.
+
+Next: **OP2 — exact OLM lifecycle replay on CRC/OpenShift**.
 
 ## Current CRC promotion state
 
