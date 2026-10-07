@@ -1,0 +1,50 @@
+apiVersion: platform.mayabank.example/v1alpha1
+kind: CapabilityConsumption
+metadata:
+  name: tradeops-crc
+spec:
+  consumer:
+    name: tradeops
+    owner: ai-platform
+    environment: crc
+  target:
+    namespace: tradeops
+  identity:
+    mode: CONSUME_SHARED
+  observability:
+    mode: CONSUME_SHARED
+  secrets:
+    mode: CONSUME_SHARED
+  gitops:
+    mode: CONSUME_SHARED
+  quality:
+    mode: CONSUME_SHARED
+  eventing:
+    mode: DEDICATED_FOR_TEST
+  database:
+    mode: DEDICATED_FOR_TEST
+  objectStorage:
+    mode: REFERENCE_ONLY
+  resources:
+    profile: ai-medium
+  network:
+    profile: restricted
+  gitSource:
+    repository: zdmooc/TradeOps-GenAI-Integration
+    revision: main
+    path: infra/helm/tradeops
+  lifecycle:
+    adoptionPolicy: Observe
+    deletionPolicy: Retain
+  externalPlatforms:
+    aiRoutingLab:
+      mode: DEDICATED_FOR_TEST
+      owner: TradeOps-GenAI-Integration
+      exitGate: G5
+  ownedCapabilities:
+    - rag
+    - agents
+    - mcp-tools
+    - deterministic-risk-gate
+    - human-in-the-loop
+    - paper-shadow-workflows
