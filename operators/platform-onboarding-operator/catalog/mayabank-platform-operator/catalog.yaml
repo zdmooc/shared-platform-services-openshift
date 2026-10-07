@@ -1,0 +1,31 @@
+schema: olm.package
+name: mayabank-platform-operator
+defaultChannel: stable
+---
+schema: olm.channel
+package: mayabank-platform-operator
+name: stable
+entries:
+  - name: mayabank-platform-operator.v0.1.0
+  - name: mayabank-platform-operator.v0.2.0
+    replaces: mayabank-platform-operator.v0.1.0
+---
+schema: olm.bundle
+name: mayabank-platform-operator.v0.1.0
+package: mayabank-platform-operator
+image: ghcr.io/zdmooc/mayabank-platform-operator-bundle:v0.1.0
+properties:
+  - type: olm.package
+    value:
+      packageName: mayabank-platform-operator
+      version: 0.1.0
+---
+schema: olm.bundle
+name: mayabank-platform-operator.v0.2.0
+package: mayabank-platform-operator
+image: ghcr.io/zdmooc/mayabank-platform-operator-bundle:v0.2.0
+properties:
+  - type: olm.package
+    value:
+      packageName: mayabank-platform-operator
+      version: 0.2.0
