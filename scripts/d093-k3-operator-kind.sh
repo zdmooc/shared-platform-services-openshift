@@ -4,6 +4,7 @@ set -euo pipefail
 CLUSTER_NAME="${CLUSTER_NAME:-d093-operator-ci}"
 KIND_NODE_IMAGE="${KIND_NODE_IMAGE:-kindest/node:v1.35.8@sha256:07b2536e30b803ed61d1677a79df6115f798ce64c80f9e22f6ed45afd09323c0}"
 OPERATOR_IMAGE="${OPERATOR_IMAGE:-mayabank-platform-operator:ci}"
+PORT_FORWARD_PID=""
 
 ROOT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 OPERATOR_DIR="$ROOT_DIR/operators/platform-onboarding-operator"
@@ -24,6 +25,9 @@ diagnostics() {
 
 cleanup() {
   status=$?
+  if [[ -n "${PORT_FORWARD_PID}" ]]; then
+    kill "${PORT_FORWARD_PID}" >/dev/null 2>&1 || true
+  fi
   if [[ "$status" -ne 0 ]]; then
     diagnostics
   fi
@@ -96,6 +100,55 @@ echo "== Install Platform Operator manager =="
 kubectl kustomize "$OPERATOR_DIR/config/manager"   | sed "s#ghcr.io/zdmooc/mayabank-platform-operator:dev#$OPERATOR_IMAGE#g"   | kubectl apply -f -
 kubectl -n shared-platform-services rollout status deploy/mayabank-platform-operator --timeout=180s
 
+echo "== I6A leader election proof =="
+kubectl -n shared-platform-services scale deploy/mayabank-platform-operator --replicas=2
+kubectl -n shared-platform-services rollout status deploy/mayabank-platform-operator --timeout=180s
+for _ in $(seq 1 60); do
+  holder="$(kubectl -n shared-platform-services get lease mayabank-platform-operator.platform.mayabank.example -o jsonpath='{.spec.holderIdentity}' 2>/dev/null || true)"
+  if [[ -n "$holder" ]]; then
+    break
+  fi
+  sleep 2
+done
+[[ -n "${holder:-}" ]]
+echo "I6A_LEADER_ELECTION_LEASE=PASS holder=$holder"
+
+echo "== I6A CRD validation negative test =="
+if cat <<'YAML' | kubectl apply -f - >/tmp/i6a-invalid-cr.out 2>/tmp/i6a-invalid-cr.err
+apiVersion: platform.mayabank.example/v1alpha1
+kind: CapabilityConsumption
+metadata:
+  name: i6a-invalid-profile
+spec:
+  consumer:
+    name: invalid
+    environment: kind
+  target:
+    namespace: i6a-invalid
+  identity: {mode: REFERENCE_ONLY}
+  observability: {mode: REFERENCE_ONLY}
+  secrets: {mode: REFERENCE_ONLY}
+  gitops: {mode: REFERENCE_ONLY}
+  quality: {mode: REFERENCE_ONLY}
+  eventing: {mode: REFERENCE_ONLY}
+  database: {mode: REFERENCE_ONLY}
+  objectStorage: {mode: REFERENCE_ONLY}
+  resources:
+    profile: xlarge
+  network:
+    profile: restricted
+  lifecycle:
+    adoptionPolicy: Observe
+    deletionPolicy: Retain
+YAML
+then
+  echo "invalid resource profile unexpectedly accepted" >&2
+  cat /tmp/i6a-invalid-cr.out >&2 || true
+  exit 1
+fi
+grep -Eq 'Unsupported value|supported values|must be' /tmp/i6a-invalid-cr.err
+echo "I6A_CRD_VALIDATION=PASS"
+
 echo "== I4 greenfield Manage =="
 cat <<'YAML' | kubectl apply -f -
 apiVersion: platform.mayabank.example/v1alpha1
@@ -146,6 +199,21 @@ kubectl -n d093-greenfield get resourcequota platform-quota -o json --show-manag
 
 echo "K3_KIND_MANAGE=PASS"
 echo "K3_KIND_SSA_FIELD_MANAGER=PASS"
+
+echo "== I6A controller metrics proof =="
+kubectl -n shared-platform-services port-forward deploy/mayabank-platform-operator 18080:8080 >/tmp/i6a-metrics-port-forward.log 2>&1 &
+PORT_FORWARD_PID=$!
+for _ in $(seq 1 30); do
+  if curl -fsS http://127.0.0.1:18080/metrics >/tmp/i6a-metrics.txt 2>/dev/null; then
+    break
+  fi
+  sleep 1
+done
+grep -q 'mayabank_platform_operator_reconcile_total' /tmp/i6a-metrics.txt
+grep -q 'mayabank_platform_operator_reconcile_duration_seconds' /tmp/i6a-metrics.txt
+kill "$PORT_FORWARD_PID" >/dev/null 2>&1 || true
+PORT_FORWARD_PID=""
+echo "I6A_OPERATOR_METRICS=PASS"
 
 echo "== I4 update declared resource profile =="
 kubectl patch capabilityconsumption instant-payments-kind --type=merge   -p '{"spec":{"resources":{"profile":"medium"}}}'
@@ -272,4 +340,7 @@ kubectl -n d093-brownfield get resourcequota,limitrange,networkpolicy
 echo "K3_KIND_OPERATOR_READY=PASS"
 echo "K3_KIND_RUNTIME_RESULT=PASS"
 echo "claim=KIND_RUNTIME_PROVEN_PLATFORM_OPERATOR"
-echo "crc_claim=NOT_PROVEN"
+echo "i6a_leader_election=KIND_RUNTIME_PROVEN"
+echo "i6a_metrics=KIND_RUNTIME_PROVEN"
+echo "crc_claim=NOT_PROVEN_BY_THIS_KIND_RUN"
+echo "crc_external_evidence=CONSUMER_1_CRC_RUNTIME_PROVEN"
