@@ -30,11 +30,14 @@ jobs:
         run: bash scripts/validate-platform.sh
 
       - name: YAML lint
-        run: yamllint -c .yamllint.yml config gitops platform consumers \
-          operators/platform-onboarding-operator/config \
-          operators/platform-onboarding-operator/bundle \
-          operators/platform-onboarding-operator/bundle-v0.1.0 \
-          operators/platform-onboarding-operator/catalog
+        shell: bash
+        run: |
+          yamllint -c .yamllint.yml \
+            config gitops platform consumers \
+            operators/platform-onboarding-operator/config \
+            operators/platform-onboarding-operator/bundle \
+            operators/platform-onboarding-operator/bundle-v0.1.0 \
+            operators/platform-onboarding-operator/catalog
 
       - name: Render Kustomize surfaces
         shell: bash
@@ -88,7 +91,14 @@ jobs:
           mkdir -p "$RUNNER_TEMP/bin"
           curl -fsSLo "$RUNNER_TEMP/bin/operator-sdk" https://github.com/operator-framework/operator-sdk/releases/download/v1.42.3/operator-sdk_linux_amd64
           curl -fsSLo "$RUNNER_TEMP/operator-sdk-checksums.txt" https://github.com/operator-framework/operator-sdk/releases/download/v1.42.3/checksums.txt
-          expected="$(grep 'operator-sdk_linux_amd64
+          expected="$(grep 'operator-sdk_linux_amd64$' "$RUNNER_TEMP/operator-sdk-checksums.txt" | awk '{print $1}')"
+          actual="$(sha256sum "$RUNNER_TEMP/bin/operator-sdk" | awk '{print $1}')"
+          test -n "$expected"
+          test "$expected" = "$actual"
+          chmod +x "$RUNNER_TEMP/bin/operator-sdk"
+          echo "$RUNNER_TEMP/bin" >> "$GITHUB_PATH"
+
+      - name: D-093 I6A/I6B Platform Operator engineering gate
         working-directory: operators/platform-onboarding-operator
         shell: bash
         run: |
@@ -126,52 +136,6 @@ jobs:
           docker build -f bundle-v0.1.0.Dockerfile -t mayabank-platform-operator-bundle:v0.1.0-ci .
           docker build -f bundle.Dockerfile -t mayabank-platform-operator-bundle:v0.2.0-ci .
           docker build -f catalog.Dockerfile -t mayabank-platform-operator-catalog:v0.2.0-ci .
-
-      - name: Consumer contract gates
-        shell: bash
-        run: |
-          set -euo pipefail
-          test -s consumers/api-management/capability-consumption.yaml
-          test -s consumers/customer-kyc/capability-consumption.yaml
-          test -s consumers/instant-payments/capability-consumption.yaml
-          test -s consumers/tradeops/capability-consumption.yaml
-          test -s consumers/odm-ai/capability-consumption.yaml
-          test -s gitops/consumers/customer-kyc-application.yaml
-          test -s gitops/consumers/instant-payments-application.yaml
-          grep -q 'CRC_RUNTIME_PROVEN_SHARED_PLATFORM_CONSUMER' consumers/api-management/CONTRACT.md
-          grep -q 'STATIC_CONSUMER_CONTRACT_VERIFIED' consumers/customer-kyc/CONTRACT.md
-          grep -q 'READY_FOR_CRC' consumers/instant-payments/CONTRACT.md
-          grep -q 'STATIC_CONSUMER_CONTRACT_PREPARED' consumers/tradeops/CONTRACT.md
-          grep -q 'STATIC_CONSUMER_CONTRACT_PREPARED' consumers/odm-ai/CONTRACT.md
-          grep -q 'platform-consumption/manifests' gitops/consumers/customer-kyc-application.yaml
-          grep -q 'gitops/overlays/tech-lead-shared-platform' gitops/consumers/instant-payments-application.yaml
- "$RUNNER_TEMP/operator-sdk-checksums.txt" | awk '{print $1}')"
-          actual="$(sha256sum "$RUNNER_TEMP/bin/operator-sdk" | awk '{print $1}')"
-          test -n "$expected"
-          test "$expected" = "$actual"
-          chmod +x "$RUNNER_TEMP/bin/operator-sdk"
-          echo "$RUNNER_TEMP/bin" >> "$GITHUB_PATH"
-
-      - name: D-093 I6A/I6B Platform Operator engineering gate
-        working-directory: operators/platform-onboarding-operator
-        shell: bash
-        run: |
-          set -euo pipefail
-          go mod tidy
-          git diff --exit-code -- go.mod go.sum
-          make fmt
-          git diff --exit-code -- '*.go'
-          make vet
-          make test
-          rm -rf /tmp/i6a-generated-crd /tmp/i6a-generated-rbac
-          mkdir -p /tmp/i6a-generated-crd /tmp/i6a-generated-rbac
-          make manifests CRD_OUTPUT=/tmp/i6a-generated-crd RBAC_OUTPUT=/tmp/i6a-generated-rbac
-          find /tmp/i6a-generated-crd /tmp/i6a-generated-rbac -type f -maxdepth 2 -print
-          test -n "$(find /tmp/i6a-generated-crd -type f -print -quit)"
-          test -n "$(find /tmp/i6a-generated-rbac -type f -print -quit)"
-          grep -R -q 'payments-medium' /tmp/i6a-generated-crd
-          grep -R -q 'coordination.k8s.io' /tmp/i6a-generated-rbac
-          grep -R -q 'leases' /tmp/i6a-generated-rbac
 
       - name: Consumer contract gates
         shell: bash
