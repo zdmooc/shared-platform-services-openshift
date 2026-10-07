@@ -30,7 +30,11 @@ jobs:
         run: bash scripts/validate-platform.sh
 
       - name: YAML lint
-        run: yamllint -c .yamllint.yml config gitops platform consumers operators/platform-onboarding-operator/config
+        run: yamllint -c .yamllint.yml config gitops platform consumers \
+          operators/platform-onboarding-operator/config \
+          operators/platform-onboarding-operator/bundle \
+          operators/platform-onboarding-operator/bundle-v0.1.0 \
+          operators/platform-onboarding-operator/catalog
 
       - name: Render Kustomize surfaces
         shell: bash
@@ -76,6 +80,77 @@ jobs:
         run: |
           bash -n scripts/*.sh
           python -m compileall -q scripts
+
+      - name: Install Operator SDK v1.42.3
+        shell: bash
+        run: |
+          set -euo pipefail
+          mkdir -p "$RUNNER_TEMP/bin"
+          curl -fsSLo "$RUNNER_TEMP/bin/operator-sdk" https://github.com/operator-framework/operator-sdk/releases/download/v1.42.3/operator-sdk_linux_amd64
+          curl -fsSLo "$RUNNER_TEMP/operator-sdk-checksums.txt" https://github.com/operator-framework/operator-sdk/releases/download/v1.42.3/checksums.txt
+          expected="$(grep 'operator-sdk_linux_amd64
+        working-directory: operators/platform-onboarding-operator
+        shell: bash
+        run: |
+          set -euo pipefail
+          go mod tidy
+          git diff --exit-code -- go.mod go.sum
+          make fmt
+          git diff --exit-code -- '*.go'
+          make vet
+          make test
+          rm -rf /tmp/i6a-generated-crd /tmp/i6a-generated-rbac
+          mkdir -p /tmp/i6a-generated-crd /tmp/i6a-generated-rbac
+          make manifests CRD_OUTPUT=/tmp/i6a-generated-crd RBAC_OUTPUT=/tmp/i6a-generated-rbac
+          find /tmp/i6a-generated-crd /tmp/i6a-generated-rbac -type f -maxdepth 2 -print
+          test -n "$(find /tmp/i6a-generated-crd -type f -print -quit)"
+          test -n "$(find /tmp/i6a-generated-rbac -type f -print -quit)"
+          grep -R -q 'payments-medium' /tmp/i6a-generated-crd
+          grep -R -q 'coordination.k8s.io' /tmp/i6a-generated-rbac
+          grep -R -q 'leases' /tmp/i6a-generated-rbac
+
+      - name: D-093 I6C OLM bundle and catalog gate
+        working-directory: operators/platform-onboarding-operator
+        shell: bash
+        run: |
+          set -euo pipefail
+          operator-sdk bundle validate ./bundle-v0.1.0
+          operator-sdk bundle validate ./bundle
+          grep -q 'version: 0.1.0' bundle-v0.1.0/manifests/mayabank-platform-operator.clusterserviceversion.yaml
+          grep -q 'version: 0.2.0' bundle/manifests/mayabank-platform-operator.clusterserviceversion.yaml
+          grep -q 'replaces: mayabank-platform-operator.v0.1.0' bundle/manifests/mayabank-platform-operator.clusterserviceversion.yaml
+          grep -q 'deletionPolicy' bundle/manifests/platform.mayabank.example_capabilityconsumptions.yaml
+          docker run --rm \
+            -v "$PWD/catalog/mayabank-platform-operator:/configs:ro" \
+            quay.io/operator-framework/opm:v1.74.0 validate /configs
+          docker build -f bundle-v0.1.0.Dockerfile -t mayabank-platform-operator-bundle:v0.1.0-ci .
+          docker build -f bundle.Dockerfile -t mayabank-platform-operator-bundle:v0.2.0-ci .
+          docker build -f catalog.Dockerfile -t mayabank-platform-operator-catalog:v0.2.0-ci .
+
+      - name: Consumer contract gates
+        shell: bash
+        run: |
+          set -euo pipefail
+          test -s consumers/api-management/capability-consumption.yaml
+          test -s consumers/customer-kyc/capability-consumption.yaml
+          test -s consumers/instant-payments/capability-consumption.yaml
+          test -s consumers/tradeops/capability-consumption.yaml
+          test -s consumers/odm-ai/capability-consumption.yaml
+          test -s gitops/consumers/customer-kyc-application.yaml
+          test -s gitops/consumers/instant-payments-application.yaml
+          grep -q 'CRC_RUNTIME_PROVEN_SHARED_PLATFORM_CONSUMER' consumers/api-management/CONTRACT.md
+          grep -q 'STATIC_CONSUMER_CONTRACT_VERIFIED' consumers/customer-kyc/CONTRACT.md
+          grep -q 'READY_FOR_CRC' consumers/instant-payments/CONTRACT.md
+          grep -q 'STATIC_CONSUMER_CONTRACT_PREPARED' consumers/tradeops/CONTRACT.md
+          grep -q 'STATIC_CONSUMER_CONTRACT_PREPARED' consumers/odm-ai/CONTRACT.md
+          grep -q 'platform-consumption/manifests' gitops/consumers/customer-kyc-application.yaml
+          grep -q 'gitops/overlays/tech-lead-shared-platform' gitops/consumers/instant-payments-application.yaml
+ "$RUNNER_TEMP/operator-sdk-checksums.txt" | awk '{print $1}')"
+          actual="$(sha256sum "$RUNNER_TEMP/bin/operator-sdk" | awk '{print $1}')"
+          test -n "$expected"
+          test "$expected" = "$actual"
+          chmod +x "$RUNNER_TEMP/bin/operator-sdk"
+          echo "$RUNNER_TEMP/bin" >> "$GITHUB_PATH"
 
       - name: D-093 I6A/I6B Platform Operator engineering gate
         working-directory: operators/platform-onboarding-operator
