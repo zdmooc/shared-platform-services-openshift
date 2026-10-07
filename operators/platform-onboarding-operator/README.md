@@ -1,6 +1,6 @@
 # MayaBank Platform Onboarding Operator
 
-Status: **K3 / I2-I5 RUNTIME PROVEN / I6A IMPLEMENTED ON PR #8 — PLATFORM CI + KIND RUNTIME PROVEN / CRC CONSUMER #1 PROVEN**
+Status: **K3 / I2-I5 RUNTIME PROVEN / I6A CLOSED — PLATFORM CI + KIND RUNTIME PROVEN / CRC CONSUMER #1 PROVEN**
 
 This operator materializes D-093/K2. `CapabilityConsumption` is the canonical Kubernetes Platform API.
 
