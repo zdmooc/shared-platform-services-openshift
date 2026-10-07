@@ -431,7 +431,7 @@ func reconciler() *CapabilityConsumptionReconciler {
 func newConsumption(name, consumer, namespace string, policy platformv1alpha1.AdoptionPolicy) *platformv1alpha1.CapabilityConsumption {
 	ref := platformv1alpha1.CapabilitySelection{Mode: platformv1alpha1.ReferenceOnly}
 	return &platformv1alpha1.CapabilityConsumption{
-		TypeMeta: metav1.TypeMeta{APIVersion: platformv1alpha1.GroupVersion.String(), Kind: "CapabilityConsumption"},
+		TypeMeta:   metav1.TypeMeta{APIVersion: platformv1alpha1.GroupVersion.String(), Kind: "CapabilityConsumption"},
 		ObjectMeta: metav1.ObjectMeta{Name: name},
 		Spec: platformv1alpha1.CapabilityConsumptionSpec{
 			Consumer:      platformv1alpha1.ConsumerIdentity{Name: consumer, Owner: "test", Environment: "envtest"},
