@@ -57,9 +57,9 @@ Validated on branch `d093-i6a-operator-hardening`:
   - `I6A_OPERATOR_METRICS=PASS`;
   - `K3_KIND_RUNTIME_RESULT=PASS`.
 
-Allowed branch-level claim: `PLATFORM_CI_PROVEN + KIND_RUNTIME_PROVEN_I6A`.
+Allowed claim: `PLATFORM_CI_PROVEN + KIND_RUNTIME_PROVEN_I6A`.
 
-Promotion to `main` remains pending PR #8 merge.
+Merged to `main` via PR #8 on squash commit `0d1d50ff52cfe1ee1734361db89837f34baec744`.
 
 ## Acceptance gates
 
@@ -83,3 +83,7 @@ I6A is Operator engineering hardening. It does not claim:
 - cloud runtime.
 
 Those remain separate gates (I6B/I6C/K4/K5).
+
+## Closure
+
+I6A is **CLOSED / RUNTIME_PROVEN_WITHIN_KIND_SCOPE**. The evidence proves production-style Operator engineering mechanics on CI/envtest/Kind and preserves the earlier CRC/OpenShift consumer #1 proof. It does not claim OpenShift HA, production readiness, OLM packaging, or TradeOps Manage.
