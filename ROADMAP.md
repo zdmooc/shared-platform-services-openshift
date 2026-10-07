@@ -16,6 +16,7 @@
 | O3 | Evidence hardening | COMPLETE | differentiated CRC evidence recorded; HA/production not claimed |
 | D-093 K3 I4 | CapabilityConsumption Platform Operator | IMPLEMENTED | ENVTEST_VALIDATED + KIND_RUNTIME_PROVEN_PLATFORM_OPERATOR |
 | D-093 K3/K4 I5 | Instant Payments consumer #1 on CRC | COMPLETE | CONSUMER_1_CRC_RUNTIME_PROVEN |
+| D-093 I6A | Production-style Go/Kubebuilder hardening | IN PROGRESS | CI + KIND EVIDENCE PENDING |
 
 ## Recorded evidence
 
