@@ -1,0 +1,124 @@
+apiVersion: operators.coreos.com/v1alpha1
+kind: ClusterServiceVersion
+metadata:
+  name: mayabank-platform-operator.v0.1.0
+  annotations:
+    alm-examples: |-
+      [{"apiVersion":"platform.mayabank.example/v1alpha1","kind":"CapabilityConsumption","metadata":{"name":"example-consumer"},"spec":{"consumer":{"name":"example","owner":"platform-engineering","environment":"demo"},"target":{"namespace":"example-consumer"},"identity":{"mode":"REFERENCE_ONLY"},"observability":{"mode":"REFERENCE_ONLY"},"secrets":{"mode":"REFERENCE_ONLY"},"gitops":{"mode":"REFERENCE_ONLY"},"quality":{"mode":"REFERENCE_ONLY"},"eventing":{"mode":"REFERENCE_ONLY"},"database":{"mode":"REFERENCE_ONLY"},"objectStorage":{"mode":"REFERENCE_ONLY"},"resources":{"profile":"small"},"network":{"profile":"restricted"},"lifecycle":{"adoptionPolicy":"Observe","deletionPolicy":"Retain"}}}]
+    capabilities: Basic Install
+    categories: Integration & Delivery
+    operators.operatorframework.io/builder: operator-sdk-v1.42.3
+    operators.operatorframework.io/project_layout: go.kubebuilder.io/v4
+spec:
+  displayName: MayaBank Platform Onboarding Operator
+  description: >-
+    Reconciles the platform-owned baseline declared by CapabilityConsumption while
+    preserving product-owned workloads and brownfield ownership guardrails.
+  maturity: alpha
+  version: 0.1.0
+  provider:
+    name: MayaBank Reference Architecture
+  maintainers:
+    - name: MayaBank Platform Engineering
+      email: platform-engineering@example.invalid
+  links:
+    - name: Repository
+      url: https://github.com/zdmooc/shared-platform-services-openshift
+  minKubeVersion: 1.31.0
+  installModes:
+    - type: OwnNamespace
+      supported: false
+    - type: SingleNamespace
+      supported: false
+    - type: MultiNamespace
+      supported: false
+    - type: AllNamespaces
+      supported: true
+  customresourcedefinitions:
+    owned:
+      - name: capabilityconsumptions.platform.mayabank.example
+        version: v1alpha1
+        kind: CapabilityConsumption
+        displayName: Capability Consumption
+        description: Declares shared-platform consumption and the platform-owned baseline.
+  install:
+    strategy: deployment
+    spec:
+      clusterPermissions:
+        - serviceAccountName: mayabank-platform-operator
+          rules:
+            - apiGroups: ["platform.mayabank.example"]
+              resources: ["capabilityconsumptions"]
+              verbs: ["get", "list", "watch", "update", "patch"]
+            - apiGroups: ["platform.mayabank.example"]
+              resources: ["capabilityconsumptions/status"]
+              verbs: ["get", "update", "patch"]
+            - apiGroups: [""]
+              resources: ["namespaces", "serviceaccounts", "resourcequotas", "limitranges", "configmaps", "services"]
+              verbs: ["get", "list", "watch", "create", "update", "patch"]
+            - apiGroups: ["rbac.authorization.k8s.io"]
+              resources: ["roles", "rolebindings"]
+              verbs: ["get", "list", "watch", "create", "update", "patch"]
+            - apiGroups: ["networking.k8s.io"]
+              resources: ["networkpolicies"]
+              verbs: ["get", "list", "watch", "create", "update", "patch"]
+            - apiGroups: [""]
+              resources: ["events"]
+              verbs: ["create", "patch"]
+            - apiGroups: ["coordination.k8s.io"]
+              resources: ["leases"]
+              verbs: ["get", "list", "watch", "create", "update", "patch"]
+      deployments:
+        - name: mayabank-platform-operator
+          spec:
+            replicas: 2
+            selector:
+              matchLabels:
+                app.kubernetes.io/name: mayabank-platform-operator
+            template:
+              metadata:
+                labels:
+                  app.kubernetes.io/name: mayabank-platform-operator
+                  app.kubernetes.io/part-of: shared-platform-services
+              spec:
+                serviceAccountName: mayabank-platform-operator
+                securityContext:
+                  runAsNonRoot: true
+                containers:
+                  - name: manager
+                    image: ghcr.io/zdmooc/mayabank-platform-operator:v0.1.0
+                    imagePullPolicy: IfNotPresent
+                    args:
+                      - --leader-elect=true
+                      - --metrics-bind-address=:8080
+                      - --health-probe-bind-address=:8081
+                    ports:
+                      - name: metrics
+                        containerPort: 8080
+                        protocol: TCP
+                      - name: health
+                        containerPort: 8081
+                        protocol: TCP
+                    securityContext:
+                      allowPrivilegeEscalation: false
+                      capabilities:
+                        drop: ["ALL"]
+                      readOnlyRootFilesystem: true
+                    resources:
+                      requests:
+                        cpu: 50m
+                        memory: 64Mi
+                      limits:
+                        cpu: 500m
+                        memory: 256Mi
+                    livenessProbe:
+                      httpGet:
+                        path: /healthz
+                        port: 8081
+                    readinessProbe:
+                      httpGet:
+                        path: /readyz
+                        port: 8081
+  relatedImages:
+    - name: operator
+      image: ghcr.io/zdmooc/mayabank-platform-operator:v0.1.0
