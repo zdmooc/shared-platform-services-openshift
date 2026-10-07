@@ -17,6 +17,7 @@
 | D-093 K3 I4 | CapabilityConsumption Platform Operator | IMPLEMENTED | ENVTEST_VALIDATED + KIND_RUNTIME_PROVEN_PLATFORM_OPERATOR |
 | D-093 K3/K4 I5 | Instant Payments consumer #1 on CRC | COMPLETE | CONSUMER_1_CRC_RUNTIME_PROVEN |
 | D-093 I6A | Production-style Go/Kubebuilder hardening | CLOSED | PLATFORM_CI_PROVEN + KIND_RUNTIME_PROVEN_I6A |
+| D-093 I6B | Day-2 / Failure Engineering | IMPLEMENTED / PR #9 OPEN | PLATFORM_CI_PROVEN + KIND_RUNTIME_PROVEN_I6B_DAY2 |
 
 ## Recorded evidence
 

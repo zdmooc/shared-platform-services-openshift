@@ -52,6 +52,27 @@ wait_reason() {
   return 1
 }
 
+wait_condition() {
+  local name="$1"
+  local condition_type="$2"
+  local expected_status="$3"
+  local expected_reason="$4"
+  local observed_status=""
+  local observed_reason=""
+  for _ in $(seq 1 90); do
+    observed_status="$(kubectl get capabilityconsumption "$name" -o json 2>/dev/null | jq -r --arg t "$condition_type" '.status.conditions[]? | select(.type==$t) | .status' | tail -n1 || true)"
+    observed_reason="$(kubectl get capabilityconsumption "$name" -o json 2>/dev/null | jq -r --arg t "$condition_type" '.status.conditions[]? | select(.type==$t) | .reason' | tail -n1 || true)"
+    if [[ "$observed_status" == "$expected_status" && "$observed_reason" == "$expected_reason" ]]; then
+      echo "CapabilityConsumption/$name $condition_type=$observed_status reason=$observed_reason"
+      return 0
+    fi
+    sleep 2
+  done
+  echo "Timed out waiting for CapabilityConsumption/$name $condition_type=$expected_status reason=$expected_reason; observed=$observed_status/$observed_reason" >&2
+  return 1
+}
+
+
 wait_resource() {
   for _ in $(seq 1 90); do
     if kubectl "$@" >/dev/null 2>&1; then
@@ -215,6 +236,109 @@ kill "$PORT_FORWARD_PID" >/dev/null 2>&1 || true
 PORT_FORWARD_PID=""
 echo "I6A_OPERATOR_METRICS=PASS"
 
+echo "== I6B transient RBAC apply failure -> automatic controller-runtime retry =="
+rbac_rule_index="$(kubectl get clusterrole mayabank-platform-operator -o json | jq -r '.rules | to_entries[] | select(.value.apiGroups | index("rbac.authorization.k8s.io")) | .key' | head -n1)"
+[[ "$rbac_rule_index" =~ ^[0-9]+$ ]]
+original_rbac_verbs="$(kubectl get clusterrole mayabank-platform-operator -o json | jq -c ".rules[$rbac_rule_index].verbs")"
+denied_rbac_verbs="$(printf '%s' "$original_rbac_verbs" | jq -c 'map(select(. != "create"))')"
+deny_patch="$(jq -nc --arg path "/rules/$rbac_rule_index/verbs" --argjson verbs "$denied_rbac_verbs" '[{op:"replace",path:$path,value:$verbs}]')"
+kubectl patch clusterrole mayabank-platform-operator --type=json -p="$deny_patch"
+
+cat <<'YAML' | kubectl apply -f -
+apiVersion: platform.mayabank.example/v1alpha1
+kind: CapabilityConsumption
+metadata:
+  name: i6b-transient-kind
+spec:
+  consumer:
+    name: i6b-transient
+    owner: platform-engineering
+    environment: kind
+  target:
+    namespace: d093-i6b-transient
+  identity:
+    mode: REFERENCE_ONLY
+  observability:
+    mode: REFERENCE_ONLY
+  secrets:
+    mode: REFERENCE_ONLY
+  gitops:
+    mode: REFERENCE_ONLY
+  quality:
+    mode: REFERENCE_ONLY
+  eventing:
+    mode: REFERENCE_ONLY
+  database:
+    mode: REFERENCE_ONLY
+  objectStorage:
+    mode: REFERENCE_ONLY
+  resources:
+    profile: small
+  network:
+    profile: restricted
+  lifecycle:
+    adoptionPolicy: Manage
+    deletionPolicy: Retain
+YAML
+
+wait_condition i6b-transient-kind Ready False ApplyFailed
+wait_condition i6b-transient-kind Degraded True ApplyFailed
+kubectl get namespace d093-i6b-transient
+kubectl -n d093-i6b-transient get serviceaccount platform-consumer
+if kubectl -n d093-i6b-transient get role platform-consumer-read >/dev/null 2>&1; then
+  echo "Role unexpectedly created while RBAC create permission was removed" >&2
+  exit 1
+fi
+echo "I6B_TRANSIENT_APPLY_FAILURE_OBSERVED=PASS"
+
+restore_patch="$(jq -nc --arg path "/rules/$rbac_rule_index/verbs" --argjson verbs "$original_rbac_verbs" '[{op:"replace",path:$path,value:$verbs}]')"
+kubectl patch clusterrole mayabank-platform-operator --type=json -p="$restore_patch"
+
+# No CR patch/update here: convergence must come from controller-runtime's queued retry.
+wait_reason i6b-transient-kind Reconciled
+wait_condition i6b-transient-kind Degraded False Healthy
+wait_resource -n d093-i6b-transient get role platform-consumer-read
+echo "I6B_AUTOMATIC_RETRY_RECOVERY=PASS"
+
+echo "== I6B retryable failure metric =="
+current_holder="$(kubectl -n shared-platform-services get lease mayabank-platform-operator.platform.mayabank.example -o jsonpath='{.spec.holderIdentity}')"
+current_leader_pod="${current_holder%%_*}"
+kubectl -n shared-platform-services port-forward "pod/$current_leader_pod" 18081:8080 >/tmp/i6b-metrics-port-forward.log 2>&1 &
+PORT_FORWARD_PID=$!
+for _ in $(seq 1 30); do
+  if curl -fsS http://127.0.0.1:18081/metrics >/tmp/i6b-metrics.txt 2>/dev/null; then
+    break
+  fi
+  sleep 1
+done
+grep -Eq 'mayabank_platform_operator_retryable_failures_total\{stage="apply"\} [1-9][0-9]*(\.[0-9]+)?' /tmp/i6b-metrics.txt
+kill "$PORT_FORWARD_PID" >/dev/null 2>&1 || true
+PORT_FORWARD_PID=""
+echo "I6B_RETRYABLE_FAILURE_METRIC=PASS"
+
+echo "== I6B leader loss -> failover -> reconciliation continuity =="
+holder_before="$(kubectl -n shared-platform-services get lease mayabank-platform-operator.platform.mayabank.example -o jsonpath='{.spec.holderIdentity}')"
+leader_pod_before="${holder_before%%_*}"
+kubectl -n shared-platform-services delete pod "$leader_pod_before" --wait=true
+
+holder_after=""
+for _ in $(seq 1 90); do
+  holder_after="$(kubectl -n shared-platform-services get lease mayabank-platform-operator.platform.mayabank.example -o jsonpath='{.spec.holderIdentity}' 2>/dev/null || true)"
+  if [[ -n "$holder_after" && "$holder_after" != "$holder_before" ]]; then
+    break
+  fi
+  sleep 2
+done
+[[ -n "$holder_after" && "$holder_after" != "$holder_before" ]]
+kubectl -n shared-platform-services rollout status deploy/mayabank-platform-operator --timeout=180s
+echo "I6B_LEADER_FAILOVER=PASS before=$holder_before after=$holder_after"
+
+kubectl -n d093-greenfield delete resourcequota platform-quota
+wait_resource -n d093-greenfield get resourcequota platform-quota
+wait_quota_cpu d093-greenfield 2
+wait_reason instant-payments-kind Reconciled
+echo "I6B_POST_FAILOVER_RECONCILIATION=PASS"
+
 echo "== I4 update declared resource profile =="
 kubectl patch capabilityconsumption instant-payments-kind --type=merge   -p '{"spec":{"resources":{"profile":"medium"}}}'
 wait_quota_cpu d093-greenfield 4
@@ -342,5 +466,8 @@ echo "K3_KIND_RUNTIME_RESULT=PASS"
 echo "claim=KIND_RUNTIME_PROVEN_PLATFORM_OPERATOR"
 echo "i6a_leader_election=KIND_RUNTIME_PROVEN"
 echo "i6a_metrics=KIND_RUNTIME_PROVEN"
+echo "i6b_retry_recovery=KIND_RUNTIME_PROVEN"
+echo "i6b_leader_failover=KIND_RUNTIME_PROVEN"
+echo "i6b_day2=KIND_RUNTIME_PROVEN"
 echo "crc_claim=NOT_PROVEN_BY_THIS_KIND_RUN"
 echo "crc_external_evidence=CONSUMER_1_CRC_RUNTIME_PROVEN"
