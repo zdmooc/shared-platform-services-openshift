@@ -354,8 +354,8 @@ func TestPartialApplyFailureRecoversIdempotently(t *testing.T) {
 		Recorder: record.NewFakeRecorder(100),
 	}
 	req := ctrl.Request{NamespacedName: client.ObjectKey{Name: cc.Name}}
-	if _, err := r.Reconcile(ctx, req); err != nil {
-		t.Fatalf("first reconcile should report failure through status: %v", err)
+	if _, err := r.Reconcile(ctx, req); err == nil || !strings.Contains(err.Error(), "injected partial apply failure") {
+		t.Fatalf("first reconcile must return the retryable root cause, got %v", err)
 	}
 
 	got := &platformv1alpha1.CapabilityConsumption{}
@@ -394,6 +394,120 @@ func TestPartialApplyFailureRecoversIdempotently(t *testing.T) {
 	if degraded == nil || degraded.Status != metav1.ConditionFalse {
 		t.Fatalf("expected Degraded=False after recovery, got %#v", degraded)
 	}
+}
+
+func TestDependencyReadFailureIsDegradedAndRetryable(t *testing.T) {
+	ctx := context.Background()
+	ns := "dependency-read-i6b"
+	cc := newConsumption("dependency-read-i6b", "dependency-read", ns, platformv1alpha1.AdoptionManage)
+	mustCreate(t, ctx, cc)
+
+	faulty := &failNamespaceReadClient{Client: testClient}
+	r := &CapabilityConsumptionReconciler{
+		Client:   faulty,
+		Scheme:   testScheme,
+		Recorder: record.NewFakeRecorder(100),
+	}
+	req := ctrl.Request{NamespacedName: client.ObjectKey{Name: cc.Name}}
+
+	if _, err := r.Reconcile(ctx, req); err == nil || !strings.Contains(err.Error(), "injected dependency read failure") {
+		t.Fatalf("dependency read failure must be returned for controller-runtime retry, got %v", err)
+	}
+
+	got := &platformv1alpha1.CapabilityConsumption{}
+	if err := testClient.Get(ctx, client.ObjectKey{Name: cc.Name}, got); err != nil {
+		t.Fatalf("get dependency failure status: %v", err)
+	}
+	ready := meta.FindStatusCondition(got.Status.Conditions, ConditionReady)
+	degraded := meta.FindStatusCondition(got.Status.Conditions, ConditionDegraded)
+	if ready == nil || ready.Reason != "DependencyReadFailed" {
+		t.Fatalf("expected DependencyReadFailed, got %#v", ready)
+	}
+	if degraded == nil || degraded.Status != metav1.ConditionTrue || degraded.Reason != "DependencyReadFailed" {
+		t.Fatalf("expected Degraded=True/DependencyReadFailed, got %#v", degraded)
+	}
+
+	if _, err := r.Reconcile(ctx, req); err != nil {
+		t.Fatalf("reconcile should recover after one-shot dependency read failure: %v", err)
+	}
+	if err := testClient.Get(ctx, client.ObjectKey{Name: cc.Name}, got); err != nil {
+		t.Fatalf("get recovered dependency status: %v", err)
+	}
+	ready = meta.FindStatusCondition(got.Status.Conditions, ConditionReady)
+	degraded = meta.FindStatusCondition(got.Status.Conditions, ConditionDegraded)
+	if ready == nil || ready.Status != metav1.ConditionTrue || ready.Reason != "Reconciled" {
+		t.Fatalf("expected recovered Ready/Reconciled, got %#v", ready)
+	}
+	if degraded == nil || degraded.Status != metav1.ConditionFalse {
+		t.Fatalf("expected Degraded=False after dependency recovery, got %#v", degraded)
+	}
+}
+
+func TestApplyRootCauseSurvivesStatusUpdateFailure(t *testing.T) {
+	ctx := context.Background()
+	ns := "status-mask-i6b"
+	cc := newConsumption("status-mask-i6b", "status-mask", ns, platformv1alpha1.AdoptionManage)
+	mustCreate(t, ctx, cc)
+
+	stored := &platformv1alpha1.CapabilityConsumption{}
+	if err := testClient.Get(ctx, client.ObjectKey{Name: cc.Name}, stored); err != nil {
+		t.Fatalf("get consumption: %v", err)
+	}
+	stored.Status.ObservedGeneration = stored.Generation
+	if err := testClient.Status().Update(ctx, stored); err != nil {
+		t.Fatalf("prime observed generation: %v", err)
+	}
+
+	statusFailure := errors.New("injected status update failure")
+	statusClient := &failStatusClient{Client: testClient, err: statusFailure}
+	faulty := &failApplyClient{Client: statusClient, failAt: 1}
+	r := &CapabilityConsumptionReconciler{
+		Client:   faulty,
+		Scheme:   testScheme,
+		Recorder: record.NewFakeRecorder(100),
+	}
+
+	_, err := r.Reconcile(ctx, ctrl.Request{NamespacedName: client.ObjectKey{Name: cc.Name}})
+	if err == nil {
+		t.Fatal("expected joined apply + status error")
+	}
+	if !strings.Contains(err.Error(), "injected partial apply failure") {
+		t.Fatalf("root apply error was masked: %v", err)
+	}
+	if !strings.Contains(err.Error(), "injected status update failure") {
+		t.Fatalf("status error missing from joined error: %v", err)
+	}
+}
+
+type failNamespaceReadClient struct {
+	client.Client
+	failed bool
+}
+
+func (c *failNamespaceReadClient) Get(ctx context.Context, key client.ObjectKey, obj client.Object, opts ...client.GetOption) error {
+	if _, ok := obj.(*corev1.Namespace); ok && !c.failed {
+		c.failed = true
+		return errors.New("injected dependency read failure")
+	}
+	return c.Client.Get(ctx, key, obj, opts...)
+}
+
+type failStatusClient struct {
+	client.Client
+	err error
+}
+
+func (c *failStatusClient) Status() client.SubResourceWriter {
+	return &failStatusWriter{SubResourceWriter: c.Client.Status(), err: c.err}
+}
+
+type failStatusWriter struct {
+	client.SubResourceWriter
+	err error
+}
+
+func (w *failStatusWriter) Update(context.Context, client.Object, ...client.SubResourceUpdateOption) error {
+	return w.err
 }
 
 type failApplyClient struct {
