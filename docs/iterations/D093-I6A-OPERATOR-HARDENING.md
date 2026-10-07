@@ -44,17 +44,34 @@ No finalizer is added in I6A.
 
 The V1 contract intentionally uses `deletionPolicy=Retain`. Deleting the intent object must not cascade-delete brownfield platform resources. A destructive finalizer would therefore add lifecycle coupling without a valid cleanup contract.
 
+## Runtime evidence
+
+Validated on branch `d093-i6a-operator-hardening`:
+
+- final validated code head before documentation-only status sync: `ddbab78219a7c9537f5337e08f87d7b8098bc2bf`;
+- Platform CI run `37587208717` — **SUCCESS**;
+- D093 K3 Operator Kind Runtime run `37587208723` — **SUCCESS**;
+- observed markers:
+  - `I6A_LEADER_ELECTION_LEASE=PASS`;
+  - `I6A_CRD_VALIDATION=PASS`;
+  - `I6A_OPERATOR_METRICS=PASS`;
+  - `K3_KIND_RUNTIME_RESULT=PASS`.
+
+Allowed branch-level claim: `PLATFORM_CI_PROVEN + KIND_RUNTIME_PROVEN_I6A`.
+
+Promotion to `main` remains pending PR #8 merge.
+
 ## Acceptance gates
 
-- `go mod tidy` clean;
-- `go fmt` clean;
-- `go vet ./...`;
-- envtest PASS;
-- controller-gen CRD/RBAC generation PASS;
-- generated RBAC contains Lease permissions;
-- generated CRD contains the I6A profile validations;
-- Kind runtime PASS with leader election + metrics + CRD negative test;
-- prior I4 reconciliation proof remains non-regressed.
+- [x] `go mod tidy` clean;
+- [x] `go fmt` clean;
+- [x] `go vet ./...`;
+- [x] envtest PASS;
+- [x] controller-gen CRD/RBAC generation PASS;
+- [x] generated RBAC contains Lease permissions;
+- [x] generated CRD contains the I6A profile validations;
+- [x] Kind runtime PASS with leader election + metrics + CRD negative test;
+- [x] prior I4 reconciliation proof remains non-regressed.
 
 ## Truth boundary
 
