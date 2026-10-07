@@ -1,0 +1,17 @@
+apiVersion: olm.operatorframework.io/v1
+kind: ClusterExtension
+metadata:
+  name: mayabank-platform-operator
+spec:
+  namespace: shared-platform-services
+  serviceAccount:
+    name: mayabank-platform-operator-installer
+  source:
+    sourceType: Catalog
+    catalog:
+      packageName: mayabank-platform-operator
+      channels:
+        - stable
+      selector:
+        matchLabels:
+          olm.operatorframework.io/metadata.name: mayabank-platform-operator
