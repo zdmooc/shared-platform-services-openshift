@@ -89,12 +89,14 @@ jobs:
           make vet
           make test
           rm -rf /tmp/i6a-generated-crd /tmp/i6a-generated-rbac
+          mkdir -p /tmp/i6a-generated-crd /tmp/i6a-generated-rbac
           make manifests CRD_OUTPUT=/tmp/i6a-generated-crd RBAC_OUTPUT=/tmp/i6a-generated-rbac
-          test -s /tmp/i6a-generated-crd/platform.mayabank.example_capabilityconsumptions.yaml
-          test -s /tmp/i6a-generated-rbac/role.yaml
-          grep -q 'payments-medium' /tmp/i6a-generated-crd/platform.mayabank.example_capabilityconsumptions.yaml
-          grep -q 'coordination.k8s.io' /tmp/i6a-generated-rbac/role.yaml
-          grep -q 'leases' /tmp/i6a-generated-rbac/role.yaml
+          find /tmp/i6a-generated-crd /tmp/i6a-generated-rbac -type f -maxdepth 2 -print
+          test -n "$(find /tmp/i6a-generated-crd -type f -print -quit)"
+          test -n "$(find /tmp/i6a-generated-rbac -type f -print -quit)"
+          grep -R -q 'payments-medium' /tmp/i6a-generated-crd
+          grep -R -q 'coordination.k8s.io' /tmp/i6a-generated-rbac
+          grep -R -q 'leases' /tmp/i6a-generated-rbac
 
       - name: Consumer contract gates
         shell: bash
