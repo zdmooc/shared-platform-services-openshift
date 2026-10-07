@@ -22,10 +22,17 @@ var (
 			Buckets: prometheus.DefBuckets,
 		},
 	)
+	retryableFailureTotal = prometheus.NewCounterVec(
+		prometheus.CounterOpts{
+			Name: "mayabank_platform_operator_retryable_failures_total",
+			Help: "Retryable CapabilityConsumption reconcile failures by bounded stage.",
+		},
+		[]string{"stage"},
+	)
 )
 
 func init() {
-	ctrlmetrics.Registry.MustRegister(reconcileTotal, reconcileDuration)
+	ctrlmetrics.Registry.MustRegister(reconcileTotal, reconcileDuration, retryableFailureTotal)
 }
 
 func startReconcileMetrics() func(string) {
