@@ -64,7 +64,7 @@ spec:
                 target:
                   type: object
                   properties:
-                    namespace: {type: string}
+                    namespace: {type: string, minLength: 1}
                 identity:
                   type: object
                   required: [mode]
@@ -124,11 +124,15 @@ spec:
                 resources:
                   type: object
                   properties:
-                    profile: {type: string}
+                    profile:
+                      type: string
+                      enum: [small, medium, payments-medium, ai-medium]
                 network:
                   type: object
                   properties:
-                    profile: {type: string}
+                    profile:
+                      type: string
+                      enum: [restricted]
                 gitSource:
                   type: object
                   properties:
