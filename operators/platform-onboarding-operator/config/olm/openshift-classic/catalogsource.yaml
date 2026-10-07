@@ -1,0 +1,13 @@
+apiVersion: operators.coreos.com/v1alpha1
+kind: CatalogSource
+metadata:
+  name: mayabank-platform-operator
+  namespace: openshift-marketplace
+spec:
+  sourceType: grpc
+  image: ghcr.io/zdmooc/mayabank-platform-operator-catalog:v0.2.0
+  displayName: MayaBank Platform Operator
+  publisher: MayaBank Reference Architecture
+  updateStrategy:
+    registryPoll:
+      interval: 30m
