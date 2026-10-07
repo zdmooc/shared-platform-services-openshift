@@ -86,9 +86,9 @@ Runtime markers include:
 - `I6B_POST_FAILOVER_RECONCILIATION=PASS`;
 - `K3_KIND_RUNTIME_RESULT=PASS`.
 
-Allowed branch-level claim: `PLATFORM_CI_PROVEN + KIND_RUNTIME_PROVEN_I6B_DAY2`.
+Allowed claim: `PLATFORM_CI_PROVEN + KIND_RUNTIME_PROVEN_I6B_DAY2`.
 
-Promotion to `main` remains pending PR #9 merge.
+Merged to `main` through PR #9 — squash commit `079b3f11a4b514e636b04bcaf97feabbc3fc66f0`.
 
 ## Acceptance gates
 
@@ -113,3 +113,7 @@ This is a local Kubernetes/Kind Day-2 proof. It does not establish:
 - cloud runtime;
 - TradeOps Manage;
 - business-service OIDC/telemetry resilience beyond already existing product evidence.
+
+## Closure
+
+I6B is **CLOSED / KIND_RUNTIME_PROVEN_WITHIN_SCOPE**. I6C owns OLM/OpenShift packaging and lifecycle evidence.
