@@ -2,6 +2,7 @@ package controller
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"reflect"
 	"sort"
@@ -90,8 +91,8 @@ func (r *CapabilityConsumptionReconciler) Reconcile(ctx context.Context, req ctr
 	desired := desiredObjects(&cc)
 	conflicts, detectErr := r.detectConflicts(ctx, &cc, desired, policy)
 	if detectErr != nil {
-		outcome = "conflict_scan_error"
-		return ctrl.Result{}, detectErr
+		outcome = "dependency_read_failed"
+		return ctrl.Result{}, r.retryableFailure(ctx, &cc, "DependencyReadFailed", "dependency_read", detectErr, nil)
 	}
 	if len(conflicts) > 0 {
 		message := strings.Join(conflicts, "; ")
@@ -113,7 +114,8 @@ func (r *CapabilityConsumptionReconciler) Reconcile(ctx context.Context, req ctr
 	if cc.Status.ObservedGeneration != cc.Generation {
 		if statusErr := r.setProgressingStatus(ctx, &cc, "Reconciling", "applying declared platform-owned baseline"); statusErr != nil {
 			outcome = "status_error"
-			return ctrl.Result{}, statusErr
+			retryableFailureTotal.WithLabelValues("status_update").Inc()
+			return ctrl.Result{}, fmt.Errorf("persist progressing status: %w", statusErr)
 		}
 	}
 
@@ -121,12 +123,12 @@ func (r *CapabilityConsumptionReconciler) Reconcile(ctx context.Context, req ctr
 	for _, obj := range desired {
 		if applyErr := r.apply(ctx, obj); applyErr != nil {
 			outcome = "apply_failed"
-			return ctrl.Result{}, r.setStatus(ctx, &cc, metav1.ConditionFalse, "ApplyFailed", applyErr.Error(), managed)
+			return ctrl.Result{}, r.retryableFailure(ctx, &cc, "ApplyFailed", "apply", applyErr, managed)
 		}
 		ref, refErr := r.resourceReference(obj)
 		if refErr != nil {
 			outcome = "reference_error"
-			return ctrl.Result{}, refErr
+			return ctrl.Result{}, r.retryableFailure(ctx, &cc, "ReferenceFailed", "reference", refErr, managed)
 		}
 		managed = append(managed, ref)
 	}
@@ -135,7 +137,31 @@ func (r *CapabilityConsumptionReconciler) Reconcile(ctx context.Context, req ctr
 		r.Recorder.Event(&cc, corev1.EventTypeNormal, "Reconciled", fmt.Sprintf("reconciled %d platform-owned resources", len(managed)))
 	}
 	outcome = "reconciled"
-	return ctrl.Result{}, r.setStatus(ctx, &cc, metav1.ConditionTrue, "Reconciled", "platform-owned resources match declared intent", managed)
+	if statusErr := r.setStatus(ctx, &cc, metav1.ConditionTrue, "Reconciled", "platform-owned resources match declared intent", managed); statusErr != nil {
+		outcome = "status_error"
+		retryableFailureTotal.WithLabelValues("status_update").Inc()
+		return ctrl.Result{}, fmt.Errorf("persist reconciled status: %w", statusErr)
+	}
+	return ctrl.Result{}, nil
+}
+
+func (r *CapabilityConsumptionReconciler) retryableFailure(
+	ctx context.Context,
+	cc *platformv1alpha1.CapabilityConsumption,
+	reason string,
+	stage string,
+	cause error,
+	managed []platformv1alpha1.ManagedResourceReference,
+) error {
+	retryableFailureTotal.WithLabelValues(stage).Inc()
+	if r.Recorder != nil {
+		r.Recorder.Event(cc, corev1.EventTypeWarning, reason, cause.Error())
+	}
+	statusErr := r.setStatus(ctx, cc, metav1.ConditionFalse, reason, cause.Error(), managed)
+	if statusErr != nil {
+		return errors.Join(cause, fmt.Errorf("persist %s status: %w", reason, statusErr))
+	}
+	return cause
 }
 
 func (r *CapabilityConsumptionReconciler) SetupWithManager(mgr ctrl.Manager) error {
@@ -312,7 +338,7 @@ func (r *CapabilityConsumptionReconciler) setStatus(ctx context.Context, cc *pla
 	degradedMessage := "no reconcile error observed"
 
 	switch reason {
-	case "InvalidSpec", "ApplyFailed":
+	case "InvalidSpec", "ApplyFailed", "DependencyReadFailed", "ReferenceFailed":
 		degradedStatus = metav1.ConditionTrue
 		degradedReason = reason
 		degradedMessage = message
