@@ -1,0 +1,9 @@
+apiVersion: olm.operatorframework.io/v1
+kind: ClusterCatalog
+metadata:
+  name: mayabank-platform-operator
+spec:
+  source:
+    type: Image
+    image:
+      ref: ghcr.io/zdmooc/mayabank-platform-operator-catalog:v0.2.0

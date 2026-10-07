@@ -77,3 +77,9 @@ The Operator keeps generic and workload-class profiles separate.
 `payments-medium` was introduced during D-093/I5 after the Instant Payments CRC pre-Manage measurement showed 19 active pods with about 505m CPU requests, 3.2Gi memory requests, 9.15 CPU limits, 9.44Gi memory limits, four PVCs and 5Gi requested storage. The generic `medium` profile would have set `limits.cpu=8`, below existing declared usage, which could block a later pod replacement or rollout.
 
 This profile change does not itself prove CRC Manage. Runtime promotion still requires the explicit Observe -> Manage handoff and post-handoff non-regression evidence.
+
+## OLM / OpenShift packaging
+
+I6C packages the controller as an OLM bundle with a stable FBC catalog. The current package is v0.2.0 and declares a packaging upgrade edge from the v0.1.0 lifecycle fixture. OpenShift installation contracts are provided for both OLM Classic and the OpenShift 4.22 OLM v1 extension APIs.
+
+The automated Kind gate proves bundle install, upgrade, reconciliation continuity and non-destructive uninstall. OpenShift OLM lifecycle is not claimed until replayed on CRC/OpenShift; the existing I5 evidence remains the independent OpenShift controller-runtime proof.

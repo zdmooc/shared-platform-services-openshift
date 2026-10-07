@@ -1,0 +1,80 @@
+name: D093 I6C OLM Lifecycle
+
+on:
+  pull_request:
+    paths:
+      - "operators/platform-onboarding-operator/bundle/**"
+      - "operators/platform-onboarding-operator/bundle-v0.1.0/**"
+      - "operators/platform-onboarding-operator/bundle.Dockerfile"
+      - "operators/platform-onboarding-operator/bundle-v0.1.0.Dockerfile"
+      - "operators/platform-onboarding-operator/catalog/**"
+      - "operators/platform-onboarding-operator/catalog.Dockerfile"
+      - "operators/platform-onboarding-operator/config/olm/**"
+      - "scripts/d093-i6c-olm-kind.sh"
+      - ".github/workflows/d093-i6c-olm.yml"
+  push:
+    branches: [main]
+    paths:
+      - "operators/platform-onboarding-operator/bundle/**"
+      - "operators/platform-onboarding-operator/bundle-v0.1.0/**"
+      - "operators/platform-onboarding-operator/bundle.Dockerfile"
+      - "operators/platform-onboarding-operator/bundle-v0.1.0.Dockerfile"
+      - "operators/platform-onboarding-operator/catalog/**"
+      - "operators/platform-onboarding-operator/catalog.Dockerfile"
+      - "operators/platform-onboarding-operator/config/olm/**"
+      - "scripts/d093-i6c-olm-kind.sh"
+      - ".github/workflows/d093-i6c-olm.yml"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  olm-lifecycle:
+    runs-on: ubuntu-latest
+    timeout-minutes: 35
+    env:
+      CLUSTER_NAME: d093-i6c-olm
+      KIND_NODE_IMAGE: kindest/node:v1.35.8@sha256:07b2536e30b803ed61d1677a79df6115f798ce64c80f9e22f6ed45afd09323c0
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: azure/setup-kubectl@v4
+        with:
+          version: v1.35.8
+
+      - name: Install Kind v0.33.0
+        shell: bash
+        run: |
+          set -euo pipefail
+          mkdir -p "$RUNNER_TEMP/bin"
+          curl -fsSLo "$RUNNER_TEMP/bin/kind" https://kind.sigs.k8s.io/dl/v0.33.0/kind-linux-amd64
+          chmod +x "$RUNNER_TEMP/bin/kind"
+          echo "$RUNNER_TEMP/bin" >> "$GITHUB_PATH"
+
+      - name: Install Operator SDK v1.42.3
+        shell: bash
+        run: |
+          set -euo pipefail
+          mkdir -p "$RUNNER_TEMP/bin"
+          curl -fsSLo "$RUNNER_TEMP/bin/operator-sdk" https://github.com/operator-framework/operator-sdk/releases/download/v1.42.3/operator-sdk_linux_amd64
+          curl -fsSLo "$RUNNER_TEMP/operator-sdk-checksums.txt" https://github.com/operator-framework/operator-sdk/releases/download/v1.42.3/checksums.txt
+          expected="$(grep 'operator-sdk_linux_amd64$' "$RUNNER_TEMP/operator-sdk-checksums.txt" | awk '{print $1}')"
+          actual="$(sha256sum "$RUNNER_TEMP/bin/operator-sdk" | awk '{print $1}')"
+          test -n "$expected"
+          test "$expected" = "$actual"
+          chmod +x "$RUNNER_TEMP/bin/operator-sdk"
+          echo "$RUNNER_TEMP/bin" >> "$GITHUB_PATH"
+
+      - name: Execute I6C OLM lifecycle proof
+        run: bash scripts/d093-i6c-olm-kind.sh
+
+      - name: Capture diagnostics
+        if: failure()
+        shell: bash
+        run: |
+          kubectl get csv,subscription,catalogsource,operatorgroup -A || true
+          kubectl get capabilityconsumptions.platform.mayabank.example -o yaml || true
+          kubectl -n shared-platform-services get deploy,pod,sa -o wide || true
+          kubectl get events -A --sort-by=.lastTimestamp | tail -n 200 || true
