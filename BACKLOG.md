@@ -154,9 +154,13 @@ No destructive finalizer is introduced: `deletionPolicy=Retain` remains the V1 b
 I6A, I6B and I6C are closed. The current commercial claim is `KIND_OLM_LIFECYCLE_PROVEN + OPENSHIFT_OPERATOR_RUNTIME_PROVEN_CONSUMER_1`. Exact OpenShift OLM lifecycle remains a separate optional replay; CRC single-node is not HA/production.
 
 ### Next — I6 CRC consumer #2 / TradeOps brownfield
-- [ ] onboard TradeOps in Observe;
+- [x] prepare TradeOps Observe CR and zero-mutation evidence wrapper;
+- [ ] execute TradeOps in Observe on CRC;
 - [ ] inventory real brownfield ownership conflicts;
+- [ ] refresh brownfield capacity/resource profile before any Manage decision;
 - [ ] preserve product-owned workloads, PostgreSQL, Redpanda/Kafka and Qdrant;
 - [ ] transfer only the common platform baseline after explicit approval;
 - [ ] prove no double ownership and no runtime regression;
 - [ ] promote only observed CRC evidence.
+
+Current status: **OBSERVE_PREPARED / CRC_RUNTIME_PENDING / MANAGE_NOT_AUTHORIZED**.
