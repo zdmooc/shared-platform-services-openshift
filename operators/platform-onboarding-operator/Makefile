@@ -7,7 +7,7 @@ CONTROLLER_GEN ?= $(LOCALBIN)/controller-gen
 SETUP_ENVTEST ?= $(LOCALBIN)/setup-envtest
 CONTROLLER_TOOLS_VERSION ?= v0.20.1
 ENVTEST_VERSION ?= release-0.23
-ENVTEST_K8S_VERSION ?= 1.35.x!
+ENVTEST_K8S_VERSION ?= 1.35.x!\nCRD_OUTPUT ?= config/crd/bases\nRBAC_OUTPUT ?= config/rbac
 
 .PHONY: all fmt vet test generate manifests verify build docker-build controller-gen envtest clean
 
