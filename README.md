@@ -4,7 +4,7 @@ Plateforme technique commune MayaBank pour mutualiser les capacités transverses
 
 ## Statut
 
-**V1 / O3 COMPLETE + D-093 I6A-I6C CLOSED + CONSUMER_1_CRC_RUNTIME_PROVEN + TRADEOPS CONSUMER_2 OBSERVE PREPARED + CRC SHARED OBSERVABILITY/IDENTITY PROVEN**
+**V1 / O3 COMPLETE + D-093 I6A-I6C CLOSED + CONSUMER_1_CRC_RUNTIME_PROVEN + TRADEOPS CONSUMER_2 OBSERVE CRC_RUNTIME_PROVEN + CRC SHARED OBSERVABILITY/IDENTITY PROVEN**
 
 Le dépôt fournit les contrats, manifests, GitOps, observabilité, IAM/secrets patterns, qualité et CI du socle commun.
 
@@ -139,15 +139,19 @@ Consumers actuels :
 
 ## D-093 I6 — TradeOps consumer #2
 
-D-090 G1/G2 are now CRC runtime-proven. The next canonical Platform Operator gate is TradeOps brownfield **Observe**.
+D-090 G1/G2 are CRC runtime-proven. TradeOps brownfield **Observe** is now also CRC runtime-proven.
 
 Prepared assets:
 - `consumers/tradeops/capability-consumption-crc-observe.yaml`;
 - `scripts/d093-i6-tradeops-observe-crc.sh`;
 - `docs/runbooks/D093_I6_TRADEOPS_OBSERVE_CRC.md`.
 
-Boundary:
-- Observe only;
-- zero TradeOps namespace mutation required;
-- PostgreSQL, Redpanda/Kafka, Qdrant and all product workloads remain product-owned;
-- `Manage` is explicitly not authorized until brownfield inventory/capacity is refreshed and approved.
+Runtime result:
+- `D093_I6_OBSERVE_REASON=OwnershipConflict`;
+- zero managed resources;
+- zero namespace mutation;
+- protected workloads unchanged;
+- zero platform baseline resources created;
+- `Manage` remains explicitly unauthorized.
+
+Canonical evidence: `evidence/runtime/D093-I6-crc-consumer2-tradeops-observe-20261007.md`.
