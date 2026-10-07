@@ -7,11 +7,13 @@ OPERATOR_SDK="${OPERATOR_SDK:-operator-sdk}"
 ROOT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 OPERATOR_DIR="$ROOT_DIR/operators/platform-onboarding-operator"
 TMP_DIR="$(mktemp -d)"
+REGISTRY_NAME="${REGISTRY_NAME:-d093-i6c-registry}"
+REGISTRY_PORT="${REGISTRY_PORT:-5001}"
 
-OPERATOR_V010="docker.io/library/mayabank-platform-operator:v0.1.0"
-OPERATOR_V020="docker.io/library/mayabank-platform-operator:v0.2.0"
-BUNDLE_V010="docker.io/library/mayabank-platform-operator-bundle:v0.1.0"
-BUNDLE_V020="docker.io/library/mayabank-platform-operator-bundle:v0.2.0"
+OPERATOR_V010="localhost:${REGISTRY_PORT}/mayabank-platform-operator:v0.1.0"
+OPERATOR_V020="localhost:${REGISTRY_PORT}/mayabank-platform-operator:v0.2.0"
+BUNDLE_V010="localhost:${REGISTRY_PORT}/mayabank-platform-operator-bundle:v0.1.0"
+BUNDLE_V020="localhost:${REGISTRY_PORT}/mayabank-platform-operator-bundle:v0.2.0"
 
 diagnostics() {
   echo "== I6C diagnostics =="
@@ -28,6 +30,7 @@ cleanup() {
   fi
   rm -rf "$TMP_DIR"
   kind delete cluster --name "$CLUSTER_NAME" >/dev/null 2>&1 || true
+  docker rm -f "$REGISTRY_NAME" >/dev/null 2>&1 || true
   exit "$status"
 }
 trap cleanup EXIT
@@ -71,14 +74,39 @@ command -v jq
 command -v "$OPERATOR_SDK"
 "$OPERATOR_SDK" version
 
-echo "== Create Kind cluster =="
+echo "== Start local registry and create Kind cluster =="
+docker rm -f "$REGISTRY_NAME" >/dev/null 2>&1 || true
+docker run -d --restart=always -p "127.0.0.1:${REGISTRY_PORT}:5000" --name "$REGISTRY_NAME" registry:2
+
 kind create cluster --name "$CLUSTER_NAME" --image "$KIND_NODE_IMAGE" --wait 180s
+docker network connect kind "$REGISTRY_NAME"
+
+for node in $(kind get nodes --name "$CLUSTER_NAME"); do
+  registry_dir="/etc/containerd/certs.d/localhost:${REGISTRY_PORT}"
+  docker exec "$node" mkdir -p "$registry_dir"
+  printf '[host."http://%s:5000"]\n' "$REGISTRY_NAME" \
+    | docker exec -i "$node" sh -c "cat > '$registry_dir/hosts.toml'"
+done
+
+cat <<YAML | kubectl apply -f -
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: local-registry-hosting
+  namespace: kube-public
+data:
+  localRegistryHosting.v1: |
+    host: "localhost:${REGISTRY_PORT}"
+    help: "https://kind.sigs.k8s.io/docs/user/local-registry/"
+YAML
+
 kubectl wait --for=condition=Ready node --all --timeout=120s
 kubectl create namespace shared-platform-services
 
-echo "== Build versioned Operator images =="
+echo "== Build and publish versioned Operator images =="
 docker build -t "$OPERATOR_V010" -t "$OPERATOR_V020" "$OPERATOR_DIR"
-kind load docker-image "$OPERATOR_V010" "$OPERATOR_V020" --name "$CLUSTER_NAME"
+docker push "$OPERATOR_V010"
+docker push "$OPERATOR_V020"
 
 echo "== Prepare local bundle build contexts =="
 cp -R "$OPERATOR_DIR/bundle-v0.1.0" "$TMP_DIR/bundle-v0.1.0"
@@ -93,7 +121,8 @@ sed -i "s#ghcr.io/zdmooc/mayabank-platform-operator:v0.2.0#$OPERATOR_V020#g" "$T
 
 docker build -f "$TMP_DIR/bundle-v0.1.0.Dockerfile" -t "$BUNDLE_V010" "$TMP_DIR"
 docker build -f "$TMP_DIR/bundle.Dockerfile" -t "$BUNDLE_V020" "$TMP_DIR"
-kind load docker-image "$BUNDLE_V010" "$BUNDLE_V020" --name "$CLUSTER_NAME"
+docker push "$BUNDLE_V010"
+docker push "$BUNDLE_V020"
 echo "I6C_BUNDLE_VALIDATION=PASS"
 
 echo "== Install OLM development runtime =="
@@ -102,7 +131,12 @@ echo "== Install OLM development runtime =="
 echo "I6C_OLM_INSTALL=PASS"
 
 echo "== Install bundle v0.1.0 through OLM =="
-"$OPERATOR_SDK" run bundle "$BUNDLE_V010"   --namespace shared-platform-services   --install-mode AllNamespaces   --timeout 6m   --image-pull-policy IfNotPresent
+"$OPERATOR_SDK" run bundle "$BUNDLE_V010" \
+  --namespace shared-platform-services \
+  --install-mode AllNamespaces \
+  --timeout 6m \
+  --image-pull-policy IfNotPresent \
+  --use-http
 
 wait_csv mayabank-platform-operator.v0.1.0
 kubectl -n shared-platform-services rollout status deploy/mayabank-platform-operator --timeout=180s
@@ -144,7 +178,11 @@ kubectl -n d093-i6c-consumer get resourcequota platform-quota
 echo "I6C_OLM_CONSUMER_RECONCILE=PASS"
 
 echo "== Upgrade bundle v0.1.0 -> v0.2.0 =="
-"$OPERATOR_SDK" run bundle-upgrade "$BUNDLE_V020"   --namespace shared-platform-services   --timeout 6m   --image-pull-policy IfNotPresent
+"$OPERATOR_SDK" run bundle-upgrade "$BUNDLE_V020" \
+  --namespace shared-platform-services \
+  --timeout 6m \
+  --image-pull-policy IfNotPresent \
+  --use-http
 
 wait_csv mayabank-platform-operator.v0.2.0
 kubectl -n shared-platform-services rollout status deploy/mayabank-platform-operator --timeout=180s
