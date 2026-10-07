@@ -77,7 +77,7 @@ jobs:
           bash -n scripts/*.sh
           python -m compileall -q scripts
 
-      - name: D-093 I6A Platform Operator Go/Kubebuilder gate
+      - name: D-093 I6A/I6B Platform Operator engineering gate
         working-directory: operators/platform-onboarding-operator
         shell: bash
         run: |
