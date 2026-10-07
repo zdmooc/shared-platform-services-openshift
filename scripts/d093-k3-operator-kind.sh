@@ -241,7 +241,8 @@ rbac_rule_index="$(kubectl get clusterrole mayabank-platform-operator -o json | 
 [[ "$rbac_rule_index" =~ ^[0-9]+$ ]]
 original_rbac_verbs="$(kubectl get clusterrole mayabank-platform-operator -o json | jq -c ".rules[$rbac_rule_index].verbs")"
 denied_rbac_verbs="$(printf '%s' "$original_rbac_verbs" | jq -c 'map(select(. != "create"))')"
-kubectl patch clusterrole mayabank-platform-operator --type=json   -p="[{"op":"replace","path":"/rules/$rbac_rule_index/verbs","value":$denied_rbac_verbs}]"
+deny_patch="$(jq -nc --arg path "/rules/$rbac_rule_index/verbs" --argjson verbs "$denied_rbac_verbs" '[{op:"replace",path:$path,value:$verbs}]')"
+kubectl patch clusterrole mayabank-platform-operator --type=json -p="$deny_patch"
 
 cat <<'YAML' | kubectl apply -f -
 apiVersion: platform.mayabank.example/v1alpha1
@@ -290,7 +291,8 @@ if kubectl -n d093-i6b-transient get role platform-consumer-read >/dev/null 2>&1
 fi
 echo "I6B_TRANSIENT_APPLY_FAILURE_OBSERVED=PASS"
 
-kubectl patch clusterrole mayabank-platform-operator --type=json   -p="[{"op":"replace","path":"/rules/$rbac_rule_index/verbs","value":$original_rbac_verbs}]"
+restore_patch="$(jq -nc --arg path "/rules/$rbac_rule_index/verbs" --argjson verbs "$original_rbac_verbs" '[{op:"replace",path:$path,value:$verbs}]')"
+kubectl patch clusterrole mayabank-platform-operator --type=json -p="$restore_patch"
 
 # No CR patch/update here: convergence must come from controller-runtime's queued retry.
 wait_reason i6b-transient-kind Reconciled
