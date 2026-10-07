@@ -28,17 +28,17 @@ import (
 )
 
 const (
-	FieldManager        = "mayabank-platform-operator"
-	ManagedByLabel      = "platform.mayabank.example/managed-by"
-	ConsumerLabel       = "platform.mayabank.example/consumer"
-	ConsumptionLabel    = "platform.mayabank.example/consumption"
-	ManagedByValue      = "mayabank-platform-operator"
+	FieldManager         = "mayabank-platform-operator"
+	ManagedByLabel       = "platform.mayabank.example/managed-by"
+	ConsumerLabel        = "platform.mayabank.example/consumer"
+	ConsumptionLabel     = "platform.mayabank.example/consumption"
+	ManagedByValue       = "mayabank-platform-operator"
 	ConditionReady       = "Ready"
 	ConditionAdoptable   = "AdoptionReady"
 	ConditionDegraded    = "Degraded"
 	ConditionProgressing = "Progressing"
-	platformQuotaName   = "platform-quota"
-	platformLimitsName  = "platform-defaults"
+	platformQuotaName    = "platform-quota"
+	platformLimitsName   = "platform-defaults"
 )
 
 // +kubebuilder:rbac:groups=platform.mayabank.example,resources=capabilityconsumptions,verbs=get;list;watch;update;patch
@@ -386,7 +386,7 @@ func desiredObjects(cc *platformv1alpha1.CapabilityConsumption) []client.Object 
 		&corev1.ServiceAccount{ObjectMeta: metav1.ObjectMeta{Name: "platform-consumer", Namespace: namespace, Labels: labels}},
 		&rbacv1.Role{
 			ObjectMeta: metav1.ObjectMeta{Name: "platform-consumer-read", Namespace: namespace, Labels: labels},
-			Rules: []rbacv1.PolicyRule{{APIGroups: []string{""}, Resources: []string{"services", "configmaps"}, Verbs: []string{"get", "list", "watch"}}},
+			Rules:      []rbacv1.PolicyRule{{APIGroups: []string{""}, Resources: []string{"services", "configmaps"}, Verbs: []string{"get", "list", "watch"}}},
 		},
 		&rbacv1.RoleBinding{
 			ObjectMeta: metav1.ObjectMeta{Name: "platform-consumer-read", Namespace: namespace, Labels: labels},
@@ -429,7 +429,6 @@ func desiredObjects(cc *platformv1alpha1.CapabilityConsumption) []client.Object 
 				}}},
 			},
 		},
-
 	}
 
 	if cc.Spec.Identity.Mode == platformv1alpha1.ConsumeShared {
@@ -489,39 +488,39 @@ func quotaProfile(name string) corev1.ResourceList {
 	switch name {
 	case "small":
 		return corev1.ResourceList{
-			corev1.ResourceRequestsCPU:         resource.MustParse("2"),
-			corev1.ResourceRequestsMemory:      resource.MustParse("4Gi"),
-			corev1.ResourceLimitsCPU:           resource.MustParse("4"),
-			corev1.ResourceLimitsMemory:        resource.MustParse("8Gi"),
+			corev1.ResourceRequestsCPU:            resource.MustParse("2"),
+			corev1.ResourceRequestsMemory:         resource.MustParse("4Gi"),
+			corev1.ResourceLimitsCPU:              resource.MustParse("4"),
+			corev1.ResourceLimitsMemory:           resource.MustParse("8Gi"),
 			corev1.ResourcePersistentVolumeClaims: resource.MustParse("4"),
-			corev1.ResourceRequestsStorage:     resource.MustParse("10Gi"),
+			corev1.ResourceRequestsStorage:        resource.MustParse("10Gi"),
 		}
 	case "ai-medium":
 		return corev1.ResourceList{
-			corev1.ResourceRequestsCPU:         resource.MustParse("6"),
-			corev1.ResourceRequestsMemory:      resource.MustParse("10Gi"),
-			corev1.ResourceLimitsCPU:           resource.MustParse("16"),
-			corev1.ResourceLimitsMemory:        resource.MustParse("24Gi"),
+			corev1.ResourceRequestsCPU:            resource.MustParse("6"),
+			corev1.ResourceRequestsMemory:         resource.MustParse("10Gi"),
+			corev1.ResourceLimitsCPU:              resource.MustParse("16"),
+			corev1.ResourceLimitsMemory:           resource.MustParse("24Gi"),
 			corev1.ResourcePersistentVolumeClaims: resource.MustParse("8"),
-			corev1.ResourceRequestsStorage:     resource.MustParse("20Gi"),
+			corev1.ResourceRequestsStorage:        resource.MustParse("20Gi"),
 		}
 	case "payments-medium":
 		return corev1.ResourceList{
-			corev1.ResourceRequestsCPU:         resource.MustParse("4"),
-			corev1.ResourceRequestsMemory:      resource.MustParse("8Gi"),
-			corev1.ResourceLimitsCPU:           resource.MustParse("12"),
-			corev1.ResourceLimitsMemory:        resource.MustParse("16Gi"),
+			corev1.ResourceRequestsCPU:            resource.MustParse("4"),
+			corev1.ResourceRequestsMemory:         resource.MustParse("8Gi"),
+			corev1.ResourceLimitsCPU:              resource.MustParse("12"),
+			corev1.ResourceLimitsMemory:           resource.MustParse("16Gi"),
 			corev1.ResourcePersistentVolumeClaims: resource.MustParse("6"),
-			corev1.ResourceRequestsStorage:     resource.MustParse("20Gi"),
+			corev1.ResourceRequestsStorage:        resource.MustParse("20Gi"),
 		}
 	default:
 		return corev1.ResourceList{
-			corev1.ResourceRequestsCPU:         resource.MustParse("4"),
-			corev1.ResourceRequestsMemory:      resource.MustParse("8Gi"),
-			corev1.ResourceLimitsCPU:           resource.MustParse("8"),
-			corev1.ResourceLimitsMemory:        resource.MustParse("16Gi"),
+			corev1.ResourceRequestsCPU:            resource.MustParse("4"),
+			corev1.ResourceRequestsMemory:         resource.MustParse("8Gi"),
+			corev1.ResourceLimitsCPU:              resource.MustParse("8"),
+			corev1.ResourceLimitsMemory:           resource.MustParse("16Gi"),
 			corev1.ResourcePersistentVolumeClaims: resource.MustParse("6"),
-			corev1.ResourceRequestsStorage:     resource.MustParse("20Gi"),
+			corev1.ResourceRequestsStorage:        resource.MustParse("20Gi"),
 		}
 	}
 }
