@@ -2,8 +2,8 @@
 
 **Consumer:** `zdmooc/TradeOps-GenAI-Integration`  
 **Classification:** `PRODUCT_CONSUMER` / primary executable AI runtime  
-**Status:** `IMPLEMENTED / STATIC_CONSUMER_CONTRACT_PREPARED`  
-**Runtime promotion:** pending observed D-090 G1/G2 evidence.
+**Status:** `D090_G1_G2_CRC_RUNTIME_PROVEN / D093_I6_OBSERVE_PREPARED`  
+**Runtime promotion:** D-090 G1 and G2 are runtime-proven on CRC; D-093 consumer #2 now advances through brownfield `Observe` before any `Manage` handoff.
 
 ## Shared capabilities consumed
 
@@ -56,16 +56,35 @@ Rules:
 
 ## Evidence boundary
 
-This contract does not claim a real model call or CRC deployment.
+D-090 has now observed and closed:
+- G1 full governed real-model path on CRC;
+- G2 single-consumer live governance on CRC, including model denial, quota, budget, Shared OTel and shared OpenShift Prometheus/Thanos evidence.
 
-Promotion sequence:
+Canonical TradeOps evidence:
+- `evidence/d090/20261007-g1-crc-runtime-proof.md`;
+- `evidence/d090/20261007-g2-crc-runtime-proof.md`.
+
+The next platform-consumer proof is D-093 I6 consumer #2.
+
+Brownfield sequence:
 
 ```text
-STATIC_CONSUMER_CONTRACT_PREPARED
- -> TESTED × SINGLE_CONSUMER
- -> DEPLOYED × SINGLE_CONSUMER
- -> VERIFIED × SINGLE_CONSUMER
+Observe
+ -> ownership inventory / zero namespace mutation
+ -> refresh brownfield capacity + ownership map
+ -> explicit approval
+ -> Manage only if safe
 ```
+
+The Observe CR is `consumers/tradeops/capability-consumption-crc-observe.yaml`.
+
+Observe does **not** authorize:
+- transfer of PostgreSQL, Redpanda/Kafka or Qdrant;
+- transfer of TradeOps Deployments/StatefulSets/Services/Routes;
+- deletion or replacement of product NetworkPolicies;
+- `Manage`.
+
+The provisional `ai-medium` profile in the Observe CR is intent only; Manage sizing must be refreshed from actual brownfield resource usage before approval.
 
 G3/G4 later add ODM and cross-consumer isolation.
 
