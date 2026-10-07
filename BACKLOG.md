@@ -135,6 +135,20 @@ No destructive finalizer is introduced: `deletionPolicy=Retain` remains the V1 b
 - [x] add bounded retryable-failure metric; Platform CI `37590043833` SUCCESS and Kind Runtime `37590044290` SUCCESS.
 - [x] merged PR #9 to `main` — squash commit `079b3f11a4b514e636b04bcaf97feabbc3fc66f0`.
 
+### I6C — OLM / OpenShift Operator Packaging — IMPLEMENTED / RUNTIME GATES PENDING
+- [x] bundle v0.1.0 lifecycle fixture;
+- [x] current bundle v0.2.0 + CSV;
+- [x] explicit `replaces: v0.1.0` upgrade edge;
+- [x] stable file-based catalog;
+- [x] bundle/catalog Dockerfiles;
+- [x] OpenShift OLM Classic manifests;
+- [x] OpenShift 4.22 OLM v1 ClusterCatalog/ClusterExtension surfaces;
+- [x] CI bundle/FBC/image build gates;
+- [x] Kind OLM install/upgrade/uninstall test implemented;
+- [ ] Platform CI green;
+- [ ] Kind OLM lifecycle green;
+- [ ] merge I6C and promote the observed claim.
+
 ### Next — I6 CRC consumer #2 / TradeOps brownfield
 - [ ] onboard TradeOps in Observe;
 - [ ] inventory real brownfield ownership conflicts;
