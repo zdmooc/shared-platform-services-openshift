@@ -16,7 +16,7 @@
 | O3 | Evidence hardening | COMPLETE | differentiated CRC evidence recorded; HA/production not claimed |
 | D-093 K3 I4 | CapabilityConsumption Platform Operator | IMPLEMENTED | ENVTEST_VALIDATED + KIND_RUNTIME_PROVEN_PLATFORM_OPERATOR |
 | D-093 K3/K4 I5 | Instant Payments consumer #1 on CRC | COMPLETE | CONSUMER_1_CRC_RUNTIME_PROVEN |
-| D-093 I6A | Production-style Go/Kubebuilder hardening | IMPLEMENTED / PR #8 OPEN | PLATFORM_CI_PROVEN + KIND_RUNTIME_PROVEN_I6A |
+| D-093 I6A | Production-style Go/Kubebuilder hardening | CLOSED | PLATFORM_CI_PROVEN + KIND_RUNTIME_PROVEN_I6A |
 
 ## Recorded evidence
 
@@ -26,6 +26,7 @@
 - S7 consumer main commit bc2ba297f0b2807c7168047e3c4ca4c674f942b5 inspected and contract verified.
 - D-093 K3/I4 main commit `107ea4d7c651d12295a77d851ab8c2d6c8763fe8`; Platform CI `37224601724` SUCCESS; Operator Kind runtime `37224601718` SUCCESS.
 - D-093 I5 Platform Operator main commit `bebb508b5329be158ab790808a09b19b68f89a06`; final Operator image digest `sha256:ee3c1caed1d27642f11e7491a0e46442a08b0b6cb84df4258c4b7f52a8798d73`; Instant Payments product revision `5549750fd010a1df2f14adfc6da49de799c882c2`; CRC consumer #1 closure observed 2026-10-05.
+- D-093 I6A main merge `0d1d50ff52cfe1ee1734361db89837f34baec744`; pre-merge final green head `9c4ddb5df7bbd65211d1829a290b624f33a3a2a6`; Platform CI `37587568757` SUCCESS; Operator Kind Runtime `37587568715` SUCCESS.
 
 ## S5 result
 
@@ -96,7 +97,7 @@ Allowed claim: `CONSUMER_1_CRC_RUNTIME_PROVEN`.
 
 Canonical evidence: `evidence/runtime/D093-K3-I5-crc-consumer1-instant-payments-20261005.md`.
 
-Next gate: I6 TradeOps brownfield consumer #2. CRC single-node evidence still does not prove HA, production or cloud runtime.
+Next gate: I6B Day-2 / Failure Engineering, then I6C OLM/OpenShift packaging. TradeOps consumer #2 remains Observe-only until D-090 G1/G2 and MCP-R5 gates permit Manage. CRC single-node evidence still does not prove HA, production or cloud runtime.
 
 ## Current CRC promotion state
 
