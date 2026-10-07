@@ -4,7 +4,7 @@ Plateforme technique commune MayaBank pour mutualiser les capacités transverses
 
 ## Statut
 
-**V1 / O3 COMPLETE + D-093 K3/K4 I5 — PLATFORM OPERATOR KIND_RUNTIME_PROVEN + CONSUMER_1_CRC_RUNTIME_PROVEN + CRC SHARED OBSERVABILITY/IDENTITY PROVEN**
+**V1 / O3 COMPLETE + D-093 I6A-I6C CLOSED + CONSUMER_1_CRC_RUNTIME_PROVEN + TRADEOPS CONSUMER_2 OBSERVE PREPARED + CRC SHARED OBSERVABILITY/IDENTITY PROVEN**
 
 Le dépôt fournit les contrats, manifests, GitOps, observabilité, IAM/secrets patterns, qualité et CI du socle commun.
 
@@ -135,3 +135,19 @@ Consumers actuels :
 - API Management — spécialisé, runtime CRC prouvé ;
 - Instant Payments — produit flagship, Shared OIDC + Shared OTel runtime CRC prouvé ;
 - Customer/KYC/Digital — produit, contrat statique validé.
+
+
+## D-093 I6 — TradeOps consumer #2
+
+D-090 G1/G2 are now CRC runtime-proven. The next canonical Platform Operator gate is TradeOps brownfield **Observe**.
+
+Prepared assets:
+- `consumers/tradeops/capability-consumption-crc-observe.yaml`;
+- `scripts/d093-i6-tradeops-observe-crc.sh`;
+- `docs/runbooks/D093_I6_TRADEOPS_OBSERVE_CRC.md`.
+
+Boundary:
+- Observe only;
+- zero TradeOps namespace mutation required;
+- PostgreSQL, Redpanda/Kafka, Qdrant and all product workloads remain product-owned;
+- `Manage` is explicitly not authorized until brownfield inventory/capacity is refreshed and approved.
