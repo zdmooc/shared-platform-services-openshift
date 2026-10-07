@@ -169,7 +169,7 @@ AFTER_HASH="$(sha256sum "$OUT/07-after.json" | awk '{print $1}')"
 echo "$AFTER_HASH" > "$OUT/07-after.sha256"
 
 if [[ "$BEFORE_HASH" != "$AFTER_HASH" ]]; then
-  python - "$OUT/01-before.json" "$OUT/07-after.json" <<'PY'
+  python - "$OUT/01-before.json" "$OUT/07-after.json" > "$OUT/08-namespace-diff-keys.txt" <<'PY'
 import json, sys
 before=json.load(open(sys.argv[1],encoding="utf-8"))
 after=json.load(open(sys.argv[2],encoding="utf-8"))
@@ -180,18 +180,15 @@ for key in keys:
     if b.get(key) != a.get(key):
         print(key)
 PY
-  > "$OUT/08-namespace-diff-keys.txt"
   echo "D093_I6_OBSERVE_FAIL namespace_mutation_detected" >&2
   exit 1
 fi
 echo "D093_I6_ZERO_NAMESPACE_MUTATION=PASS"
 
-# Explicitly prove protected product runtime assets remain product-owned and unchanged.
-oc -n "$NAMESPACE" get deployments,statefulsets,pvc -o wide   > "$OUT/09-protected-workloads-after.txt"
-if ! diff -u "$OUT/02-protected-workloads-before.txt" "$OUT/09-protected-workloads-after.txt"   > "$OUT/10-protected-workloads.diff"; then
-  echo "D093_I6_OBSERVE_FAIL protected_workload_inventory_changed" >&2
-  exit 1
-fi
+# The canonical namespace hash above includes Deployment/StatefulSet/PVC specs.
+# Capture a human-readable after inventory without comparing AGE/status columns.
+oc -n "$NAMESPACE" get deployments,statefulsets,pvc -o wide \
+  > "$OUT/09-protected-workloads-after.txt"
 echo "D093_I6_PROTECTED_WORKLOADS_UNCHANGED=PASS"
 
 # No platform baseline may be created by Observe.
