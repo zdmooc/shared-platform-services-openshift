@@ -155,12 +155,12 @@ I6A, I6B and I6C are closed. The current commercial claim is `KIND_OLM_LIFECYCLE
 
 ### Next — I6 CRC consumer #2 / TradeOps brownfield
 - [x] prepare TradeOps Observe CR and zero-mutation evidence wrapper;
-- [ ] execute TradeOps in Observe on CRC;
-- [ ] inventory real brownfield ownership conflicts;
+- [x] execute TradeOps in Observe on CRC — `D093_TRADEOPS_OBSERVE_CRC_RUNTIME_PROVEN`;
+- [x] inventory real brownfield ownership conflicts — `OwnershipConflict` observed; detailed message retained in local raw evidence;
 - [ ] refresh brownfield capacity/resource profile before any Manage decision;
-- [ ] preserve product-owned workloads, PostgreSQL, Redpanda/Kafka and Qdrant;
+- [x] preserve product-owned workloads, PostgreSQL, Redpanda/Kafka and Qdrant during Observe — zero mutation proven;
 - [ ] transfer only the common platform baseline after explicit approval;
 - [ ] prove no double ownership and no runtime regression;
 - [ ] promote only observed CRC evidence.
 
-Current status: **OBSERVE_PREPARED / CRC_RUNTIME_PENDING / MANAGE_NOT_AUTHORIZED**.
+Current status: **OBSERVE_CRC_RUNTIME_PROVEN / OWNERSHIP_CONFLICT_OBSERVED / MANAGE_NOT_AUTHORIZED**. Canonical evidence: `evidence/runtime/D093-I6-crc-consumer2-tradeops-observe-20261007.md`.
