@@ -112,6 +112,20 @@ Allowed claim: `CONSUMER_1_CRC_RUNTIME_PROVEN`.
 
 Canonical evidence: `evidence/runtime/D093-K3-I5-crc-consumer1-instant-payments-20261005.md`.
 
+### I6A — Production-style Operator Engineering — IMPLEMENTED / CI + KIND RUNTIME PROVEN / PR #8 OPEN
+- [x] add Kubebuilder-style Makefile and pinned controller-gen tooling;
+- [x] add CRD profile validation markers;
+- [x] add Progressing / Degraded conditions;
+- [x] add bounded reconciliation metrics;
+- [x] add Lease-based leader election + RBAC;
+- [x] add partial-apply failure / idempotent recovery envtest;
+- [x] extend Kind runtime script with CRD negative test, two-replica Lease proof and metrics proof;
+- [x] Platform CI green on the I6A branch — run `37587208717` SUCCESS;
+- [x] D093 Kind runtime workflow green with I6A evidence — run `37587208723` SUCCESS;
+- [ ] merge I6A and promote the claim.
+
+No destructive finalizer is introduced: `deletionPolicy=Retain` remains the V1 brownfield safety contract.
+
 ### Next — I6 CRC consumer #2 / TradeOps brownfield
 - [ ] onboard TradeOps in Observe;
 - [ ] inventory real brownfield ownership conflicts;

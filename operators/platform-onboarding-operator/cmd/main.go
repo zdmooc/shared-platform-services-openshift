@@ -1,6 +1,7 @@
 package main
 
 import (
+	"flag"
 	"os"
 
 	"k8s.io/apimachinery/pkg/runtime"
@@ -8,8 +9,8 @@ import (
 	clientgoscheme "k8s.io/client-go/kubernetes/scheme"
 	ctrl "sigs.k8s.io/controller-runtime"
 	"sigs.k8s.io/controller-runtime/pkg/healthz"
-	metricsserver "sigs.k8s.io/controller-runtime/pkg/metrics/server"
 	"sigs.k8s.io/controller-runtime/pkg/log/zap"
+	metricsserver "sigs.k8s.io/controller-runtime/pkg/metrics/server"
 
 	platformv1alpha1 "github.com/zdmooc/shared-platform-services-openshift/operators/platform-onboarding-operator/api/v1alpha1"
 	"github.com/zdmooc/shared-platform-services-openshift/operators/platform-onboarding-operator/internal/controller"
@@ -23,14 +24,25 @@ func init() {
 }
 
 func main() {
+	var metricsAddr string
+	var probeAddr string
+	var enableLeaderElection bool
+
+	flag.StringVar(&metricsAddr, "metrics-bind-address", ":8080", "The address the metrics endpoint binds to.")
+	flag.StringVar(&probeAddr, "health-probe-bind-address", ":8081", "The address the probe endpoint binds to.")
+	flag.BoolVar(&enableLeaderElection, "leader-elect", false, "Enable leader election for controller manager.")
+	flag.Parse()
+
 	ctrl.SetLogger(zap.New(zap.UseDevMode(false)))
 	setupLog := ctrl.Log.WithName("setup")
 
 	mgr, err := ctrl.NewManager(ctrl.GetConfigOrDie(), ctrl.Options{
-		Scheme:                 scheme,
-		Metrics:                metricsserver.Options{BindAddress: ":8080"},
-		HealthProbeBindAddress: ":8081",
-		LeaderElection:         false,
+		Scheme:                        scheme,
+		Metrics:                       metricsserver.Options{BindAddress: metricsAddr},
+		HealthProbeBindAddress:        probeAddr,
+		LeaderElection:                enableLeaderElection,
+		LeaderElectionID:              "mayabank-platform-operator.platform.mayabank.example",
+		LeaderElectionReleaseOnCancel: true,
 	})
 	if err != nil {
 		setupLog.Error(err, "unable to start manager")
@@ -55,7 +67,7 @@ func main() {
 		os.Exit(1)
 	}
 
-	setupLog.Info("K3 controller ready")
+	setupLog.Info("K3 controller ready", "leaderElection", enableLeaderElection)
 	if err := mgr.Start(ctrl.SetupSignalHandler()); err != nil {
 		setupLog.Error(err, "manager stopped with error")
 		os.Exit(1)

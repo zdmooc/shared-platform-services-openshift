@@ -42,14 +42,17 @@ type ConsumerIdentity struct {
 }
 
 type TargetSpec struct {
+	// +kubebuilder:validation:MinLength=1
 	Namespace string `json:"namespace,omitempty"`
 }
 
 type ResourceProfileSpec struct {
+	// +kubebuilder:validation:Enum=small;medium;payments-medium;ai-medium
 	Profile string `json:"profile,omitempty"`
 }
 
 type NetworkProfileSpec struct {
+	// +kubebuilder:validation:Enum=restricted
 	Profile string `json:"profile,omitempty"`
 }
 

@@ -24,7 +24,17 @@ spec:
         - name: manager
           image: ghcr.io/zdmooc/mayabank-platform-operator:dev
           imagePullPolicy: IfNotPresent
-          args: []
+          args:
+            - --leader-elect=true
+            - --metrics-bind-address=:8080
+            - --health-probe-bind-address=:8081
+          ports:
+            - name: metrics
+              containerPort: 8080
+              protocol: TCP
+            - name: health
+              containerPort: 8081
+              protocol: TCP
           securityContext:
             allowPrivilegeEscalation: false
             capabilities:

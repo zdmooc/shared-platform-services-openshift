@@ -77,17 +77,26 @@ jobs:
           bash -n scripts/*.sh
           python -m compileall -q scripts
 
-      - name: D-093 K3 Platform Operator API + envtest gate
+      - name: D-093 I6A Platform Operator Go/Kubebuilder gate
         working-directory: operators/platform-onboarding-operator
         shell: bash
         run: |
           set -euo pipefail
           go mod tidy
           git diff --exit-code -- go.mod go.sum
-          go vet ./...
-          go install sigs.k8s.io/controller-runtime/tools/setup-envtest@release-0.23
-          export KUBEBUILDER_ASSETS="$(setup-envtest use -p path 1.35.x!)"
-          go test ./... -count=1
+          make fmt
+          git diff --exit-code -- '*.go'
+          make vet
+          make test
+          rm -rf /tmp/i6a-generated-crd /tmp/i6a-generated-rbac
+          mkdir -p /tmp/i6a-generated-crd /tmp/i6a-generated-rbac
+          make manifests CRD_OUTPUT=/tmp/i6a-generated-crd RBAC_OUTPUT=/tmp/i6a-generated-rbac
+          find /tmp/i6a-generated-crd /tmp/i6a-generated-rbac -type f -maxdepth 2 -print
+          test -n "$(find /tmp/i6a-generated-crd -type f -print -quit)"
+          test -n "$(find /tmp/i6a-generated-rbac -type f -print -quit)"
+          grep -R -q 'payments-medium' /tmp/i6a-generated-crd
+          grep -R -q 'coordination.k8s.io' /tmp/i6a-generated-rbac
+          grep -R -q 'leases' /tmp/i6a-generated-rbac
 
       - name: Consumer contract gates
         shell: bash

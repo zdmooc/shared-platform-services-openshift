@@ -2,6 +2,7 @@ package controller
 
 import (
 	"context"
+	"errors"
 	"os"
 	"path/filepath"
 	"strings"
@@ -301,6 +302,116 @@ func TestDesiredObjectsHonorSharedCapabilityIntent(t *testing.T) {
 	}
 }
 
+func TestProgressingAndDegradedConditions(t *testing.T) {
+	ctx := context.Background()
+	cc := newConsumption("condition-model-i6a", "condition-model", "condition-model-i6a", platformv1alpha1.AdoptionManage)
+	mustCreate(t, ctx, cc)
+
+	r := reconciler()
+	if err := r.setProgressingStatus(ctx, cc, "Reconciling", "test transition"); err != nil {
+		t.Fatalf("set progressing status: %v", err)
+	}
+
+	got := &platformv1alpha1.CapabilityConsumption{}
+	if err := testClient.Get(ctx, client.ObjectKey{Name: cc.Name}, got); err != nil {
+		t.Fatalf("get progressing status: %v", err)
+	}
+	progressing := meta.FindStatusCondition(got.Status.Conditions, ConditionProgressing)
+	if progressing == nil || progressing.Status != metav1.ConditionTrue {
+		t.Fatalf("expected Progressing=True, got %#v", progressing)
+	}
+	degraded := meta.FindStatusCondition(got.Status.Conditions, ConditionDegraded)
+	if degraded == nil || degraded.Status != metav1.ConditionFalse {
+		t.Fatalf("expected Degraded=False while progressing, got %#v", degraded)
+	}
+
+	got.Spec.Target.Namespace = ""
+	if err := testClient.Update(ctx, got); err != nil {
+		t.Fatalf("update invalid spec: %v", err)
+	}
+	if _, err := r.Reconcile(ctx, ctrl.Request{NamespacedName: client.ObjectKey{Name: cc.Name}}); err != nil {
+		t.Fatalf("reconcile invalid spec: %v", err)
+	}
+	if err := testClient.Get(ctx, client.ObjectKey{Name: cc.Name}, got); err != nil {
+		t.Fatalf("get degraded status: %v", err)
+	}
+	degraded = meta.FindStatusCondition(got.Status.Conditions, ConditionDegraded)
+	if degraded == nil || degraded.Status != metav1.ConditionTrue || degraded.Reason != "InvalidSpec" {
+		t.Fatalf("expected Degraded=True/InvalidSpec, got %#v", degraded)
+	}
+}
+
+func TestPartialApplyFailureRecoversIdempotently(t *testing.T) {
+	ctx := context.Background()
+	ns := "partial-recovery-i6a"
+	cc := newConsumption("partial-recovery-i6a", "partial-recovery", ns, platformv1alpha1.AdoptionManage)
+	mustCreate(t, ctx, cc)
+
+	faulty := &failApplyClient{Client: testClient, failAt: 3}
+	r := &CapabilityConsumptionReconciler{
+		Client:   faulty,
+		Scheme:   testScheme,
+		Recorder: record.NewFakeRecorder(100),
+	}
+	req := ctrl.Request{NamespacedName: client.ObjectKey{Name: cc.Name}}
+	if _, err := r.Reconcile(ctx, req); err != nil {
+		t.Fatalf("first reconcile should report failure through status: %v", err)
+	}
+
+	got := &platformv1alpha1.CapabilityConsumption{}
+	if err := testClient.Get(ctx, client.ObjectKey{Name: cc.Name}, got); err != nil {
+		t.Fatalf("get failed status: %v", err)
+	}
+	ready := meta.FindStatusCondition(got.Status.Conditions, ConditionReady)
+	degraded := meta.FindStatusCondition(got.Status.Conditions, ConditionDegraded)
+	if ready == nil || ready.Reason != "ApplyFailed" {
+		t.Fatalf("expected ApplyFailed, got %#v", ready)
+	}
+	if degraded == nil || degraded.Status != metav1.ConditionTrue {
+		t.Fatalf("expected Degraded=True after partial failure, got %#v", degraded)
+	}
+
+	var namespace corev1.Namespace
+	if err := testClient.Get(ctx, client.ObjectKey{Name: ns}, &namespace); err != nil {
+		t.Fatalf("expected first successful apply to remain: %v", err)
+	}
+	var sa corev1.ServiceAccount
+	if err := testClient.Get(ctx, client.ObjectKey{Namespace: ns, Name: "platform-consumer"}, &sa); err != nil {
+		t.Fatalf("expected second successful apply to remain: %v", err)
+	}
+
+	if _, err := r.Reconcile(ctx, req); err != nil {
+		t.Fatalf("second reconcile recovery: %v", err)
+	}
+	if err := testClient.Get(ctx, client.ObjectKey{Name: cc.Name}, got); err != nil {
+		t.Fatalf("get recovered status: %v", err)
+	}
+	ready = meta.FindStatusCondition(got.Status.Conditions, ConditionReady)
+	degraded = meta.FindStatusCondition(got.Status.Conditions, ConditionDegraded)
+	if ready == nil || ready.Status != metav1.ConditionTrue || ready.Reason != "Reconciled" {
+		t.Fatalf("expected recovered Ready/Reconciled, got %#v", ready)
+	}
+	if degraded == nil || degraded.Status != metav1.ConditionFalse {
+		t.Fatalf("expected Degraded=False after recovery, got %#v", degraded)
+	}
+}
+
+type failApplyClient struct {
+	client.Client
+	applyCalls int
+	failAt     int
+	failed     bool
+}
+
+func (c *failApplyClient) Apply(ctx context.Context, obj runtime.ApplyConfiguration, opts ...client.ApplyOption) error {
+	c.applyCalls++
+	if !c.failed && c.applyCalls == c.failAt {
+		c.failed = true
+		return errors.New("injected partial apply failure")
+	}
+	return c.Client.Apply(ctx, obj, opts...)
+}
+
 func objectNames(objects []client.Object) map[string]bool {
 	out := map[string]bool{}
 	for _, obj := range objects {
@@ -320,7 +431,7 @@ func reconciler() *CapabilityConsumptionReconciler {
 func newConsumption(name, consumer, namespace string, policy platformv1alpha1.AdoptionPolicy) *platformv1alpha1.CapabilityConsumption {
 	ref := platformv1alpha1.CapabilitySelection{Mode: platformv1alpha1.ReferenceOnly}
 	return &platformv1alpha1.CapabilityConsumption{
-		TypeMeta: metav1.TypeMeta{APIVersion: platformv1alpha1.GroupVersion.String(), Kind: "CapabilityConsumption"},
+		TypeMeta:   metav1.TypeMeta{APIVersion: platformv1alpha1.GroupVersion.String(), Kind: "CapabilityConsumption"},
 		ObjectMeta: metav1.ObjectMeta{Name: name},
 		Spec: platformv1alpha1.CapabilityConsumptionSpec{
 			Consumer:      platformv1alpha1.ConsumerIdentity{Name: consumer, Owner: "test", Environment: "envtest"},
