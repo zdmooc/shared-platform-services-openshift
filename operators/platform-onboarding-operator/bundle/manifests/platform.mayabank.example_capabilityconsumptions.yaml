@@ -1,0 +1,204 @@
+apiVersion: apiextensions.k8s.io/v1
+kind: CustomResourceDefinition
+metadata:
+  name: capabilityconsumptions.platform.mayabank.example
+spec:
+  group: platform.mayabank.example
+  scope: Cluster
+  names:
+    plural: capabilityconsumptions
+    singular: capabilityconsumption
+    kind: CapabilityConsumption
+    shortNames:
+      - capcons
+  versions:
+    - name: v1alpha1
+      served: true
+      storage: true
+      additionalPrinterColumns:
+        - name: Consumer
+          type: string
+          jsonPath: .spec.consumer.name
+        - name: Environment
+          type: string
+          jsonPath: .spec.consumer.environment
+        - name: Namespace
+          type: string
+          jsonPath: .spec.target.namespace
+        - name: Adoption
+          type: string
+          jsonPath: .spec.lifecycle.adoptionPolicy
+        - name: Ready
+          type: string
+          jsonPath: '.status.conditions[?(@.type=="Ready")].status'
+      subresources:
+        status: {}
+      schema:
+        openAPIV3Schema:
+          type: object
+          properties:
+            apiVersion:
+              type: string
+            kind:
+              type: string
+            metadata:
+              type: object
+            spec:
+              type: object
+              required:
+                - identity
+                - observability
+                - secrets
+                - gitops
+                - quality
+                - eventing
+                - database
+                - objectStorage
+              properties:
+                consumer:
+                  type: object
+                  properties:
+                    name: {type: string}
+                    owner: {type: string}
+                    environment: {type: string}
+                target:
+                  type: object
+                  properties:
+                    namespace: {type: string, minLength: 1}
+                identity:
+                  type: object
+                  required: [mode]
+                  properties:
+                    mode:
+                      type: string
+                      enum: [CONSUME_SHARED, DEDICATED_FOR_TEST, SPECIALIZED_PLATFORM, PRODUCT_OWNED, REFERENCE_ONLY]
+                observability:
+                  type: object
+                  required: [mode]
+                  properties:
+                    mode:
+                      type: string
+                      enum: [CONSUME_SHARED, DEDICATED_FOR_TEST, SPECIALIZED_PLATFORM, PRODUCT_OWNED, REFERENCE_ONLY]
+                secrets:
+                  type: object
+                  required: [mode]
+                  properties:
+                    mode:
+                      type: string
+                      enum: [CONSUME_SHARED, DEDICATED_FOR_TEST, SPECIALIZED_PLATFORM, PRODUCT_OWNED, REFERENCE_ONLY]
+                gitops:
+                  type: object
+                  required: [mode]
+                  properties:
+                    mode:
+                      type: string
+                      enum: [CONSUME_SHARED, DEDICATED_FOR_TEST, SPECIALIZED_PLATFORM, PRODUCT_OWNED, REFERENCE_ONLY]
+                quality:
+                  type: object
+                  required: [mode]
+                  properties:
+                    mode:
+                      type: string
+                      enum: [CONSUME_SHARED, DEDICATED_FOR_TEST, SPECIALIZED_PLATFORM, PRODUCT_OWNED, REFERENCE_ONLY]
+                eventing:
+                  type: object
+                  required: [mode]
+                  properties:
+                    mode:
+                      type: string
+                      enum: [CONSUME_SHARED, DEDICATED_FOR_TEST, SPECIALIZED_PLATFORM, PRODUCT_OWNED, REFERENCE_ONLY]
+                database:
+                  type: object
+                  required: [mode]
+                  properties:
+                    mode:
+                      type: string
+                      enum: [CONSUME_SHARED, DEDICATED_FOR_TEST, SPECIALIZED_PLATFORM, PRODUCT_OWNED, REFERENCE_ONLY]
+                objectStorage:
+                  type: object
+                  required: [mode]
+                  properties:
+                    mode:
+                      type: string
+                      enum: [CONSUME_SHARED, DEDICATED_FOR_TEST, SPECIALIZED_PLATFORM, PRODUCT_OWNED, REFERENCE_ONLY]
+                resources:
+                  type: object
+                  properties:
+                    profile:
+                      type: string
+                      enum: [small, medium, payments-medium, ai-medium]
+                network:
+                  type: object
+                  properties:
+                    profile:
+                      type: string
+                      enum: [restricted]
+                gitSource:
+                  type: object
+                  properties:
+                    repository: {type: string}
+                    revision: {type: string}
+                    path: {type: string}
+                lifecycle:
+                  type: object
+                  default:
+                    adoptionPolicy: Observe
+                    deletionPolicy: Retain
+                  properties:
+                    adoptionPolicy:
+                      type: string
+                      enum: [Observe, Manage]
+                      default: Observe
+                    deletionPolicy:
+                      type: string
+                      enum: [Retain]
+                      default: Retain
+                externalPlatforms:
+                  type: object
+                  additionalProperties:
+                    type: object
+                    required: [mode]
+                    properties:
+                      mode:
+                        type: string
+                        enum: [CONSUME_SHARED, DEDICATED_FOR_TEST, SPECIALIZED_PLATFORM, PRODUCT_OWNED, REFERENCE_ONLY]
+                      owner: {type: string}
+                      exitGate: {type: string}
+                ownedCapabilities:
+                  type: array
+                  items: {type: string}
+            status:
+              type: object
+              properties:
+                observedGeneration:
+                  type: integer
+                  format: int64
+                conditions:
+                  type: array
+                  items:
+                    type: object
+                    required: [lastTransitionTime, message, reason, status, type]
+                    properties:
+                      lastTransitionTime:
+                        type: string
+                        format: date-time
+                      message: {type: string}
+                      observedGeneration:
+                        type: integer
+                        format: int64
+                      reason: {type: string}
+                      status:
+                        type: string
+                        enum: ["True", "False", Unknown]
+                      type: {type: string}
+                  x-kubernetes-list-type: map
+                  x-kubernetes-list-map-keys: [type]
+                managedResources:
+                  type: array
+                  items:
+                    type: object
+                    properties:
+                      apiVersion: {type: string}
+                      kind: {type: string}
+                      namespace: {type: string}
+                      name: {type: string}
