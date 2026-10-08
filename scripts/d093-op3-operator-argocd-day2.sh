@@ -49,12 +49,15 @@ wait_capability_reason() {
 }
 
 restore_on_failure() {
-  status=$?
+  local status=$?
+  trap - EXIT
   if [[ "$status" -ne 0 ]]; then
-    log "== OP3 failure diagnostics =="
-    oc -n "$ARGO_NAMESPACE" get application "$ARGO_APP" -o yaml 2>/dev/null || true
-    oc get capabilityconsumption "$CAPABILITY_CONSUMPTION" -o yaml 2>/dev/null || true
-    oc -n "$PAYMENT_NAMESPACE" get deploy "$PRODUCT_DEPLOYMENT" resourcequota "$PLATFORM_QUOTA" -o yaml 2>/dev/null || true
+    if [[ "$PRODUCT_DRIFT_INJECTED" != "true" && "$PLATFORM_DRIFT_INJECTED" != "true" ]]; then
+      log "OP3_EXIT_WITHOUT_MUTATION=PASS (no drift injected, no rollback required)"
+    else
+      log "== OP3 bounded recovery diagnostics =="
+      oc -n "$PAYMENT_NAMESPACE" get deployment/"$PRODUCT_DEPLOYMENT" resourcequota/"$PLATFORM_QUOTA" -o wide 2>/dev/null || true
+    fi
 
     if [[ "$PRODUCT_DRIFT_INJECTED" == "true" && -n "$ORIGINAL_REPLICAS" ]]; then
       oc -n "$PAYMENT_NAMESPACE" patch deploy "$PRODUCT_DEPLOYMENT" --type merge         -p "{\"spec\":{\"replicas\":$ORIGINAL_REPLICAS}}" >/dev/null 2>&1 || true
@@ -89,7 +92,23 @@ oc -n "$PAYMENT_NAMESPACE" get resourcequota "$PLATFORM_QUOTA" >/dev/null
 
 wait_jsonpath "application/$ARGO_APP" '{.status.sync.status}' "Synced" "$ARGO_NAMESPACE"
 wait_jsonpath "application/$ARGO_APP" '{.status.health.status}' "Healthy" "$ARGO_NAMESPACE"
-wait_capability_reason Reconciled
+
+if [[ "${OP3_PREFLIGHT_ONLY:-false}" == "true" ]]; then
+  capability_state="$(oc get capabilityconsumption "$CAPABILITY_CONSUMPTION" -o json)"
+  ready_reason="$(printf '%s' "$capability_state" | jq -r '[.status.conditions[]? | select(.type=="Ready") | .reason] | last // "NoReadyCondition"')"
+  if [[ "$ready_reason" != "Reconciled" ]]; then
+    log "OP3_PREFLIGHT_BLOCKED=OPERATOR_NOT_RECONCILED"
+    printf '%s' "$capability_state" | jq -r '.status.conditions[]? | select(.type=="Ready") | "Ready=\(.status) reason=\(.reason) lastTransitionTime=\(.lastTransitionTime) message=\(.message)"'
+    log "== Operator deployment (read-only) =="
+    oc -n shared-platform-services get deploy/mayabank-platform-operator -o wide 2>/dev/null || true
+    log "== Tekton proxy webhook endpoints (read-only) =="
+    oc -n openshift-pipelines get endpoints/tekton-operator-proxy-webhook -o wide 2>/dev/null || true
+    log "An old Ready condition alone does not prove the webhook is still unavailable now."
+    exit 32
+  fi
+else
+  wait_capability_reason Reconciled
+fi
 
 adoption="$(oc get capabilityconsumption "$CAPABILITY_CONSUMPTION" -o jsonpath='{.spec.lifecycle.adoptionPolicy}')"
 [[ "$adoption" == "Manage" ]] || {
