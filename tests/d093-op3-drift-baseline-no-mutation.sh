@@ -17,8 +17,8 @@ case "$*" in
   "whoami --show-server") echo https://api.crc.testing:6443 ;;
   "get clusterversion") echo "version 4.22.7" ;;
   "api-resources") echo "applications app argoproj.io/v1alpha1 true Application" ;;
-  *"get application instant-payments-tech-lead-shared-platform -o jsonpath={.status.sync.status}") echo Synced ;;
-  *"get application instant-payments-tech-lead-shared-platform -o jsonpath={.status.health.status}") echo Healthy ;;
+  *"get application/instant-payments-tech-lead-shared-platform -o jsonpath={.status.sync.status}") echo Synced ;;
+  *"get application/instant-payments-tech-lead-shared-platform -o jsonpath={.status.health.status}") echo Healthy ;;
   "get capabilityconsumption instant-payments-crc -o jsonpath={.spec.lifecycle.adoptionPolicy}") echo Manage ;;
   "get capabilityconsumption instant-payments-crc -o json")
     echo '{"status":{"conditions":[{"type":"Ready","status":"True","reason":"Reconciled"}],"managedResources":[{"kind":"Namespace"},{"kind":"ResourceQuota"}]}}' ;;
