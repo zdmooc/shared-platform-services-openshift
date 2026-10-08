@@ -37,7 +37,7 @@ exit 0
 MOCK
 chmod +x "$TEST_DIR/bin/"*
 
-for scenario in existing_namespace existing_cr read_only; do
+for scenario in existing_namespace existing_cr read_only unauthorized; do
   log="$TEST_DIR/$scenario-oc.log"
   : >"$log"
   set +e
@@ -49,6 +49,7 @@ for scenario in existing_namespace existing_cr read_only; do
   expected=20
   [[ "$scenario" == existing_cr ]] && expected=22
   [[ "$scenario" == read_only ]] && expected=0
+  [[ "$scenario" == unauthorized ]] && expected=23
   if [[ "$rc" != "$expected" ]]; then
     cat "$TEST_DIR/$scenario.log"
     echo "Expected preflight exit $expected for $scenario, got $rc" >&2
