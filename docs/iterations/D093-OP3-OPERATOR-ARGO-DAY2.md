@@ -58,3 +58,26 @@ Second user-run command output establishes:
 **Claim boundary:** ready Tekton proxy pod and current service endpoint disprove a *currently missing-endpoints* hypothesis, but do **not** prove admission request success or tell whether the Operator retried after recovery. Kubernetes `meta.SetStatusCondition` retains `lastTransitionTime` when the condition status is unchanged; inspect recent Operator logs/events to distinguish active admission failure versus unreconciled state. Controller source returns the apply error (automatic controller-runtime rate-limited retry). No restart, update, or drift authorized/performed.
 
 **Next:** read-only inspection of last 60 minutes of direct Operator logs and per-CR events plus EndpointSlice readiness; only after results decide whether to request explicit approval for a targeted requeue/metadata trigger. OP3 `CRC_RUNTIME_PENDING` unchanged.
+
+
+## OP3 targeted-requeue recovery gate — prepared, CRC run outstanding
+
+Following the user-read CRC inspections of 2026-10-08, Operator (one Ready
+worker, live `args=null`) and Tekton proxy (`ready=true/serving=true`) are
+available while `CapabilityConsumption/instant-payments-crc` remains
+`Ready=False/ApplyFailed`. The prior Tekton error is historic; no live
+admission request succeeded yet in the captured proof.
+
+The OP3 PR adds `scripts/d093-op3-crc-reconcile-recovery.sh`, an explicit
+`readonly` / `apply` gate with CRC-only API verification, consumer identity +
+`Manage/Retain` checks, deployment readiness, Tekton endpoint readiness,
+Argo Synced/Healthy, before/after snapshots, and **at most one** metadata
+annotation of `instant-payments-crc` with a resource-version guard. It never
+mutates Tekton/TradeOps or the product Deployment directly. The Operator's
+Manage-mode reconcile **may write platform namespace/RBAC/quota/limits/policies**.
+
+Mocked regression CI tests readonly, unavailable-webhook, wrong-cluster,
+missing-consent and an authorized single-CR requeue. Do not promote runtime
+status on CI alone. The user must execute the bounded apply script in the
+local CRC and return evidence of `OP3_RECOVERY_RECONCILED=PASS`, then
+OP3's **separate** Day-2 drift test is required before final closure.
