@@ -50,6 +50,7 @@ wait_capability_reason() {
 
 restore_on_failure() {
   local status=$?
+  local rollback_failed=false actual=""
   trap - EXIT
   if [[ "$status" -ne 0 ]]; then
     if [[ "$PRODUCT_DRIFT_INJECTED" != "true" && "$PLATFORM_DRIFT_INJECTED" != "true" ]]; then
@@ -60,12 +61,41 @@ restore_on_failure() {
     fi
 
     if [[ "$PRODUCT_DRIFT_INJECTED" == "true" && -n "$ORIGINAL_REPLICAS" ]]; then
-      oc -n "$PAYMENT_NAMESPACE" patch deploy "$PRODUCT_DEPLOYMENT" --type merge         -p "{\"spec\":{\"replicas\":$ORIGINAL_REPLICAS}}" >/dev/null 2>&1 || true
+      if oc -n "$PAYMENT_NAMESPACE" patch deploy "$PRODUCT_DEPLOYMENT" --type merge \
+        -p "{\"spec\":{\"replicas\":$ORIGINAL_REPLICAS}}" >/dev/null; then
+        actual="$(oc -n "$PAYMENT_NAMESPACE" get deploy "$PRODUCT_DEPLOYMENT" -o jsonpath='{.spec.replicas}' 2>/dev/null || true)"
+        if [[ "$actual" == "$ORIGINAL_REPLICAS" ]]; then
+          log "OP3_PRODUCT_ROLLBACK=PASS replicas=$actual"
+        else
+          log "OP3_PRODUCT_ROLLBACK=FAILED expected=$ORIGINAL_REPLICAS observed=$actual" >&2
+          rollback_failed=true
+        fi
+      else
+        log "OP3_PRODUCT_ROLLBACK=FAILED patch error" >&2
+        rollback_failed=true
+      fi
     fi
 
     if [[ "$PLATFORM_DRIFT_INJECTED" == "true" && -n "$ORIGINAL_STORAGE" ]]; then
-      oc -n "$PAYMENT_NAMESPACE" patch resourcequota "$PLATFORM_QUOTA" --type merge         -p "{\"spec\":{\"hard\":{\"requests.storage\":\"$ORIGINAL_STORAGE\"}}}" >/dev/null 2>&1 || true
+      if oc -n "$PAYMENT_NAMESPACE" patch resourcequota "$PLATFORM_QUOTA" --type merge \
+        -p "{\"spec\":{\"hard\":{\"requests.storage\":\"$ORIGINAL_STORAGE\"}}}" >/dev/null; then
+        actual="$(oc -n "$PAYMENT_NAMESPACE" get resourcequota "$PLATFORM_QUOTA" -o jsonpath='{.spec.hard.requests\.storage}' 2>/dev/null || true)"
+        if [[ "$actual" == "$ORIGINAL_STORAGE" ]]; then
+          log "OP3_QUOTA_ROLLBACK=PASS requests.storage=$actual"
+          log "truth_boundary=MANUAL_ROLLBACK_NOT_OPERATOR_SELF_HEAL"
+        else
+          log "OP3_QUOTA_ROLLBACK=FAILED expected=$ORIGINAL_STORAGE observed=$actual" >&2
+          rollback_failed=true
+        fi
+      else
+        log "OP3_QUOTA_ROLLBACK=FAILED patch error" >&2
+        rollback_failed=true
+      fi
     fi
+  fi
+  if [[ "$rollback_failed" == "true" ]]; then
+    log "OP3_ROLLBACK_ATTENTION_REQUIRED=YES" >&2
+    status=86
   fi
   exit "$status"
 }
