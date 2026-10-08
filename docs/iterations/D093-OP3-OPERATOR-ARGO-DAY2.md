@@ -107,3 +107,29 @@ Argo/Operator Day-2 drift proof. No D-093/OP3 full `CRC_RUNTIME_PROVEN` promotio
 yet. Next: run `OP3_PREFLIGHT_ONLY=true` on the current PR branch script, then
 separately authorize the controlled integrated drift rehearsal if the preflight
 passes.
+
+
+## OP3 integrated Day-2 read-only prerequisite — PASS on CRC, 2026-10-08
+
+User-executed `TIMEOUT_SECONDS=45 OP3_PREFLIGHT_ONLY=true` on
+`api.crc.testing:6443`, OpenShift 4.22.7, after successful consumer recovery.
+Actual terminal markers:
+- `OP3_ARGO_INITIAL_SYNC=PASS`
+- `OP3_ARGO_INITIAL_HEALTH=PASS`
+- `OP3_OPERATOR_INITIAL_RECONCILED=PASS`
+- `OP3_OPERATOR_PLATFORM_OWNERSHIP=PASS`
+- `OP3_ARGO_PRODUCT_OWNERSHIP=PASS`
+- `OP3_OWNERSHIP_BOUNDARY=PASS`
+- `OP3_PREFLIGHT_READONLY=PASS`.
+
+Platform-owned kinds observed: `LimitRange`, `Namespace`, `NetworkPolicy`,
+`ResourceQuota`, `Role`, `RoleBinding`, `ServiceAccount`.
+Argo owns `Deployment/wero-ui`. Neither quota nor Deployment was changed.
+
+**Gate closed:** OP3 preflight and ownership boundary on CRC. **Still pending:**
+separately consented live replica drift/self-heal, platform quota drift/recovery,
+and final integrated proof marker. The scoped mutating script now checks
+`wero-ui` desired/available replicas are exactly `1/1` and
+`ResourceQuota/platform-quota requests.storage=20Gi` before its first write.
+A changed CRC baseline fails closed. These checks do not alter the read-only
+preflight result above.
