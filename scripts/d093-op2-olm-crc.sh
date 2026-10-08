@@ -154,6 +154,14 @@ if oc get capabilityconsumption "$CONSUMER_NAME" >/dev/null 2>&1; then
   exit 22
 fi
 
+# Safe, explicitly read-only readiness mode for preparing the CRC window.
+# Stops before parking the direct Operator or creating any test resources.
+if [[ "${OP2_PREFLIGHT_ONLY:-false}" == "true" ]]; then
+  log "OP2_PREFLIGHT_READONLY=PASS"
+  log "No deployment scaled, no resource created or deleted."
+  exit 0
+fi
+
 if oc -n "$DIRECT_OPERATOR_NAMESPACE" get deploy "$DIRECT_OPERATOR_DEPLOYMENT" >/dev/null 2>&1; then
   DIRECT_PRESENT=true
   DIRECT_REPLICAS="$(oc -n "$DIRECT_OPERATOR_NAMESPACE" get deploy "$DIRECT_OPERATOR_DEPLOYMENT" -o jsonpath='{.spec.replicas}')"
