@@ -81,3 +81,29 @@ missing-consent and an authorized single-CR requeue. Do not promote runtime
 status on CI alone. The user must execute the bounded apply script in the
 local CRC and return evidence of `OP3_RECOVERY_RECONCILED=PASS`, then
 OP3's **separate** Day-2 drift test is required before final closure.
+
+
+## OP3 CRC consumer recovery — RUNTIME PROVEN, 2026-10-08
+
+User-executed Git Bash, OpenShift Local CRC (previous context API `https://api.crc.testing:6443`), on existing direct Operator:
+- `OP3_RECOVERY_PREFLIGHT=PASS` — prerequisite read-only gate;
+- initial CR condition: `Ready=False / ApplyFailed` with previously observed Tekton webhook error;
+- explicit `OP3_RECOVERY_MODE=apply` and `CONFIRM_OP3_CRC_RECONCILE=YES_I_AUTHORIZE_INSTANT_PAYMENTS_PLATFORM_RECONCILE`;
+- `OP3_RECOVERY_MUTATION_SCOPE=CapabilityConsumption/instant-payments-crc metadata.annotation only`;
+- `OP3_RECOVERY_ANNOTATION_APPLIED=PASS`;
+- `OP3_RECOVERY_RECONCILED=PASS`;
+- `OP3_RECOVERY_SCOPE=CRC_CONSUMER1_ONLY`;
+- `truth_boundary=RECONCILIATION_RECOVERY_NOT_OP3_DAY2_DRIFT_PROOF`.
+
+The recovery script's success predicate checked generation/status convergence,
+`Ready=True / Reconciled`, at least one managed `ResourceQuota`, and no
+`Deployment` ownership. Local evidence directory reported:
+`/c/workspaces/d093-audit-readonly-20261008/recovery-evidence`
+with JSON before/after snapshots; these files remain on the user's PC
+and are **not** uploaded to GitHub by this operation.
+
+**Closed gate:** OP3 consumer-readiness recovery on CRC, not the complete OP3
+Argo/Operator Day-2 drift proof. No D-093/OP3 full `CRC_RUNTIME_PROVEN` promotion
+yet. Next: run `OP3_PREFLIGHT_ONLY=true` on the current PR branch script, then
+separately authorize the controlled integrated drift rehearsal if the preflight
+passes.
