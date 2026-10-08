@@ -26,9 +26,20 @@ Argo CD --------------------> product-owned Deployment
 
 ## Entry point
 
+Read-only ownership preflight (fails with code 40 before any drift, when initial ownership is healthy):
+
 ```bash
 bash scripts/d093-op3-operator-argocd-day2.sh
 ```
+
+Mutating drift rehearsal only after a separately approved CRC window:
+
+```bash
+CONFIRM_OP3_CRC_DRIFT=YES_I_AUTHORIZE_OP3_CONTROLLED_DRIFT \
+  bash scripts/d093-op3-operator-argocd-day2.sh
+```
+
+The explicit opt-in prevents accidental changes to the product Deployment and platform quota.
 
 Defaults reuse the already proven Instant Payments consumer:
 
