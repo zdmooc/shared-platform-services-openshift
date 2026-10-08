@@ -194,3 +194,20 @@ OP3_OPERATOR_ARGO_DAY2_INTEGRATED_DEMO_PROVEN=PASS
 - D-091/K1/I35: Argo CD drift/self-heal/prune/rollback on CRC.
 
 OP3 does not repeat destructive prune/rollback demonstrations; it integrates the ownership story needed for the DAAROPS interview.
+
+
+## Verified OP3 prerequisite — 2026-10-08
+
+`instant-payments-crc` recovered under the consented single-annotation
+requeue. Captured by user on CRC:
+`OP3_RECOVERY_PREFLIGHT=PASS`,
+`OP3_RECOVERY_ANNOTATION_APPLIED=PASS`,
+`OP3_RECOVERY_RECONCILED=PASS`.
+The recovery evidence is stored locally in
+`/c/workspaces/d093-audit-readonly-20261008/recovery-evidence`.
+Do not rerun the recovery script merely to regenerate the result.
+
+This is a prerequisite only. Before demonstrating Day-2 drift, execute the
+read-only `OP3_PREFLIGHT_ONLY=true` form above against the latest **PR #14**
+script. Proceed to the mutating form only after fresh evidence and separate
+explicit authorization. OP2's OLM CRC proof is independent and still pending.
