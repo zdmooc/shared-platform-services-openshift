@@ -4,7 +4,9 @@ on:
   pull_request:
     paths:
       - "scripts/d093-op3-operator-argocd-day2.sh"
+      - "scripts/d093-op3-crc-reconcile-recovery.sh"
       - "tests/d093-op3-readonly-blocker-no-mutation.sh"
+      - "tests/d093-op3-crc-reconcile-recovery-test.sh"
       - "docs/runbooks/DAAROPS_OPERATOR_ARGO_DAY2_DEMO.md"
       - "docs/iterations/D093-OP3-OPERATOR-ARGO-DAY2.md"
       - ".github/workflows/d093-op3-static.yml"
@@ -12,7 +14,9 @@ on:
     branches: [main]
     paths:
       - "scripts/d093-op3-operator-argocd-day2.sh"
+      - "scripts/d093-op3-crc-reconcile-recovery.sh"
       - "tests/d093-op3-readonly-blocker-no-mutation.sh"
+      - "tests/d093-op3-crc-reconcile-recovery-test.sh"
       - "docs/runbooks/DAAROPS_OPERATOR_ARGO_DAY2_DEMO.md"
       - "docs/iterations/D093-OP3-OPERATOR-ARGO-DAY2.md"
       - ".github/workflows/d093-op3-static.yml"
@@ -32,9 +36,14 @@ jobs:
         run: |
           bash -n scripts/d093-op3-operator-argocd-day2.sh
           bash -n tests/d093-op3-readonly-blocker-no-mutation.sh
+          bash -n scripts/d093-op3-crc-reconcile-recovery.sh
+          bash -n tests/d093-op3-crc-reconcile-recovery-test.sh
 
       - name: Regression — no mutation on blocked operator preflight
         run: bash tests/d093-op3-readonly-blocker-no-mutation.sh
+
+      - name: Regression — targeted CR recovery authorization and no unrelated writes
+        run: bash tests/d093-op3-crc-reconcile-recovery-test.sh
 
       - name: Validate ownership and recovery markers
         run: |
