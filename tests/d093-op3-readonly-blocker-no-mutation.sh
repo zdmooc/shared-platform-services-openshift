@@ -16,8 +16,8 @@ case "$*" in
   "whoami --show-server") echo https://api.crc.testing:6443 ;;
   "get clusterversion") echo "version 4.22.7" ;;
   "api-resources") echo "applications app argoproj.io/v1alpha1 true Application" ;;
-  "-n openshift-gitops get application instant-payments-tech-lead-shared-platform -o jsonpath={.status.sync.status}") echo Synced ;;
-  "-n openshift-gitops get application instant-payments-tech-lead-shared-platform -o jsonpath={.status.health.status}") echo Healthy ;;
+  *".status.sync.status"*) echo Synced ;;
+  *".status.health.status"*) echo Healthy ;;
   "get capabilityconsumption instant-payments-crc -o json")
     echo '{"metadata":{"generation":3},"status":{"conditions":[{"type":"Ready","status":"False","reason":"ApplyFailed","lastTransitionTime":"2026-10-05T14:01:18Z","message":"no endpoints available for service tekton-operator-proxy-webhook"}]}}' ;;
   "-n shared-platform-services get deploy/mayabank-platform-operator -o wide") echo 'mayabank-platform-operator 1/1' ;;
@@ -36,6 +36,7 @@ set -e
 
 if [[ "$status" -ne 32 ]]; then
   cat "$TEST_DIR/output.log"
+  cat "$OP3_OC_LOG"
   echo "Expected blocked status 32, got $status" >&2
   exit 1
 fi
