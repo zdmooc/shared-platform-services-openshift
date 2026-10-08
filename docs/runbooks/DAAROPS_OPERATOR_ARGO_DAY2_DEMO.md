@@ -52,6 +52,58 @@ Defaults reuse the already proven Instant Payments consumer:
 
 All values are overridable through environment variables.
 
+
+## Before Day-2: targeted recovery of stale consumer readiness
+
+Observed on 2026-10-08: Tekton webhook endpoint recovered and is ready/serving;
+the direct Go Operator Deployment is 1/1 ready (its **live** args are null, so
+leader election is not enabled); `CapabilityConsumption/instant-payments-crc`
+remains `Ready=False / ApplyFailed` with historical webhook message. The
+previous user probes did not demonstrate a fresh successful reconcile.
+
+A narrow, operator-triggered **requeue** is available as
+`scripts/d093-op3-crc-reconcile-recovery.sh`. It does **not** restart any
+components, touch TradeOps, change the CR spec, or directly patch any quota,
+policy or product Deployment. The one write in `apply` mode is a **new annotation
+on that exact existing CR**. Since adoptionPolicy is `Manage`, the controller
+may then reapply its declared namespace metadata, quota, RBAC, limits and
+NetworkPolicies; this write side effect is intentional and requires an approved
+local CRC window.
+
+Stage A (default, read-only):
+
+```bash
+D093_EVIDENCE_DIR=/c/workspaces/d093-op3-recovery-evidence \
+  OP3_RECOVERY_MODE=readonly \
+  bash scripts/d093-op3-crc-reconcile-recovery.sh
+```
+
+Stage B (separate, explicitly authorized mutation):
+
+```bash
+D093_EVIDENCE_DIR=/c/workspaces/d093-op3-recovery-evidence \
+  OP3_RECOVERY_MODE=apply \
+  CONFIRM_OP3_CRC_RECONCILE=YES_I_AUTHORIZE_INSTANT_PAYMENTS_PLATFORM_RECONCILE \
+  OP3_RECOVERY_TIMEOUT_SECONDS=120 \
+  bash scripts/d093-op3-crc-reconcile-recovery.sh
+```
+
+When retrieving the script from an unmerged PR without changing local branches,
+run `git show origin/d093-op3-operator-argocd-day2-demo:scripts/d093-op3-crc-reconcile-recovery.sh`
+and save its stdout to a standalone `.sh` file. The script does not depend
+on repo-relative paths.
+
+Expected successful result: `OP3_RECOVERY_RECONCILED=PASS` with status
+`Ready=True / Reconciled`, managed `ResourceQuota` ownership and no
+`Deployment` ownership. The script writes local JSON snapshots before and
+after the targeted requeue. If it times out, preserve output and snapshots;
+do **not** disable Tekton webhooks, edit consumer spec, restart operators or
+retry unrestricted.
+
+**Evidence boundary:** recovery only closes the consumer-readiness **prerequisite**.
+The separately consented Day-2 Argo/Operator drift test below is still
+required to claim `OP3_OPERATOR_ARGO_DAY2_INTEGRATED_DEMO_PROVEN=PASS`.
+
 ## What the live demo proves
 
 ### 1. Explicit ownership boundary
