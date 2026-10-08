@@ -85,6 +85,13 @@ if jq -e 'any(.status.conditions[]?;
   exit 0
 fi
 
+limit="$(printenv OP3_RECOVERY_TIMEOUT_SECONDS || true)"
+[ -n "$limit" ] || limit=120
+case "$limit" in
+  *[!0-9]*|"") die "Invalid timeout" ;;
+esac
+[ "$limit" -ge 10 ] && [ "$limit" -le 300 ] || die "Timeout must be 10..300 seconds"
+
 # An annotation-only update to exactly one existing CR enqueues the controller.
 # No direct patch of product Deployment, quota, Tekton or the operator itself.
 jq -e --arg k "$annotation" '(.metadata.annotations[$k] // null) == null' \
@@ -100,12 +107,6 @@ log "OP3_RECOVERY_IMPACT=Operator may reapply platform namespace/RBAC/quota/limi
 oc annotate capabilityconsumption "$cc" "$annotation=$nonce" --resource-version="$rv" >/dev/null
 log "OP3_RECOVERY_ANNOTATION_APPLIED=PASS"
 
-limit="$(printenv OP3_RECOVERY_TIMEOUT_SECONDS || true)"
-[ -n "$limit" ] || limit=120
-case "$limit" in
-  *[!0-9]*|"") die "Invalid timeout" ;;
-esac
-[ "$limit" -ge 10 ] && [ "$limit" -le 300 ] || die "Timeout must be 10..300 seconds"
 deadline=$((SECONDS + limit))
 
 while (( SECONDS < deadline )); do
