@@ -4,6 +4,7 @@ on:
   pull_request:
     paths:
       - "scripts/d093-op2-olm-crc.sh"
+      - "tests/d093-op2-preflight-no-delete.sh"
       - "docs/runbooks/DAAROPS_OLM_CRC_REPLAY.md"
       - "docs/iterations/D093-OP2-OPENSHIFT-OLM-LIFECYCLE.md"
       - ".github/workflows/d093-op2-publish-operator-images.yml"
@@ -15,6 +16,7 @@ on:
     branches: [main]
     paths:
       - "scripts/d093-op2-olm-crc.sh"
+      - "tests/d093-op2-preflight-no-delete.sh"
       - "docs/runbooks/DAAROPS_OLM_CRC_REPLAY.md"
       - "docs/iterations/D093-OP2-OPENSHIFT-OLM-LIFECYCLE.md"
       - ".github/workflows/d093-op2-publish-operator-images.yml"
@@ -35,7 +37,12 @@ jobs:
       - uses: actions/checkout@v4
 
       - name: Shell syntax
-        run: bash -n scripts/d093-op2-olm-crc.sh
+        run: |
+          bash -n scripts/d093-op2-olm-crc.sh
+          bash -n tests/d093-op2-preflight-no-delete.sh
+
+      - name: Fail-safe preflight regression
+        run: bash tests/d093-op2-preflight-no-delete.sh
 
       - name: Validate expected lifecycle contracts
         run: |
