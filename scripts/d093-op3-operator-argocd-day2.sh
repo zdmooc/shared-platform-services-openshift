@@ -121,6 +121,12 @@ log "OP3_OPERATOR_PLATFORM_OWNERSHIP=PASS"
 log "OP3_ARGO_PRODUCT_OWNERSHIP=PASS"
 log "OP3_OWNERSHIP_BOUNDARY=PASS"
 
+if [[ "${OP3_PREFLIGHT_ONLY:-false}" == "true" ]]; then
+  log "OP3_PREFLIGHT_READONLY=PASS"
+  log "No product Deployment or platform ResourceQuota changed."
+  exit 0
+fi
+
 # This test changes a live product Deployment and ResourceQuota. Never mutate
 # the CRC without an explicitly approved bounded runtime window.
 if [[ "${CONFIRM_OP3_CRC_DRIFT:-}" != "YES_I_AUTHORIZE_OP3_CONTROLLED_DRIFT" ]]; then
