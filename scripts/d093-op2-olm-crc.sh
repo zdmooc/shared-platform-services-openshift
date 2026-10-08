@@ -73,7 +73,12 @@ cleanup() {
   local status=$?
   trap - EXIT
   if [[ "$status" -ne 0 ]]; then
-    diagnostics
+    if [[ "$DIRECT_PRESENT" == "true" || "$OLM_CREATED" == "true" || "$CONSUMER_CREATED" == "true" ]]; then
+      diagnostics
+    else
+      log "OP2_PREFLIGHT_ABORTED_WITHOUT_MUTATION=PASS"
+      log "No operator park or test-resource creation was attempted."
+    fi
   fi
   cleanup_test_resources
   if ! restore_direct_operator; then
@@ -127,8 +132,9 @@ image_preflight() {
   if oc image info "$image" >/dev/null 2>&1; then
     return 0
   fi
-  log "Image is not pullable: $image" >&2
-  log "Run the manual GitHub workflow D093 OP2 Publish Operator Images, then retry." >&2
+  log "Image unavailable or inaccessible with current registry credentials: $image" >&2
+  log "Inspect registry existence and authentication separately; do not assume an image was published." >&2
+  log "GHCR publication workflow must be present on the default branch before GitHub workflow_dispatch can run." >&2
   return 1
 }
 
