@@ -7,6 +7,7 @@ on:
       - "scripts/d093-op3-crc-reconcile-recovery.sh"
       - "tests/d093-op3-readonly-blocker-no-mutation.sh"
       - "tests/d093-op3-crc-reconcile-recovery-test.sh"
+      - "tests/d093-op3-drift-baseline-no-mutation.sh"
       - "docs/runbooks/DAAROPS_OPERATOR_ARGO_DAY2_DEMO.md"
       - "docs/iterations/D093-OP3-OPERATOR-ARGO-DAY2.md"
       - ".github/workflows/d093-op3-static.yml"
@@ -17,6 +18,7 @@ on:
       - "scripts/d093-op3-crc-reconcile-recovery.sh"
       - "tests/d093-op3-readonly-blocker-no-mutation.sh"
       - "tests/d093-op3-crc-reconcile-recovery-test.sh"
+      - "tests/d093-op3-drift-baseline-no-mutation.sh"
       - "docs/runbooks/DAAROPS_OPERATOR_ARGO_DAY2_DEMO.md"
       - "docs/iterations/D093-OP3-OPERATOR-ARGO-DAY2.md"
       - ".github/workflows/d093-op3-static.yml"
@@ -38,12 +40,16 @@ jobs:
           bash -n tests/d093-op3-readonly-blocker-no-mutation.sh
           bash -n scripts/d093-op3-crc-reconcile-recovery.sh
           bash -n tests/d093-op3-crc-reconcile-recovery-test.sh
+          bash -n tests/d093-op3-drift-baseline-no-mutation.sh
 
       - name: Regression — no mutation on blocked operator preflight
         run: bash tests/d093-op3-readonly-blocker-no-mutation.sh
 
       - name: Regression — targeted CR recovery authorization and no unrelated writes
         run: bash tests/d093-op3-crc-reconcile-recovery-test.sh
+
+      - name: Regression — refuse drift on unexpected CRC baseline
+        run: bash tests/d093-op3-drift-baseline-no-mutation.sh
 
       - name: Validate ownership and recovery markers
         run: |
