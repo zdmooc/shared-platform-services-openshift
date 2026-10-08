@@ -121,6 +121,13 @@ log "OP3_OPERATOR_PLATFORM_OWNERSHIP=PASS"
 log "OP3_ARGO_PRODUCT_OWNERSHIP=PASS"
 log "OP3_OWNERSHIP_BOUNDARY=PASS"
 
+# This test changes a live product Deployment and ResourceQuota. Never mutate
+# the CRC without an explicitly approved bounded runtime window.
+if [[ "${CONFIRM_OP3_CRC_DRIFT:-}" != "YES_I_AUTHORIZE_OP3_CONTROLLED_DRIFT" ]]; then
+  log "OP3_MUTATION_AUTHORIZATION_REQUIRED: ownership preflight only." >&2
+  exit 40
+fi
+
 log
 log "== Product drift: Argo CD self-heal =="
 ORIGINAL_REPLICAS="$(oc -n "$PAYMENT_NAMESPACE" get deploy "$PRODUCT_DEPLOYMENT" -o jsonpath='{.spec.replicas}')"
