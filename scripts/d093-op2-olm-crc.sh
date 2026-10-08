@@ -18,6 +18,7 @@ DIRECT_REPLICAS=""
 DIRECT_PRESENT=false
 OLM_CREATED=false
 CONSUMER_CREATED=false
+OLM_COMPLETED=false
 
 log() {
   printf '%s\n' "$*"
@@ -36,10 +37,17 @@ diagnostics() {
 restore_direct_operator() {
   if [[ "$DIRECT_PRESENT" == "true" && -n "$DIRECT_REPLICAS" ]]; then
     log "== Restore direct Operator replicas=$DIRECT_REPLICAS =="
-    oc -n "$DIRECT_OPERATOR_NAMESPACE" scale deploy/"$DIRECT_OPERATOR_DEPLOYMENT" --replicas="$DIRECT_REPLICAS" >/dev/null || true
-    if [[ "$DIRECT_REPLICAS" != "0" ]]; then
-      oc -n "$DIRECT_OPERATOR_NAMESPACE" rollout status deploy/"$DIRECT_OPERATOR_DEPLOYMENT" --timeout=180s || true
+    if ! oc -n "$DIRECT_OPERATOR_NAMESPACE" scale deploy/"$DIRECT_OPERATOR_DEPLOYMENT" --replicas="$DIRECT_REPLICAS" >/dev/null; then
+      log "ERROR: failed to restore direct Operator replica count." >&2
+      return 1
     fi
+    if [[ "$DIRECT_REPLICAS" != "0" ]]; then
+      if ! oc -n "$DIRECT_OPERATOR_NAMESPACE" rollout status deploy/"$DIRECT_OPERATOR_DEPLOYMENT" --timeout=180s; then
+        log "ERROR: direct Operator did not become ready after restore." >&2
+        return 1
+      fi
+    fi
+    log "OP2_DIRECT_OPERATOR_RESTORE=PASS"
   fi
 }
 
@@ -62,12 +70,21 @@ cleanup_test_resources() {
 }
 
 cleanup() {
-  status=$?
+  local status=$?
+  trap - EXIT
   if [[ "$status" -ne 0 ]]; then
     diagnostics
   fi
   cleanup_test_resources
-  restore_direct_operator
+  if ! restore_direct_operator; then
+    log "OP2_DIRECT_OPERATOR_RESTORE=FAILED; investigate CRC before further action." >&2
+    status=80
+  fi
+  if [[ "$status" -eq 0 && "$OLM_COMPLETED" == "true" ]]; then
+    log "OP2_OPENSHIFT_OLM_LIFECYCLE_RESULT=PASS"
+    log "claim=OPENSHIFT_OLM_LIFECYCLE_PROVEN_CRC"
+    log "truth_boundary=CRC_SINGLE_NODE_NOT_PRODUCTION_HA"
+  fi
   exit "$status"
 }
 trap cleanup EXIT
@@ -278,6 +295,5 @@ oc get namespace "$CONSUMER_NAMESPACE"
 oc -n "$CONSUMER_NAMESPACE" get resourcequota platform-quota
 
 log "OP2_OPENSHIFT_OLM_UNINSTALL_RETAIN=PASS"
-log "OP2_OPENSHIFT_OLM_LIFECYCLE_RESULT=PASS"
-log "claim=OPENSHIFT_OLM_LIFECYCLE_PROVEN_CRC"
-log "truth_boundary=CRC_SINGLE_NODE_NOT_PRODUCTION_HA"
+# Final PASS is emitted by cleanup only after the original direct Operator is restored.
+OLM_COMPLETED=true
