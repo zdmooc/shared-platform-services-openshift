@@ -33,3 +33,15 @@ A successful CRC run must emit:
 ## Next
 
 OP4 converts OP1/OP2/OP3 into the final 12–15 minute recruiter demo pack.
+
+## CRC read-only preflight — observed 2026-10-08
+
+User-provided Git Bash output on OpenShift Local 4.22.7:
+- Argo CD `instant-payments-tech-lead-shared-platform`: `Synced / Healthy`;
+- application workload `wero-ui`: desired/available replicas 1;
+- `CapabilityConsumption/instant-payments-crc`: `Manage` but `Ready=False / ApplyFailed`;
+- the Ready condition last transitioned on **2026-10-05T14:01:18Z**; its message identifies `namespace.operator.tekton.dev` failing to call `tekton-operator-proxy-webhook.openshift-pipelines.svc` because **no endpoints were available then**;
+- because the status message predates the preflight, it does **not** establish that the webhook currently has no endpoints. A fresh read-only endpoint/Operator Deployment inventory is necessary.
+- no product drift, quota drift or integrated runtime acceptance marker was produced.
+
+The preflight now reports concise conditions and checks the Tekton service endpoints and direct Operator deployment without emitting full YAML or changing resources. Do not disable/delete Tekton webhooks or restart the cluster as a shortcut. Restore the external admission dependency only after verifying the current state and receiving authorization for the proposed fix.
