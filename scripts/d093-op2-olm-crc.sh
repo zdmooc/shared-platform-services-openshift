@@ -49,12 +49,16 @@ cleanup_test_resources() {
     return
   fi
 
-  if oc get capabilityconsumption "$CONSUMER_NAME" >/dev/null 2>&1; then
+  # Only delete resources created by this invocation. In particular, a failed
+  # preflight must never delete namespaces or a CapabilityConsumption that existed
+  # before the run.
+  if [[ "$CONSUMER_CREATED" == "true" ]]; then
     oc delete capabilityconsumption "$CONSUMER_NAME" --wait=false >/dev/null 2>&1 || true
+    oc delete namespace "$CONSUMER_NAMESPACE" --wait=false >/dev/null 2>&1 || true
   fi
-
-  oc delete namespace "$CONSUMER_NAMESPACE" --wait=false >/dev/null 2>&1 || true
-  oc delete namespace "$OLM_NAMESPACE" --wait=false >/dev/null 2>&1 || true
+  if [[ "$OLM_CREATED" == "true" ]]; then
+    oc delete namespace "$OLM_NAMESPACE" --wait=false >/dev/null 2>&1 || true
+  fi
 }
 
 cleanup() {
@@ -144,6 +148,10 @@ fi
 if oc get namespace "$CONSUMER_NAMESPACE" >/dev/null 2>&1; then
   log "Namespace $CONSUMER_NAMESPACE already exists; refusing to reuse it." >&2
   exit 21
+fi
+if oc get capabilityconsumption "$CONSUMER_NAME" >/dev/null 2>&1; then
+  log "CapabilityConsumption/$CONSUMER_NAME already exists; refusing to overwrite it." >&2
+  exit 22
 fi
 
 if oc -n "$DIRECT_OPERATOR_NAMESPACE" get deploy "$DIRECT_OPERATOR_DEPLOYMENT" >/dev/null 2>&1; then
