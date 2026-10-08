@@ -19,11 +19,21 @@ exact OLM install / upgrade / uninstall on CRC/OpenShift
 
 The runtime claim is promoted only after the script completes on the user's OpenShift Local / CRC cluster.
 
-## Entry point
+## Read-only preflight — execute before any CRC window
+
+```bash
+OP2_PREFLIGHT_ONLY=true bash scripts/d093-op2-olm-crc.sh
+```
+
+Expected marker: `OP2_PREFLIGHT_READONLY=PASS`. This mode verifies OpenShift/OLM APIs, GHCR image pullability, and that dedicated test names are unused; it exits **before scaling, applying, or deleting anything**. Pre-existing names make it fail safely. A separate CI regression uses mocked `oc` to check this property. The availability of images must still be confirmed against the actual CRC runtime.
+
+## Full mutating lifecycle — explicit authorization required
 
 ```bash
 bash scripts/d093-op2-olm-crc.sh
 ```
+
+Never run this second command automatically: it scales the existing direct Operator to zero, creates test resources, deletes a test quota for reconstruction, uninstalls OLM resources and cleans only its own test namespaces. Use a controlled CRC window, capture the original state and obtain explicit authorization first.
 
 Required local tools:
 
@@ -112,3 +122,5 @@ After a successful OP2 run the bounded additional claim becomes:
 `OPENSHIFT_OLM_LIFECYCLE_PROVEN_CRC`.
 
 This still does **not** prove multi-node OpenShift HA or production readiness.
+
+The v0.1.0 and v0.2.0 bundle pair is an **OLM packaging lifecycle fixture** using the same underlying controller code, as documented in `docs/iterations/D093-I6C-OLM-OPENSHIFT-PACKAGING.md`. A successful replay proves package/version orchestration and post-upgrade reconciliation, not a functional Go-controller upgrade with schema/data migration.
