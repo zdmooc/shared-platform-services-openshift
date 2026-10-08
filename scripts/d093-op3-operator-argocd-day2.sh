@@ -158,9 +158,24 @@ if [[ "${CONFIRM_OP3_CRC_DRIFT:-}" != "YES_I_AUTHORIZE_OP3_CONTROLLED_DRIFT" ]];
   exit 40
 fi
 
+# Inspect both mutation targets before any writes. The source controller's
+# payments-medium profile is 20Gi and this CRC demo expects one healthy UI.
+# Fail closed if the current environment has diverged from that known baseline.
+ORIGINAL_REPLICAS="$(oc -n "$PAYMENT_NAMESPACE" get deploy "$PRODUCT_DEPLOYMENT" -o jsonpath='{.spec.replicas}')"
+AVAILABLE_REPLICAS="$(oc -n "$PAYMENT_NAMESPACE" get deploy "$PRODUCT_DEPLOYMENT" -o jsonpath='{.status.availableReplicas}')"
+ORIGINAL_STORAGE="$(oc -n "$PAYMENT_NAMESPACE" get resourcequota "$PLATFORM_QUOTA" -o jsonpath='{.spec.hard.requests\.storage}')"
+if [[ "$ORIGINAL_REPLICAS" != "1" || "$AVAILABLE_REPLICAS" != "1" ]]; then
+  log "OP3_DRIFT_REFUSED: expected exactly one desired/available UI replica (desired=$ORIGINAL_REPLICAS available=$AVAILABLE_REPLICAS)" >&2
+  exit 41
+fi
+if [[ "$ORIGINAL_STORAGE" != "20Gi" ]]; then
+  log "OP3_DRIFT_REFUSED: expected payments-medium requests.storage=20Gi (observed=$ORIGINAL_STORAGE)" >&2
+  exit 42
+fi
+log "OP3_DRIFT_BASELINE=PASS replicas=$ORIGINAL_REPLICAS available=$AVAILABLE_REPLICAS requests.storage=$ORIGINAL_STORAGE"
+
 log
 log "== Product drift: Argo CD self-heal =="
-ORIGINAL_REPLICAS="$(oc -n "$PAYMENT_NAMESPACE" get deploy "$PRODUCT_DEPLOYMENT" -o jsonpath='{.spec.replicas}')"
 DRIFT_REPLICAS=$((ORIGINAL_REPLICAS + 1))
 oc -n "$PAYMENT_NAMESPACE" patch deploy "$PRODUCT_DEPLOYMENT" --type merge   -p "{\"spec\":{\"replicas\":$DRIFT_REPLICAS}}" >/dev/null
 PRODUCT_DRIFT_INJECTED=true
@@ -190,12 +205,6 @@ log "OP3_ARGO_SELF_HEAL=PASS"
 
 log
 log "== Platform drift: Operator reconciliation =="
-ORIGINAL_STORAGE="$(oc -n "$PAYMENT_NAMESPACE" get resourcequota "$PLATFORM_QUOTA" -o jsonpath='{.spec.hard.requests\.storage}')"
-[[ -n "$ORIGINAL_STORAGE" ]] || {
-  log "ResourceQuota/$PLATFORM_QUOTA has no requests.storage hard limit." >&2
-  exit 30
-}
-
 oc -n "$PAYMENT_NAMESPACE" patch resourcequota "$PLATFORM_QUOTA" --type merge   -p '{"spec":{"hard":{"requests.storage":"99Gi"}}}' >/dev/null
 PLATFORM_DRIFT_INJECTED=true
 log "OP3_OPERATOR_PLATFORM_DRIFT_INJECTED=PASS"
