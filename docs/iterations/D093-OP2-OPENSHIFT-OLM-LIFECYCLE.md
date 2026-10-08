@@ -42,3 +42,14 @@ Current truth remains:
 After runtime closure:
 
 **OP3 — integrated Operator + Argo CD + Day-2 demonstration**.
+
+## CRC read-only preflight — observed 2026-10-08
+
+User-provided Git Bash output on `api.crc.testing:6443` / OpenShift Local 4.22.7:
+- OLM Classic APIs detected: `OP2_OLM_CLASSIC_APIS=PASS`;
+- the first GHCR check did **not** resolve `ghcr.io/zdmooc/mayabank-platform-operator:v0.1.0`;
+- the reported failure means **missing or inaccessible with the current registry credentials**, not proven image non-existence;
+- no OLM installation, direct-Operator scale-down, test namespace creation, or CRC lifecycle proof took place;
+- `OPENSHIFT_OLM_LIFECYCLE_PROVEN_CRC` remains **not claimed**.
+
+The manual publisher workflow exists in this **unmerged OP2 branch**, but not in `main`. GitHub `workflow_dispatch` requires the workflow file on the default branch; it cannot be assumed runnable before explicit integration. GHCR publication/visibility and any further CRC mutation require a separate controlled step. Do not bypass this by force-merging the PR.
