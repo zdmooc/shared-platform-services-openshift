@@ -164,6 +164,12 @@ if [[ "${OP2_PREFLIGHT_ONLY:-false}" == "true" ]]; then
   exit 0
 fi
 
+# Full OLM replay changes controller availability and test resources: opt-in only.
+if [[ "${CONFIRM_OP2_CRC_MUTATIONS:-}" != "YES_I_AUTHORIZE_OP2_OPERATOR_PARK_AND_TEST_CLEANUP" ]]; then
+  log "OP2_MUTATION_AUTHORIZATION_REQUIRED: inspect the runbook and explicitly opt in." >&2
+  exit 23
+fi
+
 if oc -n "$DIRECT_OPERATOR_NAMESPACE" get deploy "$DIRECT_OPERATOR_DEPLOYMENT" >/dev/null 2>&1; then
   DIRECT_PRESENT=true
   DIRECT_REPLICAS="$(oc -n "$DIRECT_OPERATOR_NAMESPACE" get deploy "$DIRECT_OPERATOR_DEPLOYMENT" -o jsonpath='{.spec.replicas}')"
