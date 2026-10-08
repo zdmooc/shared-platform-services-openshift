@@ -167,3 +167,12 @@ oc get clusteroperator kube-storage-version-migrator
 The core proof is OpenShift / Kubernetes CaaS, Platform Engineering, GitOps, security, observability, lifecycle and Day-2 / N3 RCA.
 
 The Data Lakehouse or application stacks are workload proofs only. Kind multi-node demonstrates Kubernetes and workload behavior. CRC demonstrates OpenShift-specific mechanisms. CRC must never be presented as the client's target platform or as proof of production HA.
+
+
+## Runtime evidence capture
+
+The full read-only capture executed on 2026-10-08 is stored at:
+
+`evidence/runtime/2026-10-08-openshift-caas-day2-n3-full-output.txt`
+
+This evidence is produced on OpenShift Local / CRC and must be interpreted as lab evidence only, not as a production or HA certification.
