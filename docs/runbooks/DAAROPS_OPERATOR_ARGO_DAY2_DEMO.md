@@ -211,3 +211,26 @@ This is a prerequisite only. Before demonstrating Day-2 drift, execute the
 read-only `OP3_PREFLIGHT_ONLY=true` form above against the latest **PR #14**
 script. Proceed to the mutating form only after fresh evidence and separate
 explicit authorization. OP2's OLM CRC proof is independent and still pending.
+
+
+## 2026-10-08 CRC partial failure — do not repeat drift until diagnosed
+
+The user-run live test proved Argo product drift detection and self-heal but
+**did not** prove Operator quota drift recovery. On timeout, the diagnostic
+quota showed `requests.storage=99Gi` before the earlier script's silent EXIT
+rollback. The quota's **current** value must be inspected read-only. This
+version of the script checks whether any failure rollback actually restored
+the quota, and differentiates **manual rollback** from **Operator self-heal**.
+
+Before proceeding, retrieve:
+1. exact live `resourcequota/platform-quota` requests.storage, ownership labels,
+   managedFields manager entries for `f:requests.storage`;
+2. direct Operator deployment logs (last 30 minutes);
+3. `CapabilityConsumption/instant-payments-crc` Ready/Degraded conditions;
+4. Argo application sync/health and `Deployment/wero-ui` desired/available
+   replicas.
+
+Hypothesis to test, not to assume: SSA conflict between `kubectl-patch`
+field manager and Operator SSA field manager (`mayabank-platform-operator`)
+can block quota self-heal without `ForceOwnership`. Only change the
+reconciler or drift demonstration after concrete managed-field and error evidence.
