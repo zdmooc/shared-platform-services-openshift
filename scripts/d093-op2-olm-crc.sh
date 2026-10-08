@@ -118,7 +118,9 @@ image_preflight() {
 log "== OP2 preflight =="
 command -v oc
 command -v jq
-command -v operator-sdk
+if [[ "${OP2_PREFLIGHT_ONLY:-false}" != "true" ]]; then
+  command -v operator-sdk
+fi
 
 oc whoami
 oc get clusterversion
