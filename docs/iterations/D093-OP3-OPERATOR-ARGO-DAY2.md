@@ -133,3 +133,28 @@ and final integrated proof marker. The scoped mutating script now checks
 `ResourceQuota/platform-quota requests.storage=20Gi` before its first write.
 A changed CRC baseline fails closed. These checks do not alter the read-only
 preflight result above.
+
+
+## Integrated Day-2 CRC replay — PARTIAL FAILURE, 2026-10-08
+
+User-run `TIMEOUT_SECONDS=180` with explicit OP3 drift authorization and latest script:
+- `OP3_ARGO_INITIAL_SYNC/HEALTH=PASS`, `OP3_OPERATOR_INITIAL_RECONCILED=PASS`, ownership boundary PASS;
+- baseline `wero-ui replicas=1 available=1 requests.storage=20Gi` confirmed;
+- `OP3_ARGO_PRODUCT_DRIFT_INJECTED=PASS`;
+- `OP3_ARGO_OUTOFSYNC_OBSERVED=PASS` and `OP3_ARGO_SELF_HEAL=PASS`: **Argo CD Day-2 self-heal runtime proof achieved**;
+- `OP3_OPERATOR_PLATFORM_DRIFT_INJECTED=PASS`: quota was widened to `99Gi`;
+- **FAIL**: `Operator did not restore ResourceQuota requests.storage (expected=20Gi current=99Gi)`. The diagnostics printed `99Gi` *before the EXIT trap attempted an unconditional/silent rollback*; the user log **does not prove the post-trap storage quota**.
+
+Current truth:
+- Argo drift/self-heal portion proven on CRC.
+- Operator quota drift self-heal not proven; complete OP3 integrated runtime claim **PENDING**.
+- Do **not** assume the quota remains at 99Gi; inspect the actual current quota.
+- Potential reasons (not established without evidence): ResourceQuota watched-label mismatch, failed requeue, API admission or server-side apply managed-field ownership conflict after `oc patch`. Controller watches `ResourceQuota` and maps `platform.mayabank.example/consumption`; its SSA `ApplyOptions` lacks ForceOwnership. Logs, CR condition, ResourceQuota labels and managedFields are required before changing controller behavior.
+- Do not rerun drift, restart Operator, modify TradeOps/PARK, or alter RBAC/webhooks.
+
+The PR's EXIT recovery trap was corrected to **verify readback** and print
+`OP3_QUOTA_ROLLBACK=PASS requests.storage=20Gi` with boundary
+`MANUAL_ROLLBACK_NOT_OPERATOR_SELF_HEAL`, or
+`OP3_ROLLBACK_ATTENTION_REQUIRED=YES` if restoration fails.
+This fix is preventive for **future** runs, not retroactive proof of the already-run
+CRC test. Added mocked regression covering successful and unsuccessful rollback.
