@@ -37,16 +37,18 @@ exit 0
 MOCK
 chmod +x "$TEST_DIR/bin/"*
 
-for scenario in existing_namespace existing_cr; do
+for scenario in existing_namespace existing_cr read_only; do
   log="$TEST_DIR/$scenario-oc.log"
   : >"$log"
   set +e
   PATH="$TEST_DIR/bin:$PATH" OP2_OC_LOG="$log" OP2_TEST_SCENARIO="$scenario" \
+    OP2_PREFLIGHT_ONLY=$([[ "$scenario" == read_only ]] && echo true || echo false) \
     bash "$ROOT_DIR/scripts/d093-op2-olm-crc.sh" >"$TEST_DIR/$scenario.log" 2>&1
   rc=$?
   set -e
   expected=20
   [[ "$scenario" == existing_cr ]] && expected=22
+  [[ "$scenario" == read_only ]] && expected=0
   if [[ "$rc" != "$expected" ]]; then
     cat "$TEST_DIR/$scenario.log"
     echo "Expected preflight exit $expected for $scenario, got $rc" >&2
