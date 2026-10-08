@@ -26,10 +26,10 @@ Argo CD --------------------> product-owned Deployment
 
 ## Entry point
 
-Read-only ownership preflight (fails with code 40 before any drift, when initial ownership is healthy):
+Read-only ownership and GitOps preflight (reports `OP3_PREFLIGHT_READONLY=PASS`; no drift injected):
 
 ```bash
-bash scripts/d093-op3-operator-argocd-day2.sh
+OP3_PREFLIGHT_ONLY=true bash scripts/d093-op3-operator-argocd-day2.sh
 ```
 
 Mutating drift rehearsal only after a separately approved CRC window:
