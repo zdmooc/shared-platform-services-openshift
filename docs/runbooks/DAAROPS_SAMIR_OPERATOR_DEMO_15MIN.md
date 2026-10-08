@@ -169,7 +169,7 @@ If OP3 has previously been runtime-proven on CRC, present its archived evidence 
 
 ```bash
 # OPTIONAL, ONLY AFTER EXPLICIT AUTHORIZATION AND SAFETY REVIEW
-bash scripts/d093-op3-operator-argocd-day2.sh
+CONFIRM_OP3_CRC_DRIFT=YES_I_AUTHORIZE_OP3_CONTROLLED_DRIFT bash scripts/d093-op3-operator-argocd-day2.sh
 ```
 
 The proof deliberately demonstrates:
@@ -234,7 +234,7 @@ If OP2 has previously passed on CRC, show the archived evidence log and image/CS
 
 ```bash
 # OPTIONAL CONTROLLED REPLAY ONLY; NOT PART OF THE LIVE 2-MINUTE SECTION
-bash scripts/d093-op2-olm-crc.sh
+CONFIRM_OP2_CRC_MUTATIONS=YES_I_AUTHORIZE_OP2_OPERATOR_PARK_AND_TEST_CLEANUP bash scripts/d093-op2-olm-crc.sh
 ```
 
 Present only the markers actually recorded in CRC evidence:
