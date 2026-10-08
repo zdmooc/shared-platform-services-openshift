@@ -165,9 +165,10 @@ Platform Operator
  = RBAC / ResourceQuota / LimitRange / baseline NetworkPolicies
 ```
 
-If OP3 is live-proven, run:
+If OP3 has previously been runtime-proven on CRC, present its archived evidence (including the final Argo/Operator PASS markers). Do **not** silently rerun the mutating drift scenario during a 15-minute interview. Any fresh execution requires a reviewed maintenance window and explicit authorization:
 
 ```bash
+# OPTIONAL, ONLY AFTER EXPLICIT AUTHORIZATION AND SAFETY REVIEW
 bash scripts/d093-op3-operator-argocd-day2.sh
 ```
 
@@ -229,13 +230,14 @@ Current baseline before OP2 live closure:
 
 `KIND_OLM_LIFECYCLE_PROVEN + OPENSHIFT_OPERATOR_RUNTIME_PROVEN_CONSUMER_1`.
 
-If OP2 has passed on CRC, show:
+If OP2 has previously passed on CRC, show the archived evidence log and image/CSV provenance. **Do not rerun the full OLM lifecycle during the interview**: it can take longer than the allocated slot, parks the direct Operator, installs/uninstalls test resources, and requires explicit prior authorization. The replay entry point is documented for a separate controlled CRC window:
 
 ```bash
+# OPTIONAL CONTROLLED REPLAY ONLY; NOT PART OF THE LIVE 2-MINUTE SECTION
 bash scripts/d093-op2-olm-crc.sh
 ```
 
-and the markers:
+Present only the markers actually recorded in CRC evidence:
 
 ```text
 OP2_OPENSHIFT_OLM_V010_INSTALL=PASS
