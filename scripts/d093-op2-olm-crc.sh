@@ -123,6 +123,11 @@ if [[ "${OP2_PREFLIGHT_ONLY:-false}" != "true" ]]; then
 fi
 
 oc whoami
+api_server="$(oc whoami --show-server)"
+if [[ "$api_server" != "https://api.crc.testing:6443" ]]; then
+  printf 'ERROR: expected OpenShift Local CRC API https://api.crc.testing:6443; observed %s\n' "$api_server" >&2
+  exit 18
+fi
 oc get clusterversion
 server_version="$(oc version -o json | jq -r '.openshiftVersion // .serverVersion.gitVersion // "unknown"')"
 log "OpenShift server version: $server_version"
