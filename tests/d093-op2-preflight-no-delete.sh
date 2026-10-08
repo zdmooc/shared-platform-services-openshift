@@ -12,6 +12,7 @@ set -euo pipefail
 printf '%s\n' "$*" >>"$OP2_OC_LOG"
 case "$*" in
   whoami) echo fake-admin ;;
+  "whoami --show-server") echo 'https://api.crc.testing:6443' ;;
   "get clusterversion") echo 'version 4.22.7' ;;
   "version -o json") echo '{"openshiftVersion":"4.22.7"}' ;;
   api-resources) printf 'ClusterServiceVersion\nSubscription\nOperatorGroup\nCatalogSource\n' ;;
