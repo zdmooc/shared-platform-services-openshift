@@ -30,7 +30,8 @@ Expected marker: `OP2_PREFLIGHT_READONLY=PASS`. This mode verifies OpenShift/OLM
 ## Full mutating lifecycle — explicit authorization required
 
 ```bash
-bash scripts/d093-op2-olm-crc.sh
+CONFIRM_OP2_CRC_MUTATIONS=YES_I_AUTHORIZE_OP2_OPERATOR_PARK_AND_TEST_CLEANUP \
+  bash scripts/d093-op2-olm-crc.sh
 ```
 
 Never run this second command automatically: it scales the existing direct Operator to zero, creates test resources, deletes a test quota for reconstruction, uninstalls OLM resources and cleans only its own test namespaces. Use a controlled CRC window, capture the original state and obtain explicit authorization first.
