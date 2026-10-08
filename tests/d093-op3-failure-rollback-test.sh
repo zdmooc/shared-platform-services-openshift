@@ -21,8 +21,8 @@ case "$args" in
   "api-resources") echo 'applications app argoproj.io/v1alpha1 true Application' ;;
   "-n openshift-gitops get application instant-payments-tech-lead-shared-platform"|"get capabilityconsumption instant-payments-crc"|"-n instant-payments-local get deploy wero-ui"|"-n instant-payments-local get resourcequota platform-quota")
     echo exists ;;
-  *"get application/instant-payments-tech-lead-shared-platform -o jsonpath={.status.sync.status}") echo Synced ;;
-  *"get application/instant-payments-tech-lead-shared-platform -o jsonpath={.status.health.status}") echo Healthy ;;
+  *"get application/instant-payments-tech-lead-shared-platform -o jsonpath={.status.sync.status}"|*"get application instant-payments-tech-lead-shared-platform -o jsonpath={.status.sync.status}") echo Synced ;;
+  *"get application/instant-payments-tech-lead-shared-platform -o jsonpath={.status.health.status}"|*"get application instant-payments-tech-lead-shared-platform -o jsonpath={.status.health.status}") echo Healthy ;;
   "get capabilityconsumption instant-payments-crc -o jsonpath={.spec.lifecycle.adoptionPolicy}") echo Manage ;;
   "get capabilityconsumption instant-payments-crc -o json")
     echo '{"status":{"managedResources":[{"kind":"ResourceQuota"},{"kind":"Namespace"}],"conditions":[{"type":"Ready","status":"True","reason":"Reconciled"},{"type":"Progressing","status":"False","reason":"Stable"},{"type":"Degraded","status":"False","reason":"Healthy"}]}}' ;;
