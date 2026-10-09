@@ -284,3 +284,19 @@ and `OP3_OPERATOR_ARGO_DAY2_INTEGRATED_DEMO_PROVEN=PASS` require a fresh,
 separately authorized **99Gi→20Gi autonomous Operator recovery** run. The
 old successful Argo self-heal evidence remains valid, but does not substitute
 for the Platform Operator drift proof. OP2 GHCR + OLM remains pending.
+
+
+## FINAL OP3 VERDICT — CLOSED / CRC INTEGRATED DAY-2 RUNTIME PROVEN (2026-10-09)
+
+Authoritative user-executed, separately authorized OP3 final replay **after** replacing the direct Operator image with the CI-proven SSA fix:
+
+- Operator image `sha256:acfa316265a0c3466a67dfecc1b731ae6a7bed78689dbe39a14bdad10d80d3a1` deployed; `OP3_I2_OPERATOR_NEW_IMAGE_RUNTIME=PASS`, `OP3_I2_PLATFORM_POST_ROLLOUT=PASS`.
+- `OP3_ARGO_INITIAL_SYNC=PASS`, `OP3_ARGO_INITIAL_HEALTH=PASS`, `OP3_OPERATOR_INITIAL_RECONCILED=PASS`, `OP3_OWNERSHIP_BOUNDARY=PASS`.
+- `OP3_DRIFT_BASELINE=PASS replicas=1 available=1 requests.storage=20Gi`.
+- `OP3_ARGO_PRODUCT_DRIFT_INJECTED=PASS`, `OP3_ARGO_OUTOFSYNC_OBSERVED=PASS`, `OP3_ARGO_SELF_HEAL=PASS`.
+- `OP3_OPERATOR_PLATFORM_DRIFT_INJECTED=PASS`, **`OP3_OPERATOR_DRIFT_RECOVERY=PASS`** (99Gi → 20Gi verified by the test prior to any EXIT trap manual rollback).
+- Final `Ready=True Reconciled`, `Progressing=False Stable`, `Degraded=False Healthy`.
+- `OP3_FINAL_ARGO_SYNC=PASS`, `OP3_FINAL_ARGO_HEALTH=PASS`, `OP3_FINAL_OPERATOR_RECONCILED=PASS`.
+- **`OP3_OPERATOR_ARGO_DAY2_INTEGRATED_DEMO_PROVEN=PASS`**; `truth_boundary=CRC_SINGLE_NODE_NOT_PRODUCTION_HA`.
+
+**Decision:** OP3 runtime acceptance gate CLOSED on the user's single-node CRC. Earlier OP3 reports marked PENDING/PARTIAL are historical and superseded by this evidence. Do not re-run drift. D-093 overarching decision remains `PARTIALLY_CLOSED` until OP2 GHCR images + true OpenShift/CRC OLM install/upgrade/uninstall proof and approved GitHub integration. The user supplied terminal output; raw on-device `/c/workspaces/d093-audit-readonly-20261008/op3-final-runtime.log` is not uploaded to GitHub.
