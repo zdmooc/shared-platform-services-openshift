@@ -358,3 +358,59 @@ The build requires the OpenShift builder service account and working access
 to its Dockerfile bases/dependencies (Go 1.25); a preflight cannot
 guarantee success. **Do not deploy the new image or repeat OP3 drift
 before reviewing the actual build result and separately approving rollout.**
+
+
+### I2 Stage 2 complete; Stage 3 rollout procedure (2026-10-09)
+
+**Observed CRC image-build success:** BuildConfig `d093-op3-ssa-i2`,
+Build `d093-op3-ssa-i2-1`, `OP3_I2_BINARY_IMAGE_BUILT=PASS`.
+Exact new image:
+`image-registry.openshift-image-registry.svc:5000/shared-platform-services/mayabank-platform-operator@sha256:acfa316265a0c3466a67dfecc1b731ae6a7bed78689dbe39a14bdad10d80d3a1`.
+**Image is BUILT, NOT DEPLOYED.**
+
+The OpenShift BuildConfig was intentionally created during the preceding
+build operation. Do **not** rerun `op3-i2-build.sh`: it refuses an existing
+BuildConfig, by design.
+
+The new `scripts/d093-op3-crc-operator-rollout.sh` is an **independent**
+step: it refuses a changed old Deployment digest, a different new tag digest,
+an incomplete Build, an unhealthy Consumer/Argo/product, non-CRC context,
+or absent confirmation. It updates only `manager`'s image and waits for
+a healthy Deployment. On failure, it attempts to restore the **original
+pinned image** and verifies the Deployment image before reporting rollback.
+It does not delete product resources, rotate secrets, affect TradeOps or
+inject quota drift.
+
+```bash
+cd /c/workspaces/shared-platform-services-openshift
+git fetch origin
+AUDIT_DIR=/c/workspaces/d093-audit-readonly-20261008
+mkdir -p "$AUDIT_DIR"
+git show origin/d093-op3-operator-argocd-day2-demo:scripts/d093-op3-crc-operator-rollout.sh \
+  > "$AUDIT_DIR/op3-i2-rollout.sh"
+bash -n "$AUDIT_DIR/op3-i2-rollout.sh"
+set -o pipefail
+
+# Safe read-only gate; must report OP3_I2_ROLLOUT_READONLY=PASS:
+OP3_I2_ROLLOUT_MODE=readonly bash "$AUDIT_DIR/op3-i2-rollout.sh" \
+  2>&1 | tee "$AUDIT_DIR/op3-i2-rollout-readonly.log"
+
+# Distinct explicitly authorized rollout (not authorized by image BUILD token):
+OP3_I2_ROLLOUT_MODE=apply \
+CONFIRM_OP3_I2_CRC_ROLLOUT=YES_I_AUTHORIZE_CRC_OPERATOR_IMAGE_ROLLOUT \
+bash "$AUDIT_DIR/op3-i2-rollout.sh" \
+  2>&1 | tee "$AUDIT_DIR/op3-i2-rollout-apply.log"
+```
+
+Expected **runtime rollout** markers:
+`OP3_I2_OPERATOR_NEW_IMAGE_RUNTIME=PASS` and
+`OP3_I2_PLATFORM_POST_ROLLOUT=PASS`;
+`truth_boundary=PATCHED_IMAGE_DEPLOYED_NO_QUOTA_DRIFT_YET`.
+If anything fails, **do not retry**; preserve the diagnostics and confirm
+whether `OP3_I2_ROLLBACK=PASS_OLD_IMAGE_RESTORED` appeared.
+
+**Separate later acceptance:** only after the new Operator is healthy,
+the latest OP3 Day-2 test may be replayed with a new explicit drift
+authorization. That runtime result must prove automated platform quota
+99Gi→20Gi healing *before* the test's fallback rollback. Never claim
+`OP3_OPERATOR_ARGO_DAY2_INTEGRATED_DEMO_PROVEN=PASS` based on rollout alone.
