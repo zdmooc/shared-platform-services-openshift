@@ -151,7 +151,7 @@ No destructive finalizer is introduced: `deletionPolicy=Retain` remains the V1 b
 
 ### D-093 DAAROPS technical closure
 
-I6A, I6B and I6C are closed. The current commercial claim is `KIND_OLM_LIFECYCLE_PROVEN + OPENSHIFT_OPERATOR_RUNTIME_PROVEN_CONSUMER_1`. Exact OpenShift OLM lifecycle remains a separate optional replay; CRC single-node is not HA/production.
+**D-093 CLOSED / CRC_SCOPE_RUNTIME_PROVEN (2026-10-09).** I6A/I6B/I6C and OP1–OP4 complete for the agreed CRC gate. OP3 proved real Argo CD self-heal + Operator SSA recovery; OP2 then proved CRC OLM bundle v0.1.0 install, v0.2.0 upgrade, quota reconstruction, uninstall/Retain and restoration of the original digest-pinned Operator. Separate `D093_POST_OLM_HANDOFF_CHECK=PASS`: direct Operator 1/1 and pinned, Instant Payments Ready/Reconciled, quota 20Gi, Argo Synced/Healthy, test resources absent. See `docs/iterations/D093-OP2-OPENSHIFT-OLM-LIFECYCLE.md`. Boundary: `CRC_SINGLE_NODE_NOT_PRODUCTION_HA`; OLM fixture does not prove functional binary upgrade. TradeOps consumer #2 remains Observe-only pending separate approval and is not covered by the D-093 closure.
 
 ### Next — I6 CRC consumer #2 / TradeOps brownfield
 - [x] prepare TradeOps Observe CR and zero-mutation evidence wrapper;

@@ -99,5 +99,30 @@ User terminal evidence with the corrected OP2 script on OpenShift CRC 4.22.7:
 **OP2 gate CLOSED / CRC_RUNTIME_PROVEN.** Earlier pending text in this document is historical.
 Publisher GitHub Actions run `37900988346` was successful; GHCR images pullable.
 v0.1 and v0.2 Operator images use the same build checkout: OLM packaging lifecycle is proven, not a functional binary upgrade.
-Post-run independent read-only check of direct image digest, Instant Payments Ready/20Gi and Argo Synced/Healthy remains to be collected; do not infer it from the OP2 marker.
+The separate post-OLM check has since been supplied: see the final handoff section below.
 Raw local log path: `/c/workspaces/d093-audit-readonly-20261008/op2-olm-final.log` (not imported).
+
+## D-093 final post-OLM handoff — 2026-10-09
+
+**D093_POST_OLM_HANDOFF_CHECK=PASS** from a separate user-executed,
+read-only `oc` and `jq` validation after OP2 OLM lifecycle completion.
+
+All assertions evaluated to `true` and the final explicit marker was observed:
+
+- Direct Deployment `shared-platform-services/mayabank-platform-operator`: desired replicas 1, ready 1, available 1 and the manager image ending in immutable digest `sha256:acfa316265a0c3466a67dfecc1b731ae6a7bed78689dbe39a14bdad10d80d3a1`.
+- `CapabilityConsumption/instant-payments-crc`: `Ready=True`, reason `Reconciled`.
+- `instant-payments-local/ResourceQuota/platform-quota`: `spec.hard.requests.storage=20Gi`.
+- `openshift-gitops/Application/instant-payments-tech-lead-shared-platform`: `Synced` and `Healthy`.
+- Both OP2 test namespaces `d093-op2-olm` and `d093-op2-consumer` absent.
+- Test `CapabilityConsumption/d093-op2-olm-consumer` absent.
+
+**Closure verdict: D-093 CLOSED / CRC_SCOPE_RUNTIME_PROVEN.**
+The OP1/OP4 prepared delivery and OP3 Operator/Argo self-heal, plus OP2
+OLM install, upgrade, reconstruction, uninstall/Retain and original Operator
+restoration are closed on the agreed CRC scope. No further cluster mutation
+is required for D-093 closure. Future TradeOps `Manage` promotion remains
+separately gated and is **not** authorized by this D-093 verdict.
+
+Truth boundary: `CRC_SINGLE_NODE_NOT_PRODUCTION_HA`.
+The OLM v0.1→v0.2 fixture is a package/CSV lifecycle, not a functional
+Go controller migration. Full raw logs stay local unless separately added.
