@@ -224,3 +224,32 @@ Do not repeat live quota drift until CI/envtest gates pass and the updated
 Operator image is deployed through a separately approved, rollback-capable
 CRC procedure. The existing direct CRC Operator image remains unchanged
 until that operation.
+
+
+## D-093/I2 CRC binary build — RUNTIME BUILT, NOT DEPLOYED (2026-10-09)
+
+User executed consented `OP3_I2_MODE=build` from pinned
+`91e99136add2f3af6ee3c03373445abc93d23654`. Captured:
+- `OP3_I2_BUILD_PREFLIGHT=PASS`
+- OpenShift binary Docker BuildConfig `d093-op3-ssa-i2` created
+- Build `d093-op3-ssa-i2-1` completed successfully with Go 1.25
+- ImageStream tag `mayabank-platform-operator:crc-i2-ssa-91e99136add2` pushed to internal CRC registry
+- `OP3_I2_NEW_IMAGE_DIGEST=image-registry.openshift-image-registry.svc:5000/shared-platform-services/mayabank-platform-operator@sha256:acfa316265a0c3466a67dfecc1b731ae6a7bed78689dbe39a14bdad10d80d3a1`
+- `OP3_I2_BINARY_IMAGE_BUILT=PASS`; `truth_boundary=IMAGE_BUILT_NOT_DEPLOYED`.
+
+Original running Operator digest:
+`sha256:ee3c1caed1d27642f11e7491a0e46442a08b0b6cb84df4258c4b7f52a8798d73`.
+Its Deployment has **not** been replaced by this build operation.
+
+New PR #14 `scripts/d093-op3-crc-operator-rollout.sh` implements default
+read-only preflight, pinned old/new digest and Build verification, Consumer/
+quota/Argo/product health gates; only with separate
+`CONFIRM_OP3_I2_CRC_ROLLOUT=YES_I_AUTHORIZE_CRC_OPERATOR_IMAGE_ROLLOUT`
+does it change the `manager` container image and wait for RollingUpdate.
+If health/rollout fails, it restores the previous digest and reports
+`OP3_I2_ROLLBACK=PASS_OLD_IMAGE_RESTORED` or an actionable failure.
+It does not inject drift or merge PRs.
+
+**Next acceptance:** user-run readonly rollout preflight, explicit consented
+rollout, verify new digest/1:1/Consumer Ready/Quota 20Gi/Argo Synced Healthy,
+then separately authorized OP3 quota 99Gi→20Gi autonomous repair proof.
