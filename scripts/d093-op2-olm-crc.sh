@@ -160,10 +160,20 @@ do
   oc get --raw "/apis/${resource#*.}" >/dev/null 2>&1 || true
 done
 
-oc api-resources | grep -q 'ClusterServiceVersion'
-oc api-resources | grep -q 'Subscription'
-oc api-resources | grep -q 'OperatorGroup'
-oc api-resources | grep -q 'CatalogSource'
+# Capture the resource discovery response exactly once. Under set -o pipefail,
+# piping 'oc api-resources' into 'grep -q' can produce SIGPIPE (141) after
+# grep matches early, which was observed as a silent CRC WSL preflight abort.
+# A here-string keeps the producer out of grep's pipeline.
+if ! olm_api_resources="$(oc api-resources)"; then
+  log "OP2_OLM_API_DISCOVERY_FAILED=oc api-resources" >&2
+  exit 24
+fi
+for required_kind in ClusterServiceVersion Subscription OperatorGroup CatalogSource; do
+  if ! grep -Fq "$required_kind" <<<"$olm_api_resources"; then
+    log "OP2_OLM_API_MISSING=$required_kind" >&2
+    exit 24
+  fi
+done
 log "OP2_OLM_CLASSIC_APIS=PASS"
 
 for image in "$OPERATOR_V010" "$OPERATOR_V020" "$BUNDLE_V010" "$BUNDLE_V020"; do
