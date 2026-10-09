@@ -79,3 +79,25 @@ After user-authorized integration and review of the release commit:
 5. only then claim `OP2_OPENSHIFT_OLM_LIFECYCLE_RESULT=PASS`.
 
 **Do not merge or publish solely because the static gate is green.**
+
+
+## OP2 final — CRC OLM lifecycle runtime PASS (2026-10-09)
+
+User terminal evidence with the corrected OP2 script on OpenShift CRC 4.22.7:
+
+- `OP2_OLM_CLASSIC_APIS=PASS`; `OP2_GHCR_IMAGES_PULLABLE=PASS`; `OP2_PREFLIGHT_READONLY=PASS`.
+- Existing direct Operator replicas=1, parked: `OP2_DIRECT_OPERATOR_PARK=PASS`.
+- OLM CatalogSource/OperatorGroup/Subscription/InstallPlan created. CSV v0.1.0 Succeeded; `OP2_OPENSHIFT_OLM_V010_INSTALL=PASS`.
+- Dedicated `d093-op2-olm-consumer` Ready/Reconciled; quota storage 0/10Gi; `OP2_OPENSHIFT_OLM_CONSUMER_RECONCILE=PASS`.
+- Upgraded OLM catalog/CSV v0.2.0 Succeeded; `OP2_OPENSHIFT_OLM_UPGRADE=PASS`.
+- Quota deletion followed by automatic recreation; `OP2_OPENSHIFT_POST_UPGRADE_RECONCILIATION=PASS`.
+- Subscription/CSV uninstalled; CRD, CR and quota observed retained **before** the script's explicit test cleanup; `OP2_OPENSHIFT_OLM_UNINSTALL_RETAIN=PASS`.
+- Direct Operator restored to replicas=1 with successful rollout: `OP2_DIRECT_OPERATOR_RESTORE=PASS`.
+- `OP2_OPENSHIFT_OLM_LIFECYCLE_RESULT=PASS`; `claim=OPENSHIFT_OLM_LIFECYCLE_PROVEN_CRC`.
+- `truth_boundary=CRC_SINGLE_NODE_NOT_PRODUCTION_HA`.
+
+**OP2 gate CLOSED / CRC_RUNTIME_PROVEN.** Earlier pending text in this document is historical.
+Publisher GitHub Actions run `37900988346` was successful; GHCR images pullable.
+v0.1 and v0.2 Operator images use the same build checkout: OLM packaging lifecycle is proven, not a functional binary upgrade.
+Post-run independent read-only check of direct image digest, Instant Payments Ready/20Gi and Argo Synced/Healthy remains to be collected; do not infer it from the OP2 marker.
+Raw local log path: `/c/workspaces/d093-audit-readonly-20261008/op2-olm-final.log` (not imported).
