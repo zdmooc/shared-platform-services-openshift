@@ -173,3 +173,15 @@ User-run read-only follow-up after unsuccessful OP3 Day-2 quota self-heal:
 **Interpretation:** no residual quota/product drift; manual EXIT-trap patch from earlier failed demo may have restored the 20Gi value, so return to nominal does **not** prove autonomous Operator drift recovery. Cause remains open between watched-resource enqueue behavior and SSA ownership conflict until managedFields and contemporaneous controller evidence obtained. Avoid a second drift injection, CR annotation requeue, or unapproved mutation.
 
 **OP3 statuses:** `CRC_RECOVERY_PROVEN`, `CRC_READONLY_PREFLIGHT_PROVEN`, `ARGO_SELF_HEAL_CRC_PROVEN`, `OPERATOR_QUOTA_SELF_HEAL_CRC_PENDING`, `OP3_INTEGRATED_RUNTIME_PENDING`.
+
+## 2026-10-09 — Quota SSA field ownership verified after failed OP3 drift
+
+User-run `oc -n instant-payments-local get resourcequota platform-quota --show-managed-fields=true -o json` produced:
+- `spec.hard.requests.storage=20Gi`, resourceVersion `8274441`;
+- `mayabank-platform-operator` `operation=Apply`, `ownsStorage=true`, manager timestamp `2026-10-05T09:53:50Z`;
+- `kubectl-patch` `operation=Update`, `ownsStorage=true`, manager timestamp `2026-10-08T21:04:48Z`;
+- `kube-controller-manager` `operation=Update`, `ownsStorage=false`.
+
+**Inference, not observed log:** competing/shared ownership of `f:requests.storage` strongly supports an SSA apply conflict during the 99Gi drift. The source `CapabilityConsumptionReconciler.apply()` sends `client.ApplyOptions{FieldManager: FieldManager}` without ForceOwnership; ordinary `oc patch` can claim/update that field. Kubernetes SSA rejects changing values owned by another manager unless conflict resolution is explicitly authorized. The current two managers claiming 20Gi do **not** prove the exact rejected request at the earlier time; operator error/metrics were not captured.
+
+**Next gates:** (1) guarded controller/design correction for *already platform-managed* `ResourceQuota`, preserving existing adoption/ownership-conflict protections and testing SSA drift with a competing field manager; (2) rebuild/redeploy approved CRC operator and replay bounded OP3 drift to demonstrate auto-heal **without exit-trap manual rollback**; (3) OP2 publish accessible GHCR Operator/bundle images; (4) OP2 CRC OLM v0.1→v0.2 install/upgrade/recovery/uninstall with retention; (5) authorized technical PRs #11/#12/#14/#15 and governance PR #12 integration. No cluster mutation or GitHub merges authorized by this read-only inspection. D-093 remains PARTIALLY_CLOSED.
