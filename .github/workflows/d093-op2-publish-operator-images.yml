@@ -1,0 +1,53 @@
+name: D093 OP2 Publish Operator Images
+
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  packages: write
+
+jobs:
+  publish:
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Login to GHCR
+        uses: docker/login-action@v3
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Build Operator images
+        working-directory: operators/platform-onboarding-operator
+        run: |
+          set -euo pipefail
+          docker build             -t ghcr.io/zdmooc/mayabank-platform-operator:v0.1.0             -t ghcr.io/zdmooc/mayabank-platform-operator:v0.2.0             .
+
+      - name: Build bundle and catalog images
+        working-directory: operators/platform-onboarding-operator
+        run: |
+          set -euo pipefail
+          docker build -f bundle-v0.1.0.Dockerfile             -t ghcr.io/zdmooc/mayabank-platform-operator-bundle:v0.1.0 .
+          docker build -f bundle.Dockerfile             -t ghcr.io/zdmooc/mayabank-platform-operator-bundle:v0.2.0 .
+          docker build -f catalog.Dockerfile             -t ghcr.io/zdmooc/mayabank-platform-operator-catalog:v0.2.0 .
+
+      - name: Push images
+        run: |
+          set -euo pipefail
+          for image in             ghcr.io/zdmooc/mayabank-platform-operator:v0.1.0             ghcr.io/zdmooc/mayabank-platform-operator:v0.2.0             ghcr.io/zdmooc/mayabank-platform-operator-bundle:v0.1.0             ghcr.io/zdmooc/mayabank-platform-operator-bundle:v0.2.0             ghcr.io/zdmooc/mayabank-platform-operator-catalog:v0.2.0
+          do
+            docker push "$image"
+          done
+
+      - name: Verify published manifests
+        run: |
+          set -euo pipefail
+          for image in             ghcr.io/zdmooc/mayabank-platform-operator:v0.1.0             ghcr.io/zdmooc/mayabank-platform-operator:v0.2.0             ghcr.io/zdmooc/mayabank-platform-operator-bundle:v0.1.0             ghcr.io/zdmooc/mayabank-platform-operator-bundle:v0.2.0             ghcr.io/zdmooc/mayabank-platform-operator-catalog:v0.2.0
+          do
+            docker buildx imagetools inspect "$image" >/dev/null
+          done
+          echo "OP2_GHCR_PUBLICATION=PASS"

@@ -1,0 +1,56 @@
+name: D093 OP2 OpenShift OLM Static Gate
+
+on:
+  pull_request:
+    paths:
+      - "scripts/d093-op2-olm-crc.sh"
+      - "tests/d093-op2-preflight-no-delete.sh"
+      - "docs/runbooks/DAAROPS_OLM_CRC_REPLAY.md"
+      - "docs/iterations/D093-OP2-OPENSHIFT-OLM-LIFECYCLE.md"
+      - ".github/workflows/d093-op2-publish-operator-images.yml"
+      - ".github/workflows/d093-op2-static.yml"
+      - "operators/platform-onboarding-operator/bundle/**"
+      - "operators/platform-onboarding-operator/bundle-v0.1.0/**"
+      - "operators/platform-onboarding-operator/config/olm/**"
+  push:
+    branches: [main]
+    paths:
+      - "scripts/d093-op2-olm-crc.sh"
+      - "tests/d093-op2-preflight-no-delete.sh"
+      - "docs/runbooks/DAAROPS_OLM_CRC_REPLAY.md"
+      - "docs/iterations/D093-OP2-OPENSHIFT-OLM-LIFECYCLE.md"
+      - ".github/workflows/d093-op2-publish-operator-images.yml"
+      - ".github/workflows/d093-op2-static.yml"
+      - "operators/platform-onboarding-operator/bundle/**"
+      - "operators/platform-onboarding-operator/bundle-v0.1.0/**"
+      - "operators/platform-onboarding-operator/config/olm/**"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  validate:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Shell syntax
+        run: |
+          bash -n scripts/d093-op2-olm-crc.sh
+          bash -n tests/d093-op2-preflight-no-delete.sh
+
+      - name: Fail-safe preflight regression
+        run: bash tests/d093-op2-preflight-no-delete.sh
+
+      - name: Validate expected lifecycle contracts
+        run: |
+          set -euo pipefail
+          grep -q 'version: 0.1.0' operators/platform-onboarding-operator/bundle-v0.1.0/manifests/mayabank-platform-operator.clusterserviceversion.yaml
+          grep -q 'version: 0.2.0' operators/platform-onboarding-operator/bundle/manifests/mayabank-platform-operator.clusterserviceversion.yaml
+          grep -q 'replaces: mayabank-platform-operator.v0.1.0' operators/platform-onboarding-operator/bundle/manifests/mayabank-platform-operator.clusterserviceversion.yaml
+          grep -q 'kind: CatalogSource' operators/platform-onboarding-operator/config/olm/openshift-classic/catalogsource.yaml
+          grep -q 'kind: Subscription' operators/platform-onboarding-operator/config/olm/openshift-classic/subscription.yaml
+          grep -q 'OP2_OPENSHIFT_OLM_LIFECYCLE_RESULT=PASS' scripts/d093-op2-olm-crc.sh
+          echo "OP2_STATIC_GATE=PASS"
