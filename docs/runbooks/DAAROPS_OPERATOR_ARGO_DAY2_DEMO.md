@@ -297,3 +297,64 @@ reconciliation before trap/manual rollback; final marker
 Inspect post-run managedFields and `Ready` conditions to distinguish
 controller self-heal from script rollback. Keep the historical result
 `PARTIAL` until new CRC evidence arrives.
+
+
+### I2 inventory observed 2026-10-09 — internal registry, no BuildConfig
+
+User's `OP3_ROLLOUT_INVENTORY_READONLY=PASS` on CRC:
+- direct Deployment `shared-platform-services/mayabank-platform-operator`
+  `1/1` Available, `manager`, `serviceAccount=mayabank-platform-operator`,
+  `strategy=RollingUpdate`, `args=null`, `imagePullPolicy=IfNotPresent`;
+- pinned old image `image-registry.openshift-image-registry.svc:5000/shared-platform-services/mayabank-platform-operator@sha256:ee3c1caed1d27642f11e7491a0e46442a08b0b6cb84df4258c4b7f52a8798d73`;
+- ImageStream `mayabank-platform-operator` contains existing tags
+  `crc-i5`, `crc-i5-handoff`, `crc-i5-payments-medium`;
+- **no BuildConfig is present**, so do not assume an existing build pipeline;
+- current target consumer `Ready=True/Reconciled`, quota `20Gi`,
+  product `wero-ui=1/1`, Argo `Synced/Healthy`.
+
+### I2 Stage 2 — separate, consented binary build (NO Deployment change)
+
+The OP3 branch contains
+`scripts/d093-op3-crc-operator-binary-build.sh`.
+It defaults to **read-only** and pins the Platform-CI/Kind-tested source commit
+`91e99136add2f3af6ee3c03373445abc93d23654`.
+It refuses any changed CRC API, old digest, consumer readiness, quota or
+Argo status, any pre-existing dedicated BuildConfig or new target tag.
+It archives only `operators/platform-onboarding-operator` from that
+exact commit (no modification of local `main`) and, with explicit consent,
+creates a **dedicated binary Docker BuildConfig** and runs an OpenShift
+binary build to the new tag
+`mayabank-platform-operator:crc-i2-ssa-91e99136add2`.
+It does **not** change the Operator Deployment or overwrite any `crc-i5*`
+tag. A failed build leaves its BuildConfig/Build evidence for investigation;
+do not silently retry or clean up.
+
+User Git Bash:
+
+```bash
+cd /c/workspaces/shared-platform-services-openshift
+git fetch origin
+AUDIT_DIR=/c/workspaces/d093-audit-readonly-20261008
+mkdir -p "$AUDIT_DIR"
+git show origin/d093-op3-operator-argocd-day2-demo:scripts/d093-op3-crc-operator-binary-build.sh > "$AUDIT_DIR/op3-i2-build.sh"
+bash -n "$AUDIT_DIR/op3-i2-build.sh"
+set -o pipefail
+
+# Stage 2A: read-only. Expected OP3_I2_BUILD_READONLY=PASS
+OP3_I2_MODE=readonly bash "$AUDIT_DIR/op3-i2-build.sh" \
+  2>&1 | tee "$AUDIT_DIR/op3-i2-build-readonly.log"
+
+# Stage 2B: build-only, separate authorization, NO deployment.
+OP3_I2_MODE=build \
+CONFIRM_OP3_I2_BINARY_BUILD=YES_I_AUTHORIZE_CRC_BUILD_NO_DEPLOY \
+bash "$AUDIT_DIR/op3-i2-build.sh" \
+  2>&1 | tee "$AUDIT_DIR/op3-i2-build-active.log"
+```
+
+Expected result before any rollout:
+`OP3_I2_BINARY_IMAGE_BUILT=PASS` and a real pinned
+`OP3_I2_NEW_IMAGE_DIGEST=...@sha256:...`.
+The build requires the OpenShift builder service account and working access
+to its Dockerfile bases/dependencies (Go 1.25); a preflight cannot
+guarantee success. **Do not deploy the new image or repeat OP3 drift
+before reviewing the actual build result and separately approving rollout.**
