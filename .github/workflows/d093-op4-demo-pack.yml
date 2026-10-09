@@ -1,0 +1,42 @@
+name: D093 OP4 Samir Demo Pack
+
+on:
+  pull_request:
+    paths:
+      - "docs/runbooks/DAAROPS_SAMIR_OPERATOR_DEMO_15MIN.md"
+      - "docs/iterations/D093-OP4-SAMIR-DEMO-PACK.md"
+      - "scripts/d093-op4-samir-demo-preflight.sh"
+      - ".github/workflows/d093-op4-demo-pack.yml"
+  push:
+    branches: [main]
+    paths:
+      - "docs/runbooks/DAAROPS_SAMIR_OPERATOR_DEMO_15MIN.md"
+      - "docs/iterations/D093-OP4-SAMIR-DEMO-PACK.md"
+      - "scripts/d093-op4-samir-demo-preflight.sh"
+      - ".github/workflows/d093-op4-demo-pack.yml"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  validate:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Shell syntax
+        run: bash -n scripts/d093-op4-samir-demo-preflight.sh
+
+      - name: Demo preflight
+        run: bash scripts/d093-op4-samir-demo-preflight.sh
+
+      - name: Validate demo sections
+        run: |
+          set -euo pipefail
+          grep -q 'Argo CD vs Operator' docs/runbooks/DAAROPS_SAMIR_OPERATOR_DEMO_15MIN.md
+          grep -q 'OLM lifecycle' docs/runbooks/DAAROPS_SAMIR_OPERATOR_DEMO_15MIN.md
+          grep -q 'Truth boundary' docs/runbooks/DAAROPS_SAMIR_OPERATOR_DEMO_15MIN.md
+          grep -q 'OP4_DEMO_PREFLIGHT=PASS' scripts/d093-op4-samir-demo-preflight.sh
+          echo "OP4_STATIC_GATE=PASS"
