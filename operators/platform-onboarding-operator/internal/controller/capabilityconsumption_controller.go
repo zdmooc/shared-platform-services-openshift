@@ -279,7 +279,52 @@ func (r *CapabilityConsumptionReconciler) apply(ctx context.Context, obj client.
 	}
 	u := &unstructured.Unstructured{Object: raw}
 	u.SetGroupVersionKind(gvk)
-	return r.Apply(ctx, client.ApplyConfigurationFromUnstructured(u), &client.ApplyOptions{FieldManager: FieldManager})
+	config := client.ApplyConfigurationFromUnstructured(u)
+	options := &client.ApplyOptions{FieldManager: FieldManager}
+
+	// Normal server-side apply is the default for every resource, including
+	// previously unowned/brownfield objects. Never use ForceOwnership broadly.
+	err = r.Apply(ctx, config, options)
+	if err == nil || !apierrors.IsConflict(err) {
+		return err
+	}
+
+	// A user-driven quota storage drift via a merge patch can acquire
+	// f:requests.storage under kubectl-patch. Reclaim this one controlled
+	// field only after proving that this exact ResourceQuota already belongs
+	// to the same CapabilityConsumption. Do not force any other resource or
+	// a different quota field (e.g. requests.cpu).
+	desiredQuota, ok := obj.(*corev1.ResourceQuota)
+	if !ok || desiredQuota.Name != platformQuotaName || desiredQuota.GetNamespace() == "" {
+		return err
+	}
+	expectedConsumption := desiredQuota.Labels[ConsumptionLabel]
+	if expectedConsumption == "" || desiredQuota.Labels[ManagedByLabel] != ManagedByValue {
+		return err
+	}
+	currentQuota := &corev1.ResourceQuota{}
+	if readErr := r.Get(ctx, client.ObjectKeyFromObject(desiredQuota), currentQuota); readErr != nil {
+		return errors.Join(err, fmt.Errorf("read quota before narrowly scoped SSA ownership recovery: %w", readErr))
+	}
+	if currentQuota.Labels[ManagedByLabel] != ManagedByValue ||
+		currentQuota.Labels[ConsumptionLabel] != expectedConsumption ||
+		currentQuota.Labels[ConsumerLabel] != desiredQuota.Labels[ConsumerLabel] {
+		return err
+	}
+	wanted, hasWanted := desiredQuota.Spec.Hard[corev1.ResourceRequestsStorage]
+	actual, hasActual := currentQuota.Spec.Hard[corev1.ResourceRequestsStorage]
+	if !hasWanted || !hasActual || wanted.Cmp(actual) == 0 {
+		// Do not force conflicts affecting CPU, memory, metadata or policies.
+		return err
+	}
+
+	// Force applies the complete declared quota baseline; it is safe only
+	// within the already-claimed, exact consumer-owned platform quota and
+	// only following an observed SSA conflict on a storage-value drift.
+	if forceErr := r.Apply(ctx, config, options, client.ForceOwnership); forceErr != nil {
+		return errors.Join(err, fmt.Errorf("recover SSA-owned requests.storage on platform quota: %w", forceErr))
+	}
+	return nil
 }
 
 func (r *CapabilityConsumptionReconciler) resourceReference(obj client.Object) (platformv1alpha1.ManagedResourceReference, error) {
