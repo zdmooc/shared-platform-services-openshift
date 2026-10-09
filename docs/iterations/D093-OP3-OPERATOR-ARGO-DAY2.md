@@ -185,3 +185,42 @@ User-run `oc -n instant-payments-local get resourcequota platform-quota --show-m
 **Inference, not observed log:** competing/shared ownership of `f:requests.storage` strongly supports an SSA apply conflict during the 99Gi drift. The source `CapabilityConsumptionReconciler.apply()` sends `client.ApplyOptions{FieldManager: FieldManager}` without ForceOwnership; ordinary `oc patch` can claim/update that field. Kubernetes SSA rejects changing values owned by another manager unless conflict resolution is explicitly authorized. The current two managers claiming 20Gi do **not** prove the exact rejected request at the earlier time; operator error/metrics were not captured.
 
 **Next gates:** (1) guarded controller/design correction for *already platform-managed* `ResourceQuota`, preserving existing adoption/ownership-conflict protections and testing SSA drift with a competing field manager; (2) rebuild/redeploy approved CRC operator and replay bounded OP3 drift to demonstrate auto-heal **without exit-trap manual rollback**; (3) OP2 publish accessible GHCR Operator/bundle images; (4) OP2 CRC OLM v0.1→v0.2 install/upgrade/recovery/uninstall with retention; (5) authorized technical PRs #11/#12/#14/#15 and governance PR #12 integration. No cluster mutation or GitHub merges authorized by this read-only inspection. D-093 remains PARTIALLY_CLOSED.
+
+
+## D-093/I1 SSA Storage Drift Fix — committed, CI gate pending (2026-10-09)
+
+Based on user CRC managedFields, both `mayabank-platform-operator` (Apply) and
+`kubectl-patch` (Update) owned `f:requests.storage`. The initial
+apply path used `client.ApplyOptions{FieldManager: FieldManager}` with no
+force, explaining a plausible 409 SSA ownership conflict on `99Gi` drift.
+
+Technical PR #14 now implements a **narrow conditional fallback**:
+1. First call normal SSA Apply, never ForceOwner by default.
+2. Only on a genuine Kubernetes `IsConflict` for the fixed
+   `ResourceQuota/platform-quota`, re-read its labels and require
+   `managed-by=mayabank-platform-operator` and the same non-empty
+   `consumption` / `consumer` labels as the desired quota.
+3. Require `requests.storage` to differ while **all other hard-limit keys
+   and quantities remain identical**; otherwise return the original error,
+   preserving protection for unrelated CPU/memory/PVC conflicts.
+4. Retry SSA with `client.ForceOwnership` only for this already-owned
+   quota; preserve both initial and fallback errors on failure.
+5. Existing `detectConflicts` (unowned quota and another consumer) remains
+   the primary non-destructive ownership guard.
+
+New envtest regression scenarios:
+- `TestManagedQuotaStorageConflictRecoversViaNarrowForce`: real apiserver
+  creates 20Gi managed quota → competing `kubectl-patch` 99Gi → controller
+  reconciles back to 20Gi and `Ready=True/Reconciled`.
+- `TestManagedQuotaCPUConflictDoesNotForceOwnership`: CPU-only drift
+  remains blocked.
+- `TestManagedQuotaMixedStorageAndCPUDriftNeverForces`: mixed drift fails
+  closed rather than taking CPU ownership.
+- `TestUnownedQuotaStorageConflictRemainsProtected`: existing external
+  quota retains its 99Gi and produces `OwnershipConflict`.
+
+**Truth boundary:** code and tests in PR, not yet deployed or proven on CRC.
+Do not repeat live quota drift until CI/envtest gates pass and the updated
+Operator image is deployed through a separately approved, rollback-capable
+CRC procedure. The existing direct CRC Operator image remains unchanged
+until that operation.
