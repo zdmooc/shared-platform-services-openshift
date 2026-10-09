@@ -53,3 +53,29 @@ User-provided Git Bash output on `api.crc.testing:6443` / OpenShift Local 4.22.7
 - `OPENSHIFT_OLM_LIFECYCLE_PROVEN_CRC` remains **not claimed**.
 
 The manual publisher workflow exists in this **unmerged OP2 branch**, but not in `main`. GitHub `workflow_dispatch` requires the workflow file on the default branch; it cannot be assumed runnable before explicit integration. GHCR publication/visibility and any further CRC mutation require a separate controlled step. Do not bypass this by force-merging the PR.
+
+
+## 2026-10-09 — OP3 SSA fix integration dependency before publishing
+
+D-093/I1 technical OP3 PR #14 now contains code and envtests resolving
+the already-managed quota's SSA `requests.storage` ownership conflict.
+The I1 tested code head `b07cf830d8792c803a9ccf6849ffba1d4f31e3ee`
+passed Platform CI, Operator Kind Runtime, and OP3 Static Gate. It has
+**not yet been deployed to the user's CRC**.
+
+**Release sequencing:** avoid publishing immutable GHCR `v0.2.0` tags from
+an obsolete default-branch Operator binary while PR #14 remains unmerged.
+Current publisher tags both Operator `v0.1.0` and `v0.2.0` from *one*
+checkout, so the upgrade is a genuine **OLM packaging/CSV/catalog lifecycle**
+exercise but **not** evidence that the Operator binary gained functionality
+between tags. Preserve this distinction explicitly.
+
+After user-authorized integration and review of the release commit:
+1. pin image build commit SHAs and compare expected binary content;
+2. verify GHCR publication + pull visibility for Operator v0.1/v0.2,
+   bundle v0.1/v0.2 and catalog v0.2;
+3. execute OP2 CRC preflight without mutation;
+4. obtain separate approval for OP2 park/install/upgrade/recovery/uninstall;
+5. only then claim `OP2_OPENSHIFT_OLM_LIFECYCLE_RESULT=PASS`.
+
+**Do not merge or publish solely because the static gate is green.**
