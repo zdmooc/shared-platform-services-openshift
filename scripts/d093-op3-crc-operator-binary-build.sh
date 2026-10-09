@@ -67,12 +67,10 @@ oc -n openshift-gitops get application instant-payments-tech-lead-shared-platfor
   jq -e '.status.sync.status=="Synced" and .status.health.status=="Healthy"' >/dev/null ||
   fail "Argo application not Synced/Healthy"
 
-if oc -n "$ns" get buildconfig "$bc" >/dev/null 2>&1; then
-  fail "dedicated BuildConfig already exists; refuse overwrite"
-fi
-if oc -n "$ns" get imagestreamtag "${operator}:${tag}" >/dev/null 2>&1; then
-  fail "pinned image tag already exists; refuse overwrite"
-fi
+existing_bc="$(oc -n "$ns" get buildconfig "$bc" --ignore-not-found -o name)"
+[[ -z "$existing_bc" ]] || fail "dedicated BuildConfig already exists; refuse overwrite"
+existing_tag="$(oc -n "$ns" get imagestreamtag "${operator}:${tag}" --ignore-not-found -o name)"
+[[ -z "$existing_tag" ]] || fail "pinned image tag already exists; refuse overwrite"
 
 log "OP3_I2_SOURCE_COMMIT=$source_sha"
 log "OP3_I2_ORIGINAL_IMAGE=$old_image"
