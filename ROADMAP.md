@@ -19,7 +19,11 @@
 | D-093 I6A | Production-style Go/Kubebuilder hardening | CLOSED | PLATFORM_CI_PROVEN + KIND_RUNTIME_PROVEN_I6A |
 | D-093 I6B | Day-2 / Failure Engineering | CLOSED | PLATFORM_CI_PROVEN + KIND_RUNTIME_PROVEN_I6B_DAY2 |
 | D-093 I6C | OLM / OpenShift Operator packaging | CLOSED | KIND_OLM_LIFECYCLE_PROVEN + OPENSHIFT_OPERATOR_RUNTIME_PROVEN_CONSUMER_1 |
-| D-093 OP1 | DAAROPS Operator interview hardening | IMPLEMENTED / CI PENDING | interview surface + non-destructive evidence script |
+| D-093 OP1 | DAAROPS Operator interview hardening | CLOSED / CI VALIDATED | interview surface and safe preflight |
+| D-093 OP2 | OpenShift CRC OLM lifecycle | CLOSED / CRC RUNTIME PROVEN | OP2_OPENSHIFT_OLM_LIFECYCLE_RESULT=PASS |
+| D-093 OP3 | Operator/Argo Day-2 self-heal | CLOSED / CRC RUNTIME PROVEN | OP3_OPERATOR_ARGO_DAY2_INTEGRATED_DEMO_PROVEN=PASS |
+| D-093 OP4 | Interview demonstration package | CLOSED / MERGED | runbook and evidence |
+| D-093 closure | Final read-only CRC handoff | CLOSED | D093_POST_OLM_HANDOFF_CHECK=PASS |
 
 ## Recorded evidence
 
@@ -124,7 +128,7 @@ Canonical runbook: `docs/runbooks/DAAROPS_OPERATOR_FIRST_DEMO.md`.
 
 CI gate: `.github/workflows/d093-op1-operator-interview.yml`.
 
-Next: **OP2 — exact OLM lifecycle replay on CRC/OpenShift**.
+OP2 OLM lifecycle replay and separate post-OLM handoff completed successfully on CRC on 2026-10-09.
 
 ## Current CRC promotion state
 
@@ -163,3 +167,8 @@ STATIC_VALIDATED
 ```
 
 No cloud runtime claim is made until an observed AKS execution exists.
+
+
+## D-093 final status (2026-10-09)
+
+**D-093 CLOSED / CRC_SCOPE_RUNTIME_PROVEN.** Operator pinned 1/1, Instant Payments Ready, quota storage 20Gi, Argo Synced/Healthy, OP2 temporary resources absent. OLM packaging install-upgrade-uninstall and quota reconstruction proven. CRC single-node is not production HA; no Go controller functional binary upgrade claim. TradeOps remains Observe-only and requires separate approval for Manage.
