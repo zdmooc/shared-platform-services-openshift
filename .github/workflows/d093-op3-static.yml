@@ -1,0 +1,85 @@
+name: D093 OP3 Operator Argo Day2 Static Gate
+
+on:
+  pull_request:
+    paths:
+      - "scripts/d093-op3-operator-argocd-day2.sh"
+      - "scripts/d093-op3-crc-reconcile-recovery.sh"
+      - "tests/d093-op3-readonly-blocker-no-mutation.sh"
+      - "tests/d093-op3-crc-reconcile-recovery-test.sh"
+      - "tests/d093-op3-drift-baseline-no-mutation.sh"
+      - "tests/d093-op3-failure-rollback-test.sh"
+      - "scripts/d093-op3-crc-operator-binary-build.sh"
+      - "tests/d093-op3-i2-binary-build-readonly-test.sh"
+      - "scripts/d093-op3-crc-operator-rollout.sh"
+      - "tests/d093-op3-i2-rollout-guard-test.sh"
+      - "docs/runbooks/DAAROPS_OPERATOR_ARGO_DAY2_DEMO.md"
+      - "docs/iterations/D093-OP3-OPERATOR-ARGO-DAY2.md"
+      - ".github/workflows/d093-op3-static.yml"
+  push:
+    branches: [main]
+    paths:
+      - "scripts/d093-op3-operator-argocd-day2.sh"
+      - "scripts/d093-op3-crc-reconcile-recovery.sh"
+      - "tests/d093-op3-readonly-blocker-no-mutation.sh"
+      - "tests/d093-op3-crc-reconcile-recovery-test.sh"
+      - "tests/d093-op3-drift-baseline-no-mutation.sh"
+      - "tests/d093-op3-failure-rollback-test.sh"
+      - "scripts/d093-op3-crc-operator-binary-build.sh"
+      - "tests/d093-op3-i2-binary-build-readonly-test.sh"
+      - "scripts/d093-op3-crc-operator-rollout.sh"
+      - "tests/d093-op3-i2-rollout-guard-test.sh"
+      - "docs/runbooks/DAAROPS_OPERATOR_ARGO_DAY2_DEMO.md"
+      - "docs/iterations/D093-OP3-OPERATOR-ARGO-DAY2.md"
+      - ".github/workflows/d093-op3-static.yml"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  validate:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Shell syntax
+        run: |
+          bash -n scripts/d093-op3-operator-argocd-day2.sh
+          bash -n tests/d093-op3-readonly-blocker-no-mutation.sh
+          bash -n scripts/d093-op3-crc-reconcile-recovery.sh
+          bash -n tests/d093-op3-crc-reconcile-recovery-test.sh
+          bash -n tests/d093-op3-drift-baseline-no-mutation.sh
+          bash -n tests/d093-op3-failure-rollback-test.sh
+          bash -n scripts/d093-op3-crc-operator-binary-build.sh
+          bash -n tests/d093-op3-i2-binary-build-readonly-test.sh
+          bash -n scripts/d093-op3-crc-operator-rollout.sh
+          bash -n tests/d093-op3-i2-rollout-guard-test.sh
+
+      - name: Regression — no mutation on blocked operator preflight
+        run: bash tests/d093-op3-readonly-blocker-no-mutation.sh
+
+      - name: Regression — targeted CR recovery authorization and no unrelated writes
+        run: bash tests/d093-op3-crc-reconcile-recovery-test.sh
+
+      - name: Regression — refuse drift on unexpected CRC baseline
+        run: bash tests/d093-op3-drift-baseline-no-mutation.sh
+
+      - name: Regression — verify quota rollback or actionable failure
+        run: bash tests/d093-op3-failure-rollback-test.sh
+
+      - name: Regression — I2 CRC build script default read-only and consent gate
+        run: bash tests/d093-op3-i2-binary-build-readonly-test.sh
+
+      - name: Regression — I2 CRC rollout consent, image pin, rollback
+        run: bash tests/d093-op3-i2-rollout-guard-test.sh
+
+      - name: Validate ownership and recovery markers
+        run: |
+          set -euo pipefail
+          grep -q 'OP3_OWNERSHIP_BOUNDARY=PASS' scripts/d093-op3-operator-argocd-day2.sh
+          grep -q 'OP3_ARGO_SELF_HEAL=PASS' scripts/d093-op3-operator-argocd-day2.sh
+          grep -q 'OP3_OPERATOR_DRIFT_RECOVERY=PASS' scripts/d093-op3-operator-argocd-day2.sh
+          grep -q 'OP3_OPERATOR_ARGO_DAY2_INTEGRATED_DEMO_PROVEN=PASS' scripts/d093-op3-operator-argocd-day2.sh
+          echo "OP3_STATIC_GATE=PASS"
