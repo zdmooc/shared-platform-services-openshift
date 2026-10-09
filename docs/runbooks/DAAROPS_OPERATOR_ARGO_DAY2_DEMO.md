@@ -234,3 +234,66 @@ Hypothesis to test, not to assume: SSA conflict between `kubectl-patch`
 field manager and Operator SSA field manager (`mayabank-platform-operator`)
 can block quota self-heal without `ForceOwnership`. Only change the
 reconciler or drift demonstration after concrete managed-field and error evidence.
+
+
+## D-093/I2 — Delivering the corrected Operator on CRC (not yet executed)
+
+The D-093/I1 controller change **already passed GitHub Platform CI,
+K3 Operator Kind Runtime, and OP3 static gate** on the tested code commit
+`b07cf830d8792c803a9ccf6849ffba1d4f31e3ee`.
+The source is on technical PR #14; it has **not** replaced the live CRC
+image, which user evidence showed as the OpenShift internal-registry digest
+`sha256:ee3c1caed1d27642f11e7491a0e46442a08b0b6cb84df4258c4b7f52a8798d73`.
+
+### Stage 1 — inspect the live packaging, read-only
+
+From Git Bash on the user's own CRC machine (with `main` left untouched):
+
+```bash
+cd /c/workspaces/shared-platform-services-openshift
+git fetch origin
+AUDIT_DIR="/c/workspaces/d093-audit-readonly-20261008"
+mkdir -p "$AUDIT_DIR"
+git show origin/d093-op3-operator-argocd-day2-demo:scripts/d093-op3-crc-rollout-inventory.sh \
+  > "$AUDIT_DIR/op3-rollout-inventory.sh"
+bash -n "$AUDIT_DIR/op3-rollout-inventory.sh"
+set -o pipefail
+bash "$AUDIT_DIR/op3-rollout-inventory.sh" 2>&1 \
+  | tee "$AUDIT_DIR/op3-rollout-inventory.log"
+```
+
+This inventory checks the actual Operator Deployment/ServiceAccount/image,
+ImageStream, BuildConfigs, Pod, consumer condition, quota baseline, application
+replicas and Argo state; it does not mutate the cluster.
+
+### Stage 2 — approval-gated build/rollout (PENDING)
+
+After inventory reveals the actual build source and image pipeline:
+1. Pin the **PR #14 commit SHA** to avoid a moving branch; separately
+   preserve current Operator `Deployment` YAML, digest and rollback revision.
+2. Prepare a uniquely tagged replacement image from the validated
+   commit, not an overwrite of `:dev` or an existing digest.
+3. Verify image is accessible to the `shared-platform-services` service
+   account and that the replacement uses the same RBAC, CPU/RAM resources,
+   probes and SCC. Do not alter the CRD/consumer or product namespace.
+4. **Only after explicit CRC approval**, update the Operator's image via
+   the existing observed image-build path, wait for a healthy deployment
+   and revalidate `Ready=True / Reconciled`, quota 20Gi and Argo
+   `Synced / Healthy`.
+5. If the rollout fails, restore the pinned old digest and verify health;
+   report rollback evidence rather than silently continuing.
+
+Do not construct a guessed registry push/BuildConfig or use `oc rollout restart`
+until the live inventory confirms deployment provenance. Do not merge any PR
+or tag/publish GHCR merely for this I2 validation.
+
+### Stage 3 — controlled end-to-end proof (PENDING)
+
+The previous run proves Argo self-heal but **not** the Operator quota repair.
+Once a patched image is running, run the latest OP3 read-only preflight.
+A separately authorized bounded Day-2 run must show actual 99Gi→20Gi
+reconciliation before trap/manual rollback; final marker
+`OP3_OPERATOR_ARGO_DAY2_INTEGRATED_DEMO_PROVEN=PASS`.
+Inspect post-run managedFields and `Ready` conditions to distinguish
+controller self-heal from script rollback. Keep the historical result
+`PARTIAL` until new CRC evidence arrives.
