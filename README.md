@@ -25,6 +25,28 @@ Une capacité n'est promue qu'au niveau de preuve réellement observé.
 - API Management shared runtime : `CRC_RUNTIME_PROVEN_SHARED_PLATFORM_CONSUMER`.
 - HA multi-nœud / production : NOT_CLAIMED.
 
+## DAAROPS — Operator-first preparation
+
+Recruiter signal 2026-10-07: **Kubernetes Operators are the priority technical angle**.
+
+Direct mission flagship: `shared-platform-services-openshift`.
+
+Current lane:
+
+```text
+OP1 Operator interview hardening — IMPLEMENTED / CI PENDING
+ -> OP2 OLM lifecycle directly on CRC/OpenShift
+ -> OP3 Operator + Argo CD + Day-2 integrated demo
+ -> OP4 12–15 min recruiter demo pack
+```
+
+OP1 artifacts:
+- `docs/runbooks/DAAROPS_OPERATOR_FIRST_DEMO.md`;
+- `scripts/d093-op1-operator-interview-surface.sh`;
+- `docs/iterations/D093-OP1-OPERATOR-INTERVIEW-HARDENING.md`.
+
+TradeOps/LLM/ODM/MCP are not prerequisites for this lane.
+
 ## D-098 — SQY Expert Kubernetes/OpenShift
 
 For D-098, this repository is the **Platform Engineering proof owner**:

@@ -1,0 +1,33 @@
+name: D093 OP1 Operator Interview Surface
+
+on:
+  pull_request:
+    paths:
+      - "operators/platform-onboarding-operator/**"
+      - "docs/runbooks/DAAROPS_OPERATOR_FIRST_DEMO.md"
+      - "scripts/d093-op1-operator-interview-surface.sh"
+      - ".github/workflows/d093-op1-operator-interview.yml"
+  push:
+    branches: [main]
+    paths:
+      - "operators/platform-onboarding-operator/**"
+      - "docs/runbooks/DAAROPS_OPERATOR_FIRST_DEMO.md"
+      - "scripts/d093-op1-operator-interview-surface.sh"
+      - ".github/workflows/d093-op1-operator-interview.yml"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  operator-interview-surface:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Shell syntax
+        run: bash -n scripts/d093-op1-operator-interview-surface.sh
+
+      - name: Validate Operator interview surface
+        run: bash scripts/d093-op1-operator-interview-surface.sh
