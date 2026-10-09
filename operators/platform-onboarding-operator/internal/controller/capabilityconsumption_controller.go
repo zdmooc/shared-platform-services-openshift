@@ -311,20 +311,41 @@ func (r *CapabilityConsumptionReconciler) apply(ctx context.Context, obj client.
 		currentQuota.Labels[ConsumerLabel] != desiredQuota.Labels[ConsumerLabel] {
 		return err
 	}
-	wanted, hasWanted := desiredQuota.Spec.Hard[corev1.ResourceRequestsStorage]
-	actual, hasActual := currentQuota.Spec.Hard[corev1.ResourceRequestsStorage]
-	if !hasWanted || !hasActual || wanted.Cmp(actual) == 0 {
-		// Do not force conflicts affecting CPU, memory, metadata or policies.
+	if !quotaStorageIsOnlyHardLimitDrift(desiredQuota.Spec.Hard, currentQuota.Spec.Hard) {
+		// Force applies the full quota spec, not an individual hard-limit key.
+		// Do not force if CPU/memory/PVCs/other dimensions differ alongside
+		// storage, as doing so would seize unrelated ownership.
 		return err
 	}
 
 	// Force applies the complete declared quota baseline; it is safe only
 	// within the already-claimed, exact consumer-owned platform quota and
-	// only following an observed SSA conflict on a storage-value drift.
+	// only following an observed SSA conflict on a storage-only value drift.
 	if forceErr := r.Apply(ctx, config, options, client.ForceOwnership); forceErr != nil {
 		return errors.Join(err, fmt.Errorf("recover SSA-owned requests.storage on platform quota: %w", forceErr))
 	}
 	return nil
+}
+
+// quotaStorageIsOnlyHardLimitDrift deliberately refuses to ForceOwnership
+// when *any* other quota hard limit changed or a new/unexpected limit exists.
+func quotaStorageIsOnlyHardLimitDrift(desired, current corev1.ResourceList) bool {
+	if len(desired) != len(current) {
+		return false
+	}
+	storageDrift := false
+	for name, expected := range desired {
+		actual, exists := current[name]
+		if !exists {
+			return false
+		}
+		if name == corev1.ResourceRequestsStorage {
+			storageDrift = expected.Cmp(actual) != 0
+		} else if expected.Cmp(actual) != 0 {
+			return false
+		}
+	}
+	return storageDrift
 }
 
 func (r *CapabilityConsumptionReconciler) resourceReference(obj client.Object) (platformv1alpha1.ManagedResourceReference, error) {
