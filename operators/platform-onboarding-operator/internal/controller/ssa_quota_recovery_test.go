@@ -134,6 +134,46 @@ func TestManagedQuotaCPUConflictDoesNotForceOwnership(t *testing.T) {
 	}
 }
 
+// ForceOwnership cannot be scoped to one JSON field by controller-runtime:
+// when storage and CPU both drift, preserve BOTH external modifications and
+// report ApplyFailed rather than take ownership of the entire quota.
+func TestManagedQuotaMixedStorageAndCPUDriftNeverForces(t *testing.T) {
+	ctx := context.Background()
+	ns := "d093-ssa-mixed-guard"
+	cc := newConsumption("d093-ssa-mixed-cr", "instant-payments", ns, platformv1alpha1.AdoptionManage)
+	cc.Spec.Resources.Profile = "payments-medium"
+	mustCreate(t, ctx, cc)
+
+	req := ctrl.Request{NamespacedName: client.ObjectKey{Name: cc.Name}}
+	r := reconciler()
+	if _, err := r.Reconcile(ctx, req); err != nil {
+		t.Fatalf("initial reconcile: %v", err)
+	}
+
+	key := client.ObjectKey{Namespace: ns, Name: platformQuotaName}
+	quota := &corev1.ResourceQuota{}
+	if err := testClient.Get(ctx, key, quota); err != nil {
+		t.Fatalf("get quota: %v", err)
+	}
+	if err := testClient.Patch(ctx, quota, client.RawPatch(types.MergePatchType,
+		[]byte(`{"spec":{"hard":{"requests.storage":"99Gi","requests.cpu":"3"}}}`)),
+		client.FieldOwner("kubectl-patch")); err != nil {
+		t.Fatalf("inject mixed drift: %v", err)
+	}
+
+	if _, err := r.Reconcile(ctx, req); err == nil {
+		t.Fatal("mixed drift must refuse broad ForceOwnership")
+	}
+	if err := testClient.Get(ctx, key, quota); err != nil {
+		t.Fatalf("get mixed-drift quota: %v", err)
+	}
+	storage := quota.Spec.Hard[corev1.ResourceRequestsStorage]
+	cpu := quota.Spec.Hard[corev1.ResourceRequestsCPU]
+	if storage.String() != "99Gi" || cpu.String() != "3" {
+		t.Fatalf("reconciler took over unrelated quota fields: storage=%s CPU=%s", storage.String(), cpu.String())
+	}
+}
+
 // An external quota with the platform name is *not* adopted, even if its
 // storage limit conflicts with the desired value and the CR is in Manage.
 func TestUnownedQuotaStorageConflictRemainsProtected(t *testing.T) {
