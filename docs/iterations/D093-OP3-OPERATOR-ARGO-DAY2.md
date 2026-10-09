@@ -253,3 +253,34 @@ It does not inject drift or merge PRs.
 **Next acceptance:** user-run readonly rollout preflight, explicit consented
 rollout, verify new digest/1:1/Consumer Ready/Quota 20Gi/Argo Synced Healthy,
 then separately authorized OP3 quota 99Gi→20Gi autonomous repair proof.
+
+
+## D-093/I2 direct Operator rollout — CRC RUNTIME_PROVEN, 2026-10-09
+
+User executed the separately authorized `OP3_I2_ROLLOUT_MODE=apply`
+with `CONFIRM_OP3_I2_CRC_ROLLOUT=YES_I_AUTHORIZE_CRC_OPERATOR_IMAGE_ROLLOUT`.
+Captured exact before/after images:
+- original `image-registry.openshift-image-registry.svc:5000/shared-platform-services/mayabank-platform-operator@sha256:ee3c1caed1d27642f11e7491a0e46442a08b0b6cb84df4258c4b7f52a8798d73`;
+- newly built, source-pinned `image-registry.openshift-image-registry.svc:5000/shared-platform-services/mayabank-platform-operator@sha256:acfa316265a0c3466a67dfecc1b731ae6a7bed78689dbe39a14bdad10d80d3a1`.
+
+Observed:
+- `OP3_I2_ROLLOUT_PREFLIGHT=PASS`;
+- mutation scope: `manager` Deployment container image only;
+- `deployment "mayabank-platform-operator" successfully rolled out`;
+- `OP3_I2_OPERATOR_NEW_IMAGE_RUNTIME=PASS`;
+- `OP3_I2_PLATFORM_POST_ROLLOUT=PASS`;
+- `truth_boundary=PATCHED_IMAGE_DEPLOYED_NO_QUOTA_DRIFT_YET`.
+
+The guard checked new digest, rollout health, Consumer
+`Ready=True/Reconciled` at current generation, platform quota `20Gi`,
+`wero-ui` desired/available `1/1`, and ArgoCD `Synced/Healthy`.
+No rollback was necessary. The original image remains pinned as
+recoverable rollback target. No TradeOps, OLM or other application deployment
+change was requested.
+
+**Gate status:** I1 SOURCE+CI_PROVEN; I2 BINARY_BUILD_CRC_PROVEN +
+ROLLOUT_CRC_PROVEN. Next `OP3_OPERATOR_DRIFT_RECOVERY=PASS`
+and `OP3_OPERATOR_ARGO_DAY2_INTEGRATED_DEMO_PROVEN=PASS` require a fresh,
+separately authorized **99Gi→20Gi autonomous Operator recovery** run. The
+old successful Argo self-heal evidence remains valid, but does not substitute
+for the Platform Operator drift proof. OP2 GHCR + OLM remains pending.
