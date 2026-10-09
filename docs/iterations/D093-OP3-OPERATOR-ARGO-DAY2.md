@@ -158,3 +158,18 @@ The PR's EXIT recovery trap was corrected to **verify readback** and print
 `OP3_ROLLBACK_ATTENTION_REQUIRED=YES` if restoration fails.
 This fix is preventive for **future** runs, not retroactive proof of the already-run
 CRC test. Added mocked regression covering successful and unsuccessful rollback.
+
+
+## CRC 2026-10-09 follow-up — steady state RESTORED, drift mechanism still unproven
+
+User-run read-only follow-up after unsuccessful OP3 Day-2 quota self-heal:
+- live `instant-payments-local/ResourceQuota/platform-quota`: `spec.hard["requests.storage"]="20Gi"`, correct Operator managed-by/consumer/consumption labels;
+- `CapabilityConsumption/instant-payments-crc`: `Ready=True, reason=Reconciled`, `observedGeneration=3, generation=3`; `Ready.lastTransitionTime=2026-10-08T21:04:48Z`;
+- `Deployment/wero-ui`: desired/ready/available all 1;
+- `ArgoCD Application/instant-payments-tech-lead-shared-platform`: `Synced/Healthy`;
+- last 45m direct Operator logs emitted no entries;
+- previous jq output `"managedFields":[]` is **not evidence of no managers**: `oc get ... -o json` suppresses managedFields by default. Re-run **read only** with `--show-managed-fields=true`, or via `oc get --raw /api/v1/namespaces/instant-payments-local/resourcequotas/platform-quota`.
+
+**Interpretation:** no residual quota/product drift; manual EXIT-trap patch from earlier failed demo may have restored the 20Gi value, so return to nominal does **not** prove autonomous Operator drift recovery. Cause remains open between watched-resource enqueue behavior and SSA ownership conflict until managedFields and contemporaneous controller evidence obtained. Avoid a second drift injection, CR annotation requeue, or unapproved mutation.
+
+**OP3 statuses:** `CRC_RECOVERY_PROVEN`, `CRC_READONLY_PREFLIGHT_PROVEN`, `ARGO_SELF_HEAL_CRC_PROVEN`, `OPERATOR_QUOTA_SELF_HEAL_CRC_PENDING`, `OP3_INTEGRATED_RUNTIME_PENDING`.
