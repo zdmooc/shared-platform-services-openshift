@@ -9,6 +9,8 @@ on:
       - "tests/d093-op3-crc-reconcile-recovery-test.sh"
       - "tests/d093-op3-drift-baseline-no-mutation.sh"
       - "tests/d093-op3-failure-rollback-test.sh"
+      - "scripts/d093-op3-crc-operator-binary-build.sh"
+      - "tests/d093-op3-i2-binary-build-readonly-test.sh"
       - "docs/runbooks/DAAROPS_OPERATOR_ARGO_DAY2_DEMO.md"
       - "docs/iterations/D093-OP3-OPERATOR-ARGO-DAY2.md"
       - ".github/workflows/d093-op3-static.yml"
@@ -21,6 +23,8 @@ on:
       - "tests/d093-op3-crc-reconcile-recovery-test.sh"
       - "tests/d093-op3-drift-baseline-no-mutation.sh"
       - "tests/d093-op3-failure-rollback-test.sh"
+      - "scripts/d093-op3-crc-operator-binary-build.sh"
+      - "tests/d093-op3-i2-binary-build-readonly-test.sh"
       - "docs/runbooks/DAAROPS_OPERATOR_ARGO_DAY2_DEMO.md"
       - "docs/iterations/D093-OP3-OPERATOR-ARGO-DAY2.md"
       - ".github/workflows/d093-op3-static.yml"
@@ -44,6 +48,8 @@ jobs:
           bash -n tests/d093-op3-crc-reconcile-recovery-test.sh
           bash -n tests/d093-op3-drift-baseline-no-mutation.sh
           bash -n tests/d093-op3-failure-rollback-test.sh
+          bash -n scripts/d093-op3-crc-operator-binary-build.sh
+          bash -n tests/d093-op3-i2-binary-build-readonly-test.sh
 
       - name: Regression — no mutation on blocked operator preflight
         run: bash tests/d093-op3-readonly-blocker-no-mutation.sh
@@ -56,6 +62,9 @@ jobs:
 
       - name: Regression — verify quota rollback or actionable failure
         run: bash tests/d093-op3-failure-rollback-test.sh
+
+      - name: Regression — I2 CRC build script default read-only and consent gate
+        run: bash tests/d093-op3-i2-binary-build-readonly-test.sh
 
       - name: Validate ownership and recovery markers
         run: |
